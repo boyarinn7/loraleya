@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoraLeya — Карта сайта</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0e0e0c;color:#c8c0b4;font-family:'Raleway',sans-serif;padding:2rem}
+h1{text-align:center;font-size:1.4rem;font-weight:300;color:#e8e0d0;margin-bottom:.4rem;letter-spacing:.1em}
+.sub{text-align:center;font-size:.7rem;color:#8a847a;margin-bottom:2.5rem;letter-spacing:.05em}
+
+.map{max-width:900px;margin:0 auto;position:relative}
+
+/* LEVEL STYLES */
+.level{display:flex;justify-content:center;gap:1.2rem;margin-bottom:1rem;flex-wrap:wrap}
+.connector{display:flex;justify-content:center;margin-bottom:1rem}
+.connector svg{display:block}
+
+.box{padding:.8rem 1.2rem;border-radius:8px;text-align:center;min-width:160px;border:1px solid;position:relative}
+.box h3{font-size:.72rem;font-weight:600;letter-spacing:.08em;margin-bottom:.2rem}
+.box p{font-size:.6rem;font-weight:300;line-height:1.5;opacity:.7}
+
+/* COLOR TYPES */
+.box-main{background:#2a2010;border-color:#c5a55a40;color:#e8e0d0}
+.box-main h3{color:#c5a55a}
+.box-scenario{background:#0a1a14;border-color:#1d9e7540;color:#c8c0b4}
+.box-scenario h3{color:#5dcaa5}
+.box-color{background:#14101e;border-color:#7f77dd40;color:#c8c0b4}
+.box-color h3{color:#afa9ec}
+.box-custom{background:#1a0e0a;border-color:#d85a3040;color:#c8c0b4}
+.box-custom h3{color:#f0997b}
+.box-commerce{background:#1a1508;border-color:#c5a55a30;color:#c8c0b4}
+.box-commerce h3{color:#c5a55a}
+.box-util{background:#1a1917;border-color:#88878030;color:#8a847a}
+.box-util h3{color:#c8c0b4}
+
+/* DETAIL BOX */
+.box-detail{min-width:200px;text-align:left}
+.box-detail ul{list-style:none;margin-top:.4rem}
+.box-detail li{font-size:.58rem;padding:.15rem 0;font-weight:300;opacity:.8;padding-left:.8rem;position:relative}
+.box-detail li::before{content:'→';position:absolute;left:0;color:inherit;opacity:.4;font-size:.5rem}
+
+/* ARROWS */
+.arrows{text-align:center;padding:.5rem 0;color:#c5a55a30;font-size:1.2rem;letter-spacing:.5rem}
+.arrows-text{text-align:center;font-size:.55rem;color:#c5a55a;letter-spacing:.15em;text-transform:uppercase;margin:.3rem 0 .8rem;font-weight:500}
+
+/* CROSS LINK */
+.crosslink{display:flex;justify-content:center;align-items:center;gap:.5rem;margin:.5rem 0 1.5rem;font-size:.55rem;color:#8a847a;letter-spacing:.05em}
+.crosslink .dash{width:40px;height:1px;background:#c5a55a30;border-top:1px dashed #c5a55a40}
+
+/* SECTION LABEL */
+.section-label{text-align:center;font-size:.55rem;letter-spacing:.25em;text-transform:uppercase;color:#c5a55a;margin:2rem 0 .8rem;font-weight:500}
+
+/* FOOTER BAR */
+.footer-bar{margin-top:2rem;padding:1.2rem;border:1px solid #c5a55a15;border-radius:8px;background:#1a1917;text-align:center}
+.footer-bar h3{font-size:.65rem;color:#c5a55a;font-weight:500;letter-spacing:.1em;margin-bottom:.4rem}
+.footer-bar p{font-size:.58rem;color:#8a847a;font-weight:300;line-height:1.7}
+
+/* NOTES */
+.notes{margin-top:2.5rem;padding:1.5rem;border-left:2px solid #c5a55a30;background:#1a191708}
+.notes h3{font-size:.7rem;color:#c5a55a;font-weight:500;margin-bottom:.6rem;letter-spacing:.08em}
+.notes li{font-size:.62rem;color:#8a847a;font-weight:300;line-height:1.8;margin-left:1rem}
+</style>
+</head>
+<body>
+
+<h1>LoraLeya · Карта сайта</h1>
+<p class="sub">Концепция А — «Конструктор стола» · WordPress + WooCommerce</p>
+
+<div class="map">
+
+<!-- LEVEL 1: MAIN -->
+<div class="level">
+<div class="box box-main">
+<h3>ГЛАВНАЯ СТРАНИЦА</h3>
+<p>Hero-блок · Сценарии · Палитра · Изделия · О бренде</p>
+</div>
+</div>
+
+<div class="arrows">↓ &nbsp; ↓ &nbsp; ↓</div>
+<div class="arrows-text">Три точки входа в покупку</div>
+
+<!-- LEVEL 2: ENTRY POINTS -->
+<div class="level">
+<div class="box box-scenario box-detail">
+<h3>СЦЕНАРИИ (4–5 шт)</h3>
+<p>Лукбуки готовых сервировок</p>
+<ul>
+<li>Романтический ужин</li>
+<li>Семейный обед</li>
+<li>Праздничный стол</li>
+<li>Каждый день</li>
+<li>Ресторанная подача</li>
+</ul>
+</div>
+<div class="box box-color box-detail">
+<h3>ПАЛИТРА ЦВЕТОВ (17 шт)</h3>
+<p>Навигация по оттенкам</p>
+<ul>
+<li>Бежевый, Белый, Бирюза</li>
+<li>Блек золото, Бронза, Голубой</li>
+<li>Графит, Зелёный</li>
+<li>Меланж (золото/серебро/серый/чёрный)</li>
+<li>Платина, Серебро, Сиреневый</li>
+<li>Тёмно-бирюзовый, Фиолетовый</li>
+</ul>
+</div>
+<div class="box box-custom box-detail">
+<h3>ИНДИВИДУАЛЬНЫЙ ЗАКАЗ</h3>
+<p>Конфигуратор</p>
+<ul>
+<li>Форма стола (круг/овал/прямоуг.)</li>
+<li>Кол-во персон (2–12)</li>
+<li>Выбор цвета из палитры</li>
+<li>Монограмма, доп. опции</li>
+<li>Заявка → Telegram + email</li>
+</ul>
+</div>
+</div>
+
+<div class="crosslink">
+<span class="dash"></span>
+Перекрёстные ссылки между сценариями и цветами
+<span class="dash"></span>
+</div>
+
+<div class="arrows">↓ &nbsp; &nbsp; &nbsp; &nbsp; ↓</div>
+
+<!-- LEVEL 3: DETAIL PAGES -->
+<div class="level">
+<div class="box box-scenario box-detail">
+<h3>СТРАНИЦА СЦЕНАРИЯ</h3>
+<p>Продающая страница-лукбук</p>
+<ul>
+<li>Hero-видео сервировки</li>
+<li>Фотогалерея (сцены + детали)</li>
+<li>Рекомендуемые цвета</li>
+<li>Товары комплектом</li>
+<li>Кнопка «Собрать комплект»</li>
+<li>Покупка без карточки товара</li>
+</ul>
+</div>
+<div class="box box-color box-detail">
+<h3>СТРАНИЦА ЦВЕТА</h3>
+<p>Все товары одного оттенка</p>
+<ul>
+<li>Видео-коллаж (разное освещение)</li>
+<li>Фото: макро фактуры + сцены</li>
+<li>Все изделия единым потоком</li>
+<li>Добавить в корзину</li>
+<li>Рекомендуемые сценарии</li>
+<li>Описание оттенка, советы</li>
+</ul>
+</div>
+</div>
+
+<div class="arrows">↓ &nbsp; ↓</div>
+<div class="section-label">Покупка</div>
+
+<!-- LEVEL 4: COMMERCE -->
+<div class="level">
+<div class="box box-commerce" style="min-width:280px">
+<h3>КОРЗИНА (WooCommerce)</h3>
+<p>Комплекты и отдельные изделия · Промокоды</p>
+</div>
+</div>
+
+<div class="arrows">↓</div>
+
+<div class="level">
+<div class="box box-commerce" style="min-width:280px">
+<h3>ОФОРМЛЕНИЕ ЗАКАЗА</h3>
+<p>ЮKassa / Cloudpayments · Контактные данные</p>
+</div>
+</div>
+
+<div class="arrows">↓</div>
+
+<div class="level">
+<div class="box box-commerce" style="min-width:280px">
+<h3>ДОСТАВКА</h3>
+<p>СДЭК · Boxberry · Почта России · Калькулятор стоимости</p>
+</div>
+</div>
+
+<!-- UTILITY PAGES -->
+<div class="section-label">Служебные страницы</div>
+
+<div class="level">
+<div class="box box-util"><h3>О бренде</h3><p>История · Производство</p></div>
+<div class="box box-util"><h3>Оплата / доставка</h3><p>Условия · Сроки</p></div>
+<div class="box box-util"><h3>Отзывы</h3><p>Фото покупателей</p></div>
+<div class="box box-util"><h3>Контакты</h3><p>Форма · Соцсети</p></div>
+<div class="box box-util"><h3>Уход</h3><p>Инструкции по стирке</p></div>
+</div>
+
+<!-- GLOBAL ELEMENTS -->
+<div class="footer-bar">
+<h3>ГЛОБАЛЬНЫЕ ЭЛЕМЕНТЫ (на всех страницах)</h3>
+<p>
+Шапка: логотип · навигация (Сценарии / Палитра / Каталог / Инд. заказ / О бренде) · корзина · поиск по цвету<br>
+Футер: контакты · соцсети (Telegram, VK) · подписка на рассылку · «Сделано в России с любовью»<br>
+Плавающая кнопка: WhatsApp/Telegram чат · На мобильных — sticky CTA «Собрать комплект»
+</p>
+</div>
+
+<!-- NOTES -->
+<div class="notes">
+<h3>Технические заметки</h3>
+<ul>
+<li>Платформа: WordPress + WooCommerce, кастомная тема</li>
+<li>Покупка без отдельных карточек товара — добавление в корзину со страниц сценария/цвета</li>
+<li>Оплата: ЮKassa (карты, SBP) или Cloudpayments</li>
+<li>Доставка: СДЭК API + Boxberry API + Почта России</li>
+<li>Индивидуальный заказ: форма → Telegram-бот + email</li>
+<li>Мобильная версия — приоритет (70%+ трафика)</li>
+<li>SEO: страницы цветов = посадочные для поисковых запросов</li>
+<li>Контент: 17 цветовых страниц × (видео + фото + описание)</li>
+</ul>
+</div>
+
+</div>
+</body>
+</html>

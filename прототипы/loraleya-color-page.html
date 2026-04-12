@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Фиолетовый — LoraLeya</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0e0e0c;--bg2:#1a1917;--bg3:#252420;--cream:#e8e0d0;--gold:#c5a55a;--gold-light:#d4bc7c;--gold-dim:#8a7a4a;--text:#c8c0b4;--text-muted:#8a847a;--serif:'Cormorant Garamond',Georgia,serif;--sans:'Raleway',sans-serif;--accent:#6a3a7a;--accent-light:#8b5a9a}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden;line-height:1.6}
+a{color:inherit;text-decoration:none}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 3rem;display:flex;align-items:center;justify-content:space-between;background:rgba(14,14,12,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(197,165,90,.08)}
+.logo{font-family:var(--serif);font-size:1.4rem;font-weight:300;letter-spacing:.12em;color:var(--cream)}
+.logo em{font-style:italic;color:var(--gold);font-weight:400}
+.nav-r{display:flex;align-items:center;gap:2rem}
+.nav-bk{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);transition:color .3s}
+.nav-bk:hover{color:var(--gold)}
+.nav-ct{display:flex;align-items:center;gap:.5rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;transition:color .3s}
+.nav-ct:hover{color:var(--gold)}
+.cc{background:var(--gold);color:var(--bg);min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:600}
+
+/* COLOR HERO */
+.color-hero{min-height:70vh;display:flex;align-items:center;position:relative;overflow:hidden;padding:6rem 4rem 4rem}
+.color-hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#2d1a38 0%,#1a0f22 30%,#0e0e0c 70%)}
+.color-hero-glow{position:absolute;top:-20%;right:-10%;width:60%;height:140%;background:radial-gradient(ellipse,rgba(106,58,122,.12) 0%,transparent 70%);pointer-events:none}
+.color-hero-content{position:relative;z-index:2;display:grid;grid-template-columns:1fr 1fr;gap:4rem;align-items:center;width:100%}
+.chc-left{max-width:480px}
+.chc-bc{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:1.2rem}
+.chc-bc a{transition:color .3s}
+.chc-bc a:hover{color:var(--gold)}
+.chc-title{font-family:var(--serif);font-size:clamp(2.2rem,5vw,3.5rem);font-weight:300;color:var(--cream);line-height:1.1;margin-bottom:.6rem}
+.chc-sub{font-family:var(--serif);font-size:1.1rem;font-style:italic;color:var(--accent-light);margin-bottom:1.2rem;font-weight:300}
+.chc-desc{font-size:.85rem;color:var(--text-muted);font-weight:300;line-height:1.8;margin-bottom:1.5rem}
+.chc-tags{display:flex;gap:.5rem;flex-wrap:wrap}
+.chc-tag{font-size:.55rem;letter-spacing:.15em;text-transform:uppercase;padding:.35rem .8rem;border:1px solid rgba(106,58,122,.3);color:var(--accent-light);font-weight:400}
+.chc-right{display:grid;grid-template-columns:1fr 1fr;gap:.4rem;aspect-ratio:1}
+.chc-img{background:var(--bg3);border:1px solid rgba(106,58,122,.08);display:flex;align-items:center;justify-content:center;font-size:.55rem;color:var(--text-muted);text-align:center;letter-spacing:.1em;text-transform:uppercase;padding:.5rem}
+.chc-img:first-child{grid-column:1/3;aspect-ratio:2/1}
+
+/* VIDEO PLACEHOLDER */
+.video-sec{padding:0 4rem 4rem}
+.video-box{background:var(--bg3);border:1px solid rgba(106,58,122,.06);aspect-ratio:16/7;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;cursor:pointer}
+.video-box:hover .vplay{transform:scale(1.1)}
+.vplay{width:56px;height:56px;border-radius:50%;border:2px solid var(--accent-light);display:flex;align-items:center;justify-content:center;transition:transform .3s;margin-bottom:.8rem}
+.vplay svg{width:18px;height:18px;fill:var(--accent-light);margin-left:3px}
+.vlabel{font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--text-muted)}
+
+/* MACRO STRIP */
+.macro-strip{display:flex;gap:.3rem;padding:0 4rem 4rem;overflow-x:auto}
+.macro-item{flex:0 0 200px;height:140px;background:var(--bg3);border:1px solid rgba(106,58,122,.04);display:flex;align-items:center;justify-content:center;font-size:.5rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase}
+
+/* SECTION */
+.sec{padding:4rem}
+.sec-ey{font-size:.56rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;font-weight:500}
+.sec-t{font-family:var(--serif);font-size:clamp(1.3rem,2.5vw,1.8rem);font-weight:300;color:var(--cream);margin-bottom:.4rem}
+.sec-d{color:var(--text-muted);font-weight:300;max-width:460px;margin-bottom:2rem;font-size:.8rem}
+
+/* PRODUCTS GRID */
+.products{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.prod{background:var(--bg2);border:1px solid rgba(106,58,122,.06);padding:1.5rem;transition:border-color .3s}
+.prod:hover{border-color:rgba(106,58,122,.2)}
+.prod-img{aspect-ratio:4/3;background:var(--bg3);margin-bottom:1rem;display:flex;align-items:center;justify-content:center;font-size:.5rem;color:var(--text-muted);letter-spacing:.1em;text-transform:uppercase;border:1px solid rgba(106,58,122,.04)}
+.prod-cat{font-size:.5rem;letter-spacing:.25em;text-transform:uppercase;color:var(--accent-light);margin-bottom:.3rem;font-weight:500}
+.prod-name{font-family:var(--serif);font-size:1.05rem;color:var(--cream);font-weight:400;margin-bottom:.15rem}
+.prod-size{font-size:.62rem;color:var(--text-muted);font-weight:300;margin-bottom:.8rem}
+.prod-bottom{display:flex;align-items:center;justify-content:space-between}
+.prod-price{font-size:.9rem;color:var(--cream);font-weight:400}
+.prod-price span{font-size:.65rem;color:var(--text-muted);font-weight:300}
+.prod-add{width:32px;height:32px;border:1px solid rgba(106,58,122,.2);background:transparent;color:var(--accent-light);font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.prod-add:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+
+/* SETS SECTION */
+.sets-bg{background:var(--bg2);border-top:1px solid rgba(106,58,122,.06);border-bottom:1px solid rgba(106,58,122,.06)}
+.sets-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:1rem}
+.set{border:1px dashed rgba(197,165,90,.15);padding:1.5rem;transition:border-color .3s}
+.set:hover{border-color:rgba(197,165,90,.3)}
+.set-badge{font-size:.5rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);background:rgba(197,165,90,.08);display:inline-block;padding:.2rem .6rem;margin-bottom:.8rem;font-weight:500}
+.set-name{font-family:var(--serif);font-size:1.1rem;color:var(--cream);font-weight:400;margin-bottom:.2rem}
+.set-contents{font-size:.62rem;color:var(--text-muted);font-weight:300;line-height:1.7;margin-bottom:1rem}
+.set-bottom{display:flex;align-items:center;justify-content:space-between}
+.set-prices{display:flex;align-items:baseline;gap:.5rem}
+.set-old{font-size:.72rem;color:var(--text-muted);text-decoration:line-through}
+.set-new{font-size:1.05rem;color:var(--gold);font-weight:500}
+.btn-set{padding:.5rem 1.2rem;border:1px solid var(--gold);color:var(--gold);background:transparent;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .3s;font-family:var(--sans);font-weight:500}
+.btn-set:hover{background:var(--gold);color:var(--bg)}
+
+/* SCENARIOS REC */
+.scen-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem}
+.scen{padding:1.5rem;border:1px solid rgba(197,165,90,.06);cursor:pointer;transition:all .3s}
+.scen:hover{border-color:rgba(197,165,90,.25)}
+.scen-num{font-size:.48rem;letter-spacing:.25em;color:var(--gold);margin-bottom:.4rem}
+.scen-name{font-family:var(--serif);font-size:1rem;color:var(--cream);font-weight:300;margin-bottom:.2rem}
+.scen-hint{font-size:.58rem;color:var(--text-muted);font-weight:300}
+
+/* CARE */
+.care-box{background:rgba(106,58,122,.03);border:1px solid rgba(106,58,122,.08);padding:1.5rem;margin-top:2rem}
+.care-box h3{font-family:var(--serif);font-size:1rem;color:var(--cream);font-weight:400;margin-bottom:.6rem}
+.care-item{font-size:.68rem;color:var(--text-muted);font-weight:300;padding:.25rem 0;padding-left:1rem;position:relative}
+.care-item::before{content:'·';position:absolute;left:0;color:var(--accent-light)}
+
+/* OTHER COLORS */
+.other-colors{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:1rem}
+.oc-link{width:40px;height:40px;border-radius:50%;border:2px solid transparent;transition:all .3s;cursor:pointer}
+.oc-link:hover{border-color:var(--gold);transform:scale(1.12)}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid rgba(197,165,90,.06);padding:2rem 4rem;display:flex;justify-content:space-between;font-size:.58rem;color:var(--text-muted);letter-spacing:.08em;flex-wrap:wrap;gap:1rem}
+
+/* STICKY BOTTOM BAR */
+.sticky-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(14,14,12,.95);backdrop-filter:blur(20px);border-top:1px solid rgba(197,165,90,.1);padding:.8rem 3rem;display:flex;align-items:center;justify-content:space-between;z-index:90;transform:translateY(100%);transition:transform .3s}
+.sticky-bar.show{transform:translateY(0)}
+.sb-info{display:flex;align-items:center;gap:1rem}
+.sb-dot{width:16px;height:16px;border-radius:50%;background:var(--accent)}
+.sb-text{font-size:.7rem;color:var(--cream);font-weight:400}
+.sb-total{font-family:var(--serif);font-size:1.2rem;color:var(--cream)}
+.sb-btn{padding:.6rem 1.8rem;background:var(--gold);color:var(--bg);font-size:.6rem;letter-spacing:.15em;text-transform:uppercase;font-weight:600;border:none;cursor:pointer;font-family:var(--sans);transition:background .3s}
+.sb-btn:hover{background:var(--gold-light)}
+
+@media(max-width:1024px){
+.color-hero{padding:5rem 1.5rem 3rem}
+.color-hero-content{grid-template-columns:1fr;gap:2rem}
+.sec{padding:3rem 1.5rem}
+.video-sec,.macro-strip{padding-left:1.5rem;padding-right:1.5rem}
+nav{padding:.8rem 1.5rem}
+.sticky-bar{padding:.6rem 1.5rem}
+}
+@media(max-width:640px){
+.chc-right{grid-template-columns:1fr}
+.chc-img:first-child{grid-column:1}
+.products{grid-template-columns:1fr}
+footer{padding:1.5rem;flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<a href="#" class="logo">Lora<em>Leya</em></a>
+<div class="nav-r">
+<a href="#" class="nav-bk">← На главную</a>
+<div class="nav-ct">Корзина <span class="cc" id="cc">0</span></div>
+</div>
+</nav>
+
+<!-- COLOR HERO -->
+<section class="color-hero">
+<div class="color-hero-bg"></div>
+<div class="color-hero-glow"></div>
+<div class="color-hero-content">
+<div class="chc-left">
+<div class="chc-bc"><a href="#">Главная</a> → <a href="#">Палитра</a> → Фиолетовый</div>
+<h1 class="chc-title">Фиолетовый</h1>
+<div class="chc-sub">Глубокий и таинственный</div>
+<p class="chc-desc">Насыщенный фиолетовый с характерным жаккардовым переливом. При свечах приобретает глубину, при дневном свете — благородный блеск. Один из самых популярных оттенков коллекции.</p>
+<div class="chc-tags">
+<span class="chc-tag">Романтический ужин</span>
+<span class="chc-tag">Праздничный стол</span>
+<span class="chc-tag">Свечи</span>
+</div>
+</div>
+<div class="chc-right">
+<div class="chc-img">Фото · сервировка в этом цвете</div>
+<div class="chc-img">Макро · фактура</div>
+<div class="chc-img">Детали · салфетка</div>
+</div>
+</div>
+</section>
+
+<!-- VIDEO -->
+<section class="video-sec">
+<div class="video-box">
+<div class="vplay"><svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg></div>
+<div class="vlabel">Видео · сервировка фиолетовым при разном освещении</div>
+</div>
+</section>
+
+<!-- MACRO STRIP -->
+<div class="macro-strip">
+<div class="macro-item">Макро 1 · плетение</div>
+<div class="macro-item">Макро 2 · перелив</div>
+<div class="macro-item">Макро 3 · драпировка</div>
+<div class="macro-item">Макро 4 · край</div>
+</div>
+
+<!-- SETS -->
+<section class="sec sets-bg">
+<div class="sec-ey">Готовые наборы</div>
+<div class="sec-t">Выгоднее на 15% — всё в одном цвете</div>
+<div class="sec-d">Комплект сразу готов к сервировке. Выберите размер под свой стол.</div>
+
+<div class="sets-grid">
+<div class="set">
+<div class="set-badge">Хит</div>
+<div class="set-name">Набор на 4 персоны · дорожка 140</div>
+<div class="set-contents">Дорожка 40×140 + 4 салфетки 40×40 + 4 куверта 9×24</div>
+<div class="set-bottom">
+<div class="set-prices"><span class="set-old">3 290 ₽</span><span class="set-new">2 790 ₽</span></div>
+<button class="btn-set" onclick="addItem('Набор 4п/140')">В корзину</button>
+</div>
+</div>
+
+<div class="set">
+<div class="set-badge">Для большого стола</div>
+<div class="set-name">Набор на 4 персоны · дорожка 175</div>
+<div class="set-contents">Дорожка 40×175 + 4 салфетки 40×40 + 4 куверта 9×24</div>
+<div class="set-bottom">
+<div class="set-prices"><span class="set-old">3 490 ₽</span><span class="set-new">2 970 ₽</span></div>
+<button class="btn-set" onclick="addItem('Набор 4п/175')">В корзину</button>
+</div>
+</div>
+
+<div class="set">
+<div class="set-badge">Семейный</div>
+<div class="set-name">Набор на 6 персон · дорожка 140</div>
+<div class="set-contents">Дорожка 40×140 + 6 салфеток 40×40 + 6 кувертов 9×24</div>
+<div class="set-bottom">
+<div class="set-prices"><span class="set-old">4 490 ₽</span><span class="set-new">3 820 ₽</span></div>
+<button class="btn-set" onclick="addItem('Набор 6п/140')">В корзину</button>
+</div>
+</div>
+
+<div class="set">
+<div class="set-name">Набор на 6 персон · дорожка 175</div>
+<div class="set-contents">Дорожка 40×175 + 6 салфеток 40×40 + 6 кувертов 9×24</div>
+<div class="set-bottom">
+<div class="set-prices"><span class="set-old">4 690 ₽</span><span class="set-new">3 990 ₽</span></div>
+<button class="btn-set" onclick="addItem('Набор 6п/175')">В корзину</button>
+</div>
+</div>
+</div>
+</section>
+
+<!-- ALL PRODUCTS -->
+<section class="sec">
+<div class="sec-ey">Все изделия · Фиолетовый</div>
+<div class="sec-t">Поштучно</div>
+<div class="sec-d">Для нестандартных столов или когда нужно дополнить набор</div>
+
+<div class="products">
+
+<!-- Дорожки -->
+<div class="prod">
+<div class="prod-img">Фото дорожки 140</div>
+<div class="prod-cat">Дорожка</div>
+<div class="prod-name">Дорожка на стол</div>
+<div class="prod-size">40 × 140 см · Входит в наборы</div>
+<div class="prod-bottom">
+<div class="prod-price">890 ₽</div>
+<button class="prod-add" onclick="addItem('Дорожка 140')">+</button>
+</div>
+</div>
+
+<div class="prod">
+<div class="prod-img">Фото дорожки 175</div>
+<div class="prod-cat">Дорожка</div>
+<div class="prod-name">Дорожка на стол</div>
+<div class="prod-size">40 × 175 см · Входит в наборы</div>
+<div class="prod-bottom">
+<div class="prod-price">990 ₽</div>
+<button class="prod-add" onclick="addItem('Дорожка 175')">+</button>
+</div>
+</div>
+
+<div class="prod">
+<div class="prod-img">Фото дорожки 240</div>
+<div class="prod-cat">Дорожка</div>
+<div class="prod-name">Дорожка на стол</div>
+<div class="prod-size">40 × 240 см · Для длинных столов</div>
+<div class="prod-bottom">
+<div class="prod-price">1 290 ₽</div>
+<button class="prod-add" onclick="addItem('Дорожка 240')">+</button>
+</div>
+</div>
+
+<div class="prod">
+<div class="prod-img">Фото дорожки 300</div>
+<div class="prod-cat">Дорожка</div>
+<div class="prod-name">Дорожка на стол</div>
+<div class="prod-size">40 × 300 см · Максимальный размер</div>
+<div class="prod-bottom">
+<div class="prod-price">1 590 ₽</div>
+<button class="prod-add" onclick="addItem('Дорожка 300')">+</button>
+</div>
+</div>
+
+<!-- Скатерти -->
+<div class="prod">
+<div class="prod-img">Фото скатерти 175</div>
+<div class="prod-cat">Скатерть</div>
+<div class="prod-name">Скатерть</div>
+<div class="prod-size">140 × 175 см · На 4 персоны</div>
+<div class="prod-bottom">
+<div class="prod-price">2 490 ₽</div>
+<button class="prod-add" onclick="addItem('Скатерть 175')">+</button>
+</div>
+</div>
+
+<div class="prod">
+<div class="prod-img">Фото скатерти 220</div>
+<div class="prod-cat">Скатерть</div>
+<div class="prod-name">Скатерть</div>
+<div class="prod-size">140 × 220 см · На 6 персон</div>
+<div class="prod-bottom">
+<div class="prod-price">2 990 ₽</div>
+<button class="prod-add" onclick="addItem('Скатерть 220')">+</button>
+</div>
+</div>
+
+<div class="prod">
+<div class="prod-img">Фото скатерти 240</div>
+<div class="prod-cat">Скатерть</div>
+<div class="prod-name">Скатерть</div>
+<div class="prod-size">140 × 240 см · На 8 персон</div>
+<div class="prod-bottom">
+<div class="prod-price">3 490 ₽</div>
+<button class="prod-add" onclick="addItem('Скатерть 240')">+</button>
+</div>
+</div>
+
+<!-- Салфетки -->
+<div class="prod">
+<div class="prod-img">Фото салфетки</div>
+<div class="prod-cat">Салфетка</div>
+<div class="prod-name">Салфетка сервировочная</div>
+<div class="prod-size">40 × 40 см · Цена за 1 шт</div>
+<div class="prod-bottom">
+<div class="prod-price">350 ₽ <span>/ шт</span></div>
+<button class="prod-add" onclick="addItem('Салфетка')">+</button>
+</div>
+</div>
+
+<!-- Куверты -->
+<div class="prod">
+<div class="prod-img">Фото куверта</div>
+<div class="prod-cat">Куверт</div>
+<div class="prod-name">Куверт для приборов</div>
+<div class="prod-size">9 × 24 см · Цена за 1 шт</div>
+<div class="prod-bottom">
+<div class="prod-price">250 ₽ <span>/ шт</span></div>
+<button class="prod-add" onclick="addItem('Куверт')">+</button>
+</div>
+</div>
+
+</div>
+</section>
+
+<!-- CARE + SCENARIOS -->
+<section class="sec" style="padding-top:0">
+
+<div class="care-box">
+<h3>Уход за изделиями</h3>
+<div class="care-item">Машинная стирка при 30°C, деликатный режим</div>
+<div class="care-item">Не использовать отбеливатель</div>
+<div class="care-item">Гладить при средней температуре через ткань</div>
+<div class="care-item">Не сушить в барабане</div>
+<div class="care-item">100% полиэстер — быстро сохнет, не мнётся</div>
+</div>
+</section>
+
+<!-- SCENARIOS -->
+<section class="sec" style="border-top:1px solid rgba(197,165,90,.06)">
+<div class="sec-ey">Этот цвет подходит для</div>
+<div class="sec-t">Рекомендуемые сценарии</div>
+<div class="scen-grid">
+<div class="scen"><div class="scen-num">01</div><div class="scen-name">Романтический ужин</div><div class="scen-hint">2 персоны · свечи · вечер</div></div>
+<div class="scen"><div class="scen-num">03</div><div class="scen-name">Праздничный стол</div><div class="scen-hint">6+ персон · декор · шампанское</div></div>
+</div>
+</section>
+
+<!-- OTHER COLORS -->
+<section class="sec" style="border-top:1px solid rgba(197,165,90,.06)">
+<div class="sec-ey">Другие цвета</div>
+<div class="sec-t">Вся палитра LoraLeya</div>
+<div class="other-colors">
+<div class="oc-link" style="background:#d4c5a0" title="Бежевый"></div>
+<div class="oc-link" style="background:#f0ece4;border:1px solid #aaa" title="Белый"></div>
+<div class="oc-link" style="background:#5eb8a8" title="Бирюза"></div>
+<div class="oc-link" style="background:#2a2520;border:1px solid #555" title="Блек золото"></div>
+<div class="oc-link" style="background:#8b6e3a" title="Бронза"></div>
+<div class="oc-link" style="background:#8bb8d0" title="Голубой"></div>
+<div class="oc-link" style="background:#4a4844" title="Графит"></div>
+<div class="oc-link" style="background:#6b8a5e" title="Зелёный"></div>
+<div class="oc-link" style="background:#c8a85a" title="Меланж золото"></div>
+<div class="oc-link" style="background:#b0b0a8" title="Меланж серебро"></div>
+<div class="oc-link" style="background:#787874" title="Меланж серый"></div>
+<div class="oc-link" style="background:#2e2e2c;border:1px solid #555" title="Меланж чёрный"></div>
+<div class="oc-link" style="background:#c8c0b8" title="Платина"></div>
+<div class="oc-link" style="background:#c0c0c0" title="Серебро"></div>
+<div class="oc-link" style="background:#b088b0" title="Сиреневый"></div>
+<div class="oc-link" style="background:#3a7878" title="Тёмно-бирюзовый"></div>
+</div>
+</section>
+
+<footer>
+<span>© 2026 LoraLeya · Сделано в России с любовью</span>
+<span>loraleya.ru</span>
+</footer>
+
+<!-- STICKY BOTTOM BAR -->
+<div class="sticky-bar" id="stickyBar">
+<div class="sb-info">
+<div class="sb-dot"></div>
+<span class="sb-text">Фиолетовый</span>
+<span class="sb-total" id="sbTotal">0 ₽</span>
+</div>
+<button class="sb-btn" onclick="alert('Переход в корзину')">Оформить заказ →</button>
+</div>
+
+<script>
+let cart=[];
+let total=0;
+
+function addItem(name){
+cart.push(name);
+const c=document.getElementById('cc');
+c.textContent=cart.length;
+
+const bar=document.getElementById('stickyBar');
+bar.classList.add('show');
+
+total+=getPrice(name);
+document.getElementById('sbTotal').textContent=total.toLocaleString('ru-RU')+' ₽';
+}
+
+function getPrice(name){
+const p={'Дорожка 140':890,'Дорожка 175':990,'Дорожка 240':1290,'Дорожка 300':1590,'Скатерть 175':2490,'Скатерть 220':2990,'Скатерть 240':3490,'Салфетка':350,'Куверт':250,'Набор 4п/140':2790,'Набор 4п/175':2970,'Набор 6п/140':3820,'Набор 6п/175':3990};
+return p[name]||0;
+}
+</script>
+</body>
+</html>

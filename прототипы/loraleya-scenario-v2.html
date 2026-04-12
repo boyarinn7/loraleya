@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Романтический ужин — LoraLeya</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+--bg:#0e0e0c;--bg2:#1a1917;--bg3:#252420;
+--cream:#e8e0d0;--gold:#c5a55a;--gold-light:#d4bc7c;--gold-dim:#8a7a4a;
+--text:#c8c0b4;--text-muted:#8a847a;
+--serif:'Cormorant Garamond',Georgia,serif;
+--sans:'Raleway',sans-serif;
+}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden;line-height:1.6}
+a{color:inherit;text-decoration:none}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 3rem;display:flex;align-items:center;justify-content:space-between;background:rgba(14,14,12,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(197,165,90,.08)}
+.logo{font-family:var(--serif);font-size:1.4rem;font-weight:300;letter-spacing:.12em;color:var(--cream)}
+.logo em{font-style:italic;color:var(--gold);font-weight:400}
+.nav-right{display:flex;align-items:center;gap:2rem}
+.nav-back{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);transition:color .3s}
+.nav-back:hover{color:var(--gold)}
+.nav-cart{display:flex;align-items:center;gap:.5rem;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);cursor:pointer;transition:color .3s}
+.nav-cart:hover{color:var(--gold)}
+.cart-count{background:var(--gold);color:var(--bg);min-width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.55rem;font-weight:600}
+@keyframes cartPop{0%{transform:scale(1)}50%{transform:scale(1.4)}100%{transform:scale(1)}}
+
+.hero{height:75vh;min-height:460px;position:relative;display:flex;align-items:flex-end;overflow:hidden}
+.hero-bg{position:absolute;inset:0;background:linear-gradient(160deg,#2d1828 0%,#1a0f1e 40%,#0e0e0c 100%)}
+.hero-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(14,14,12,.95) 0%,rgba(14,14,12,.3) 50%,rgba(14,14,12,.1) 100%)}
+.hero-content{position:relative;z-index:2;padding:0 4rem 3.5rem;max-width:680px}
+.hero-bc{font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold-dim);margin-bottom:1rem}
+.hero-bc a{transition:color .3s}
+.hero-bc a:hover{color:var(--gold)}
+.hero h1{font-family:var(--serif);font-size:clamp(2rem,5vw,3.2rem);font-weight:300;color:var(--cream);line-height:1.15;margin-bottom:.8rem}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero-desc{font-size:.88rem;color:var(--text-muted);font-weight:300;line-height:1.8;max-width:460px;margin-bottom:1.2rem}
+.hero-meta{display:flex;gap:2rem;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-muted)}
+
+.section{padding:4.5rem 4rem}
+.section-ey{font-size:.56rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:.7rem;font-weight:500}
+.section-t{font-family:var(--serif);font-size:clamp(1.4rem,2.8vw,2rem);font-weight:300;color:var(--cream);margin-bottom:.5rem;line-height:1.2}
+.section-d{color:var(--text-muted);font-weight:300;max-width:460px;margin-bottom:2.2rem;font-size:.82rem}
+
+/* Gallery */
+.gallery{display:grid;grid-template-columns:2fr 1fr 1fr;grid-template-rows:260px 260px;gap:.4rem}
+.gallery-item{background:var(--bg3);border:1px solid rgba(197,165,90,.04);overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.gallery-item:first-child{grid-row:1/3}
+.gph{font-size:.58rem;color:var(--text-muted);letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:1rem}
+
+/* Colors rec */
+.colors-rec{display:flex;gap:.8rem;flex-wrap:wrap;margin-top:1.2rem}
+.cr{display:flex;align-items:center;gap:.5rem;padding:.5rem 1rem;border:1px solid rgba(197,165,90,.1);border-radius:40px;cursor:pointer;transition:all .3s}
+.cr:hover{border-color:var(--gold);background:rgba(197,165,90,.05)}
+.cr-dot{width:24px;height:24px;border-radius:50%;flex-shrink:0}
+.cr-name{font-size:.65rem;color:var(--cream);font-weight:400}
+
+/* CONSTRUCTOR */
+.con{background:var(--bg2);border:1px solid rgba(197,165,90,.06);padding:2.5rem 3rem}
+.con-head{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:2rem;flex-wrap:wrap;gap:1rem}
+
+/* Groups */
+.grp{margin-bottom:2.2rem}
+.grp-title{font-family:var(--serif);font-size:1.05rem;color:var(--cream);font-weight:400;margin-bottom:.8rem;display:flex;align-items:center;gap:.6rem}
+.grp-num{font-size:.5rem;letter-spacing:.2em;color:var(--gold);font-weight:600;background:rgba(197,165,90,.1);padding:.2rem .5rem;border-radius:2px}
+
+/* Color swatches */
+.swatches{display:flex;gap:.5rem;flex-wrap:wrap}
+.sw{width:40px;height:40px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .3s;position:relative}
+.sw:hover,.sw.on{border-color:var(--gold);transform:scale(1.12)}
+.sw.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.65rem;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+
+/* Person buttons */
+.pbtn-row{display:flex;gap:.5rem;flex-wrap:wrap}
+.pbtn{padding:.5rem 1.3rem;border:1px solid rgba(197,165,90,.15);font-size:.68rem;letter-spacing:.08em;color:var(--text-muted);cursor:pointer;transition:all .3s;font-family:var(--sans);background:transparent}
+.pbtn:hover{border-color:var(--gold);color:var(--cream)}
+.pbtn.on{border-color:var(--gold);background:var(--gold);color:var(--bg);font-weight:600}
+
+/* SET SHORTCUT */
+.set-box{background:rgba(197,165,90,.04);border:1px dashed rgba(197,165,90,.15);padding:1rem 1.3rem;margin-bottom:2rem;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.8rem}
+.set-box h4{font-size:.74rem;color:var(--cream);font-weight:500}
+.set-box p{font-size:.6rem;color:var(--text-muted);font-weight:300;margin-top:.15rem}
+.set-prices{display:flex;align-items:center;gap:.8rem}
+.sp-old{font-size:.72rem;color:var(--text-muted);text-decoration:line-through}
+.sp-new{font-size:.95rem;color:var(--gold);font-weight:500}
+.btn-s{padding:.5rem 1.3rem;border:1px solid var(--gold);color:var(--gold);background:transparent;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;cursor:pointer;transition:all .3s;font-family:var(--sans);font-weight:500}
+.btn-s:hover{background:var(--gold);color:var(--bg)}
+
+/* PRODUCT CATEGORY */
+.cat{margin-bottom:1.5rem}
+.cat-label{font-size:.58rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);margin-bottom:.6rem;font-weight:500;padding-bottom:.4rem;border-bottom:1px solid rgba(197,165,90,.08)}
+
+/* Item rows */
+.ir{display:grid;grid-template-columns:1fr auto auto auto;align-items:center;gap:1rem;padding:.7rem 0;border-bottom:1px solid rgba(197,165,90,.04)}
+.ir:last-child{border-bottom:none}
+.ir-name{font-size:.78rem;color:var(--cream);font-weight:400}
+.ir-size{font-size:.6rem;color:var(--text-muted);font-weight:300;margin-top:.1rem}
+.ir-price{font-size:.8rem;color:var(--cream);font-weight:400;text-align:right;white-space:nowrap}
+.ir-qty{display:flex;align-items:center;gap:.4rem}
+.qb{width:26px;height:26px;border:1px solid rgba(197,165,90,.2);background:transparent;color:var(--cream);font-size:.85rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s;font-family:var(--sans)}
+.qb:hover{border-color:var(--gold);color:var(--gold)}
+.qv{font-size:.78rem;color:var(--cream);min-width:20px;text-align:center;font-weight:500}
+.ir-sub{font-size:.72rem;color:var(--gold-dim);font-weight:400;text-align:right;min-width:60px;white-space:nowrap}
+
+/* NOTE */
+.note-box{background:rgba(197,165,90,.03);border-left:2px solid var(--gold);padding:.8rem 1.2rem;margin:1.5rem 0;font-size:.68rem;color:var(--text-muted);font-weight:300;line-height:1.7}
+.note-box strong{color:var(--cream);font-weight:500}
+
+/* TOTAL */
+.total{display:flex;align-items:center;justify-content:space-between;padding:1.5rem 0;border-top:1px solid rgba(197,165,90,.15);margin-top:.5rem;flex-wrap:wrap;gap:1rem}
+.total-left{display:flex;align-items:baseline;gap:.7rem}
+.total-lbl{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted)}
+.total-sum{font-family:var(--serif);font-size:1.7rem;color:var(--cream);font-weight:400}
+.total-items{font-size:.6rem;color:var(--text-muted);font-weight:300;margin-left:.5rem}
+.btn-cart{display:flex;align-items:center;gap:.7rem;padding:.9rem 2.2rem;background:var(--gold);color:var(--bg);font-size:.65rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;border:none;cursor:pointer;transition:all .3s;font-family:var(--sans)}
+.btn-cart:hover{background:var(--gold-light)}
+
+/* TIPS */
+.tips-sec{background:var(--bg2);border-top:1px solid rgba(197,165,90,.06)}
+.tips-g{display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;margin-top:1.2rem}
+.tip{padding:1.3rem;border:1px solid rgba(197,165,90,.04)}
+.tip-n{font-size:.48rem;letter-spacing:.3em;color:var(--gold);margin-bottom:.5rem}
+.tip-t{font-family:var(--serif);font-size:.95rem;color:var(--cream);font-weight:400;margin-bottom:.3rem}
+.tip-p{font-size:.68rem;color:var(--text-muted);font-weight:300;line-height:1.7}
+
+/* OTHER */
+.other-sec{border-top:1px solid rgba(197,165,90,.06)}
+.other-g{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1.2rem}
+.oc{padding:1.5rem;border:1px solid rgba(197,165,90,.06);cursor:pointer;transition:all .3s}
+.oc:hover{border-color:rgba(197,165,90,.25)}
+.oc-num{font-size:.48rem;letter-spacing:.25em;color:var(--gold);margin-bottom:.4rem}
+.oc-name{font-family:var(--serif);font-size:1rem;color:var(--cream);font-weight:300;margin-bottom:.2rem}
+.oc-hint{font-size:.6rem;color:var(--text-muted);font-weight:300}
+
+footer{background:var(--bg2);border-top:1px solid rgba(197,165,90,.06);padding:2rem 4rem;display:flex;justify-content:space-between;font-size:.58rem;color:var(--text-muted);letter-spacing:.08em;flex-wrap:wrap;gap:1rem}
+
+/* Responsive */
+@media(max-width:1024px){
+.section{padding:3rem 1.5rem}
+.con{padding:2rem 1.5rem}
+.gallery{grid-template-columns:1fr 1fr;grid-template-rows:200px 200px 200px}
+.gallery-item:first-child{grid-row:1/2;grid-column:1/3}
+.tips-g,.other-g{grid-template-columns:1fr}
+.hero-content{padding:0 2rem 2.5rem}
+nav{padding:.8rem 1.5rem}
+.ir{grid-template-columns:1fr;gap:.4rem}
+.ir-price,.ir-sub{text-align:left}
+}
+@media(max-width:640px){
+.gallery{grid-template-columns:1fr;grid-template-rows:repeat(4,180px)}
+.gallery-item:first-child{grid-column:1}
+.total{flex-direction:column;align-items:stretch}
+.btn-cart{justify-content:center}
+footer{padding:1.5rem;flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<a href="#" class="logo">Lora<em>Leya</em></a>
+<div class="nav-right">
+<a href="#" class="nav-back">← На главную</a>
+<div class="nav-cart" id="cartBtn">
+Корзина <span class="cart-count" id="cc">0</span>
+</div>
+</div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+<div class="hero-bg"></div>
+<div class="hero-overlay"></div>
+<div class="hero-content">
+<div class="hero-bc"><a href="#">Главная</a> → <a href="#">Сценарии</a> → Романтический ужин</div>
+<h1>Романтический <em>ужин</em></h1>
+<p class="hero-desc">Стол на двоих, свечи, приглушённый свет. Жаккардовый текстиль с мягким переливом задаёт настроение — осталось выбрать цвет и собрать комплект.</p>
+<div class="hero-meta">
+<span>👤 2 персоны</span>
+<span>⏱ ~5 мин на сборку</span>
+</div>
+</div>
+</section>
+
+<!-- GALLERY -->
+<section class="section">
+<div class="section-ey">Галерея</div>
+<div class="section-t">Как это выглядит</div>
+<div class="section-d">Реальные фото сервировок при разном освещении</div>
+<div class="gallery">
+<div class="gallery-item"><div class="gph">Фото · общий план стола</div></div>
+<div class="gallery-item"><div class="gph">Детали · салфетка</div></div>
+<div class="gallery-item"><div class="gph">Детали · куверт</div></div>
+<div class="gallery-item"><div class="gph">Макро · фактура ткани</div></div>
+</div>
+</section>
+
+<!-- COLORS -->
+<section class="section" style="padding-top:0">
+<div class="section-ey">Для этого сценария</div>
+<div class="section-t">Рекомендуемые оттенки</div>
+<div class="colors-rec">
+<a class="cr" href="#"><div class="cr-dot" style="background:#6a3a7a"></div><span class="cr-name">Фиолетовый</span></a>
+<a class="cr" href="#"><div class="cr-dot" style="background:#4a4844"></div><span class="cr-name">Графит</span></a>
+<a class="cr" href="#"><div class="cr-dot" style="background:#8b6e3a"></div><span class="cr-name">Бронза</span></a>
+<a class="cr" href="#"><div class="cr-dot" style="background:#b088b0"></div><span class="cr-name">Сиреневый</span></a>
+</div>
+</section>
+
+<!-- CONSTRUCTOR -->
+<section class="section" id="constructor">
+<div class="con">
+
+<div class="con-head">
+<div>
+<div class="section-ey">Конструктор</div>
+<div class="section-t">Соберите свой комплект</div>
+</div>
+</div>
+
+<!-- 1. Color -->
+<div class="grp">
+<div class="grp-title"><span class="grp-num">1</span> Выберите цвет</div>
+<div class="swatches" id="swatches">
+<div class="sw on" style="background:#6a3a7a" data-name="Фиолетовый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#4a4844" data-name="Графит" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#8b6e3a" data-name="Бронза" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#b088b0" data-name="Сиреневый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#d4c5a0" data-name="Бежевый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#f0ece4;border:1px solid rgba(197,165,90,.2)" data-name="Белый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#5eb8a8" data-name="Бирюза" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#2a2520;border:1px solid rgba(197,165,90,.2)" data-name="Блек золото" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#8bb8d0" data-name="Голубой" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#6b8a5e" data-name="Зелёный" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#c8a85a" data-name="Меланж золото" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#b0b0a8" data-name="Меланж серебро" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#787874" data-name="Меланж серый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#2e2e2c;border:1px solid rgba(197,165,90,.2)" data-name="Меланж чёрный" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#c8c0b8" data-name="Платина" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#c0c0c0" data-name="Серебро" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#3a7878" data-name="Тёмно-бирюзовый" onclick="pickSw(this)"></div>
+</div>
+<div id="colorLabel" style="margin-top:.5rem;font-size:.65rem;color:var(--gold);font-weight:400">Фиолетовый</div>
+</div>
+
+<!-- 2. Persons -->
+<div class="grp">
+<div class="grp-title"><span class="grp-num">2</span> Количество персон</div>
+<div class="pbtn-row">
+<button class="pbtn on" onclick="pickP(this,2)">2 персоны</button>
+<button class="pbtn" onclick="pickP(this,4)">4 персоны</button>
+<button class="pbtn" onclick="pickP(this,6)">6 персон</button>
+</div>
+</div>
+
+<!-- SET SHORTCUT -->
+<div class="set-box" id="setBox">
+<div>
+<h4 id="setTitle">Готовый набор на 2 персоны — выгоднее на 15%</h4>
+<p id="setDesc">Дорожка 40×140 + 2 салфетки + 2 куверта</p>
+</div>
+<div class="set-prices">
+<span class="sp-old" id="setOld">2 100 ₽</span>
+<span class="sp-new" id="setNew">1 790 ₽</span>
+</div>
+<button class="btn-s" onclick="addSet()">Добавить набор</button>
+</div>
+
+<!-- 3. ITEMS -->
+<div class="grp">
+<div class="grp-title"><span class="grp-num">3</span> Или соберите сами</div>
+
+<!-- Дорожки -->
+<div class="cat">
+<div class="cat-label">Дорожки на стол</div>
+
+<div class="ir" data-price="890">
+<div><div class="ir-name">Дорожка 40 × 140 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
+<div class="ir-price">890 ₽</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv">0</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub">0 ₽</div>
+</div>
+
+<div class="ir" data-price="990">
+<div><div class="ir-name">Дорожка 40 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
+<div class="ir-price">990 ₽</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv">0</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub">0 ₽</div>
+</div>
+
+<div class="ir" data-price="1 290">
+<div><div class="ir-name">Дорожка 40 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · Для длинных столов</div></div>
+<div class="ir-price">1 290 ₽</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv">0</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub">0 ₽</div>
+</div>
+
+<div class="ir" data-price="1 590">
+<div><div class="ir-name">Дорожка 40 × 300 см</div><div class="ir-size">Жаккард · 100% полиэстер · Максимальный размер</div></div>
+<div class="ir-price">1 590 ₽</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv">0</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub">0 ₽</div>
+</div>
+</div>
+
+<!-- Скатерти -->
+<div class="cat">
+<div class="cat-label">Скатерти</div>
+
+<div class="ir" data-price="2 490">
+<div><div class="ir-name">Скатерть 140 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 4 персоны</div></div>
+<div class="ir-price">2 490 ₽</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv">0</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub">0 ₽</div>
+</div>
+
+<div class="ir" data-price="2 990">
+<div><div class="ir-name">Скатерть 140 × 220 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 6 персон</div></div>
+<div class="ir-price">2 990 ₽</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv">0</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub">0 ₽</div>
+</div>
+
+<div class="ir" data-price="3 490">
+<div><div class="ir-name">Скатерть 140 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 8 персон</div></div>
+<div class="ir-price">3 490 ₽</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv">0</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub">0 ₽</div>
+</div>
+</div>
+
+<!-- Салфетки -->
+<div class="cat">
+<div class="cat-label">Салфетки</div>
+<div class="ir" data-price="350">
+<div><div class="ir-name">Салфетка 40 × 40 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
+<div class="ir-price">350 ₽ / шт</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv" id="qSalf">2</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub" id="subSalf">700 ₽</div>
+</div>
+</div>
+
+<!-- Куверты -->
+<div class="cat">
+<div class="cat-label">Куверты для приборов</div>
+<div class="ir" data-price="250">
+<div><div class="ir-name">Куверт 9 × 24 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
+<div class="ir-price">250 ₽ / шт</div>
+<div class="ir-qty"><button class="qb" onclick="chg(this,-1)">−</button><span class="qv" id="qKuv">2</span><button class="qb" onclick="chg(this,1)">+</button></div>
+<div class="ir-sub" id="subKuv">500 ₽</div>
+</div>
+</div>
+
+</div>
+
+<div class="note-box">
+<strong>Совет:</strong> Для стандартного стола подойдёт дорожка 140 или 175 см. Для длинных столов (от 200 см) выбирайте дорожку 240 или 300 см — в этом случае набор не подойдёт, собирайте поштучно.
+</div>
+
+<!-- TOTAL -->
+<div class="total">
+<div class="total-left">
+<span class="total-lbl">Итого</span>
+<span class="total-sum" id="totalSum">1 200 ₽</span>
+<span class="total-items" id="totalItems">4 позиции</span>
+</div>
+<button class="btn-cart" onclick="addCart()">
+В корзину →
+</button>
+</div>
+
+</div>
+</section>
+
+<!-- TIPS -->
+<section class="section tips-sec">
+<div class="section-ey">Советы</div>
+<div class="section-t">Как создать атмосферу</div>
+<div class="tips-g">
+<div class="tip">
+<div class="tip-n">01</div>
+<div class="tip-t">Свечи и свет</div>
+<div class="tip-p">Жаккард красиво переливается при мерцающем свете. Используйте свечи разной высоты — длинные по центру, чайные по периметру.</div>
+</div>
+<div class="tip">
+<div class="tip-n">02</div>
+<div class="tip-t">Складка салфеток</div>
+<div class="tip-p">Для романтического стола идеальна складка «цветок». Закрепите кольцом — золотым для тёмных тканей, серебряным для светлых.</div>
+</div>
+<div class="tip">
+<div class="tip-n">03</div>
+<div class="tip-t">Контрастная посуда</div>
+<div class="tip-p">К фиолетовому — белая или золотая посуда. К графиту — белая с золотой каймой. Контраст подчёркивает глубину цвета ткани.</div>
+</div>
+</div>
+</section>
+
+<!-- OTHER SCENARIOS -->
+<section class="section other-sec">
+<div class="section-ey">Другие сценарии</div>
+<div class="section-t">Смотрите также</div>
+<div class="other-g">
+<div class="oc"><div class="oc-num">02</div><div class="oc-name">Семейный обед</div><div class="oc-hint">4–6 персон · дневной свет</div></div>
+<div class="oc"><div class="oc-num">03</div><div class="oc-name">Праздничный стол</div><div class="oc-hint">6+ персон · декор</div></div>
+<div class="oc"><div class="oc-num">04</div><div class="oc-name">Каждый день</div><div class="oc-hint">2–4 персоны · минимализм</div></div>
+</div>
+</section>
+
+<footer>
+<span>© 2026 LoraLeya · Сделано в России с любовью</span>
+<span>loraleya.ru</span>
+</footer>
+
+<script>
+function pickSw(el){
+document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
+el.classList.add('on');
+document.getElementById('colorLabel').textContent=el.dataset.name;
+}
+function pickP(el,n){
+document.querySelectorAll('.pbtn').forEach(b=>b.classList.remove('on'));
+el.classList.add('on');
+document.getElementById('qSalf').textContent=n;
+document.getElementById('qKuv').textContent=n;
+recalc();
+updateSet(n);
+}
+function updateSet(n){
+const t=document.getElementById('setTitle');
+const d=document.getElementById('setDesc');
+if(n===2){t.textContent='Готовый набор на 2 персоны — выгоднее на 15%';d.textContent='Дорожка 40×140 + 2 салфетки + 2 куверта';}
+if(n===4){t.textContent='Готовый набор на 4 персоны — выгоднее на 15%';d.textContent='Дорожка 40×140 + 4 салфетки + 4 куверта';}
+if(n===6){t.textContent='Готовый набор на 6 персон — выгоднее на 15%';d.textContent='Дорожка 40×175 + 6 салфеток + 6 кувертов';}
+}
+function parsePrice(s){return parseInt(s.replace(/\s/g,''))||0}
+function chg(btn,d){
+const row=btn.closest('.ir');
+const v=row.querySelector('.qv');
+let n=parseInt(v.textContent)+d;
+if(n<0)n=0;if(n>12)n=12;
+v.textContent=n;
+const price=parsePrice(row.dataset.price);
+row.querySelector('.ir-sub').textContent=n>0?(price*n).toLocaleString('ru-RU')+' ₽':'0 ₽';
+recalc();
+}
+function recalc(){
+let total=0,items=0;
+document.querySelectorAll('.ir').forEach(row=>{
+const q=parseInt(row.querySelector('.qv').textContent);
+if(q>0){
+const p=parsePrice(row.dataset.price);
+total+=p*q;
+items+=q;
+}
+});
+document.getElementById('totalSum').textContent=total>0?total.toLocaleString('ru-RU')+' ₽':'0 ₽';
+document.getElementById('totalItems').textContent=items>0?items+' поз.':'—';
+}
+function addCart(){
+let items=0;
+document.querySelectorAll('.ir').forEach(row=>{
+items+=parseInt(row.querySelector('.qv').textContent);
+});
+if(items===0){alert('Добавьте хотя бы один товар');return}
+const cc=document.getElementById('cc');
+cc.textContent=parseInt(cc.textContent)+items;
+cc.style.animation='none';cc.offsetHeight;cc.style.animation='cartPop .3s';
+alert('Добавлено в корзину: '+items+' шт.');
+}
+function addSet(){
+const cc=document.getElementById('cc');
+cc.textContent=parseInt(cc.textContent)+1;
+cc.style.animation='none';cc.offsetHeight;cc.style.animation='cartPop .3s';
+alert('Набор добавлен в корзину!');
+}
+recalc();
+</script>
+</body>
+</html>

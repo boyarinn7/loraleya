@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Индивидуальный заказ — LoraLeya</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0e0e0c;--bg2:#1a1917;--bg3:#252420;--cream:#e8e0d0;--gold:#c5a55a;--gold-light:#d4bc7c;--gold-dim:#8a7a4a;--text:#c8c0b4;--text-muted:#8a847a;--serif:'Cormorant Garamond',Georgia,serif;--sans:'Raleway',sans-serif}
+html{scroll-behavior:smooth;font-size:16px}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);overflow-x:hidden;line-height:1.6}
+a{color:inherit;text-decoration:none}
+
+nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1rem 3rem;display:flex;align-items:center;justify-content:space-between;background:rgba(14,14,12,.92);backdrop-filter:blur(20px);border-bottom:1px solid rgba(197,165,90,.08)}
+.logo{font-family:var(--serif);font-size:1.4rem;font-weight:300;letter-spacing:.12em;color:var(--cream)}
+.logo em{font-style:italic;color:var(--gold);font-weight:400}
+.nav-bk{font-size:.65rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text-muted);transition:color .3s}
+.nav-bk:hover{color:var(--gold)}
+
+/* HERO */
+.hero{padding:8rem 4rem 4rem;max-width:680px}
+.hero-ey{font-size:.58rem;letter-spacing:.35em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;font-weight:500}
+.hero h1{font-family:var(--serif);font-size:clamp(2rem,4.5vw,3rem);font-weight:300;color:var(--cream);line-height:1.15;margin-bottom:1rem}
+.hero h1 em{font-style:italic;color:var(--gold)}
+.hero-desc{font-size:.88rem;color:var(--text-muted);font-weight:300;line-height:1.8;margin-bottom:1.5rem}
+.hero-features{display:flex;gap:2rem;flex-wrap:wrap}
+.hf{display:flex;align-items:flex-start;gap:.5rem}
+.hf-icon{width:32px;height:32px;border:1px solid rgba(197,165,90,.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:.8rem;color:var(--gold)}
+.hf-text{font-size:.65rem;color:var(--text-muted);font-weight:300;line-height:1.6}
+.hf-text strong{color:var(--cream);font-weight:500;display:block;margin-bottom:.1rem}
+
+/* CONFIGURATOR */
+.config{padding:0 4rem 4rem;max-width:860px}
+.config-box{background:var(--bg2);border:1px solid rgba(197,165,90,.06);padding:2.5rem 3rem}
+
+/* STEP */
+.step{margin-bottom:2.5rem;padding-bottom:2rem;border-bottom:1px solid rgba(197,165,90,.04)}
+.step:last-of-type{border-bottom:none;margin-bottom:1.5rem}
+.step-head{display:flex;align-items:center;gap:.6rem;margin-bottom:1rem}
+.step-num{width:28px;height:28px;border-radius:50%;background:rgba(197,165,90,.08);color:var(--gold);font-size:.6rem;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.step-title{font-family:var(--serif);font-size:1.1rem;color:var(--cream);font-weight:400}
+.step-hint{font-size:.65rem;color:var(--text-muted);font-weight:300;margin-bottom:1rem;margin-left:2.2rem}
+
+/* TABLE SHAPE */
+.shapes{display:flex;gap:1rem;margin-left:2.2rem;flex-wrap:wrap}
+.shape{width:120px;padding:1.2rem;border:1px solid rgba(197,165,90,.1);cursor:pointer;text-align:center;transition:all .3s}
+.shape:hover{border-color:rgba(197,165,90,.3)}
+.shape.on{border-color:var(--gold);background:rgba(197,165,90,.04)}
+.shape svg{width:50px;height:35px;margin-bottom:.5rem;display:block;margin-left:auto;margin-right:auto}
+.shape svg rect,.shape svg ellipse,.shape svg path{fill:none;stroke:var(--text-muted);stroke-width:1.5;transition:stroke .3s}
+.shape.on svg rect,.shape.on svg ellipse,.shape.on svg path{stroke:var(--gold)}
+.shape-label{font-size:.6rem;color:var(--text-muted);font-weight:400;letter-spacing:.05em;transition:color .3s}
+.shape.on .shape-label{color:var(--gold)}
+
+/* DIMENSIONS */
+.dims{display:flex;gap:1rem;margin-left:2.2rem;flex-wrap:wrap;align-items:flex-end}
+.dim-field{display:flex;flex-direction:column;gap:.3rem}
+.dim-label{font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500}
+.dim-input{background:var(--bg);border:1px solid rgba(197,165,90,.15);color:var(--cream);padding:.6rem 1rem;font-family:var(--sans);font-size:.8rem;width:140px;transition:border-color .3s;outline:none}
+.dim-input:focus{border-color:var(--gold)}
+.dim-input::placeholder{color:var(--text-muted);font-weight:300}
+.dim-x{color:var(--text-muted);font-size:1.2rem;padding-bottom:.6rem}
+
+/* PERSONS */
+.persons{display:flex;gap:.5rem;margin-left:2.2rem;flex-wrap:wrap}
+.per{padding:.6rem 1.5rem;border:1px solid rgba(197,165,90,.15);font-size:.7rem;letter-spacing:.08em;color:var(--text-muted);cursor:pointer;transition:all .3s;font-family:var(--sans);background:transparent}
+.per:hover{border-color:var(--gold);color:var(--cream)}
+.per.on{border-color:var(--gold);background:var(--gold);color:var(--bg);font-weight:600}
+
+/* COLOR PICK */
+.swatches{display:flex;gap:.5rem;flex-wrap:wrap;margin-left:2.2rem}
+.sw{width:38px;height:38px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .3s;position:relative}
+.sw:hover,.sw.on{border-color:var(--gold);transform:scale(1.12)}
+.sw.on::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#fff;font-size:.6rem;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.color-chosen{margin-left:2.2rem;margin-top:.5rem;font-size:.65rem;color:var(--gold);font-weight:400}
+
+/* ITEMS CHOOSER */
+.items-choose{margin-left:2.2rem}
+.ic-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(197,165,90,.04)}
+.ic-row:last-child{border-bottom:none}
+.ic-name{font-size:.78rem;color:var(--cream);font-weight:400}
+.ic-size{font-size:.6rem;color:var(--text-muted);font-weight:300}
+.ic-right{display:flex;align-items:center;gap:1rem}
+.ic-toggle{position:relative;width:36px;height:20px;background:rgba(197,165,90,.12);border-radius:10px;cursor:pointer;transition:background .3s}
+.ic-toggle.on{background:var(--gold)}
+.ic-dot{position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .3s}
+.ic-toggle.on .ic-dot{transform:translateX(16px)}
+.ic-qty{display:flex;align-items:center;gap:.3rem}
+.ic-qb{width:24px;height:24px;border:1px solid rgba(197,165,90,.15);background:transparent;color:var(--cream);font-size:.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--sans);transition:all .2s}
+.ic-qb:hover{border-color:var(--gold);color:var(--gold)}
+.ic-qv{font-size:.75rem;color:var(--cream);min-width:18px;text-align:center}
+
+/* OPTIONS */
+.options{margin-left:2.2rem}
+.opt-row{display:flex;align-items:center;gap:.8rem;padding:.5rem 0}
+.opt-cb{appearance:none;width:18px;height:18px;border:1px solid rgba(197,165,90,.2);cursor:pointer;position:relative;transition:all .2s;flex-shrink:0}
+.opt-cb:checked{background:var(--gold);border-color:var(--gold)}
+.opt-cb:checked::after{content:'✓';position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--bg);font-size:.55rem;font-weight:700}
+.opt-label{font-size:.75rem;color:var(--cream);font-weight:400;cursor:pointer}
+.opt-hint{font-size:.6rem;color:var(--text-muted);font-weight:300}
+
+/* CONTACT + NOTES */
+.contact{margin-left:2.2rem}
+.ct-row{display:flex;gap:1rem;margin-bottom:.8rem;flex-wrap:wrap}
+.ct-field{flex:1;min-width:200px;display:flex;flex-direction:column;gap:.3rem}
+.ct-label{font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;color:var(--text-muted);font-weight:500}
+.ct-input{background:var(--bg);border:1px solid rgba(197,165,90,.15);color:var(--cream);padding:.6rem 1rem;font-family:var(--sans);font-size:.78rem;transition:border-color .3s;outline:none;width:100%}
+.ct-input:focus{border-color:var(--gold)}
+.ct-input::placeholder{color:var(--text-muted);font-weight:300}
+textarea.ct-input{resize:vertical;min-height:80px}
+
+/* FILE UPLOAD */
+.upload-area{margin-left:2.2rem;border:1px dashed rgba(197,165,90,.15);padding:1.5rem;text-align:center;cursor:pointer;transition:all .3s}
+.upload-area:hover{border-color:var(--gold);background:rgba(197,165,90,.02)}
+.upload-icon{font-size:1.5rem;color:var(--gold-dim);margin-bottom:.4rem}
+.upload-text{font-size:.68rem;color:var(--text-muted);font-weight:300}
+.upload-text strong{color:var(--cream);font-weight:500}
+
+/* SUMMARY */
+.summary{background:rgba(197,165,90,.03);border:1px solid rgba(197,165,90,.1);padding:1.5rem;margin-top:.5rem}
+.sum-title{font-family:var(--serif);font-size:1rem;color:var(--cream);font-weight:400;margin-bottom:.8rem}
+.sum-row{display:flex;justify-content:space-between;padding:.25rem 0;font-size:.7rem}
+.sum-row .sl{color:var(--text-muted);font-weight:300}
+.sum-row .sv{color:var(--cream);font-weight:400}
+.sum-note{font-size:.6rem;color:var(--text-muted);font-weight:300;margin-top:.8rem;line-height:1.7;border-top:1px solid rgba(197,165,90,.06);padding-top:.6rem}
+
+/* SUBMIT */
+.submit-area{display:flex;align-items:center;justify-content:space-between;padding-top:1.5rem;border-top:1px solid rgba(197,165,90,.1);margin-top:1.5rem;flex-wrap:wrap;gap:1rem}
+.submit-info{font-size:.65rem;color:var(--text-muted);font-weight:300;max-width:300px;line-height:1.7}
+.btn-submit{display:flex;align-items:center;gap:.7rem;padding:1rem 2.5rem;background:var(--gold);color:var(--bg);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;font-weight:600;border:none;cursor:pointer;transition:all .3s;font-family:var(--sans)}
+.btn-submit:hover{background:var(--gold-light)}
+
+/* FAQ */
+.faq-sec{padding:4rem;max-width:860px}
+.faq-title{font-family:var(--serif);font-size:1.4rem;color:var(--cream);font-weight:300;margin-bottom:1.5rem}
+.faq{border-bottom:1px solid rgba(197,165,90,.06);padding:1rem 0;cursor:pointer}
+.faq-q{font-size:.78rem;color:var(--cream);font-weight:400;display:flex;justify-content:space-between;align-items:center}
+.faq-q::after{content:'+';color:var(--gold);font-size:1rem;transition:transform .3s}
+.faq.open .faq-q::after{content:'−'}
+.faq-a{font-size:.7rem;color:var(--text-muted);font-weight:300;line-height:1.8;max-height:0;overflow:hidden;transition:max-height .3s,padding .3s}
+.faq.open .faq-a{max-height:200px;padding-top:.6rem}
+
+footer{background:var(--bg2);border-top:1px solid rgba(197,165,90,.06);padding:2rem 4rem;display:flex;justify-content:space-between;font-size:.58rem;color:var(--text-muted);letter-spacing:.08em;flex-wrap:wrap;gap:1rem}
+
+@media(max-width:1024px){
+.hero,.config,.faq-sec{padding-left:1.5rem;padding-right:1.5rem}
+.config-box{padding:2rem 1.5rem}
+.shapes{gap:.6rem}
+.shape{width:100px;padding:1rem}
+nav{padding:.8rem 1.5rem}
+}
+@media(max-width:640px){
+.dims{flex-direction:column}
+.ct-row{flex-direction:column}
+.submit-area{flex-direction:column;align-items:stretch}
+.btn-submit{justify-content:center}
+footer{padding:1.5rem;flex-direction:column;text-align:center}
+}
+</style>
+</head>
+<body>
+
+<nav>
+<a href="#" class="logo">Lora<em>Leya</em></a>
+<a href="#" class="nav-bk">← На главную</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+<div class="hero-ey">Индивидуальный заказ</div>
+<h1>Создадим текстиль <em>под ваш стол</em></h1>
+<p class="hero-desc">Нестандартный размер стола, особый цвет, монограмма — мы сошьём именно то, что нужно. Расскажите нам о вашем столе, а мы рассчитаем стоимость и сроки.</p>
+
+<div class="hero-features">
+<div class="hf">
+<div class="hf-icon">✂</div>
+<div class="hf-text"><strong>Любой размер</strong>Пошив под точные размеры вашего стола</div>
+</div>
+<div class="hf">
+<div class="hf-icon">◇</div>
+<div class="hf-text"><strong>Монограмма</strong>Инициалы или логотип на изделии</div>
+</div>
+<div class="hf">
+<div class="hf-icon">⟳</div>
+<div class="hf-text"><strong>7–14 дней</strong>Срок изготовления</div>
+</div>
+</div>
+</section>
+
+<!-- CONFIGURATOR -->
+<section class="config">
+<div class="config-box">
+
+<!-- 1. Table shape -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">1</div>
+<div class="step-title">Форма стола</div>
+</div>
+<div class="step-hint">Выберите форму вашего стола — от этого зависит крой скатерти</div>
+<div class="shapes">
+<div class="shape on" onclick="pickShape(this,'rect')">
+<svg viewBox="0 0 60 40"><rect x="5" y="5" width="50" height="30" rx="2"/></svg>
+<div class="shape-label">Прямоугольный</div>
+</div>
+<div class="shape" onclick="pickShape(this,'oval')">
+<svg viewBox="0 0 60 40"><ellipse cx="30" cy="20" rx="27" ry="15"/></svg>
+<div class="shape-label">Овальный</div>
+</div>
+<div class="shape" onclick="pickShape(this,'round')">
+<svg viewBox="0 0 60 40"><ellipse cx="30" cy="20" rx="18" ry="18"/></svg>
+<div class="shape-label">Круглый</div>
+</div>
+<div class="shape" onclick="pickShape(this,'square')">
+<svg viewBox="0 0 60 40"><rect x="12" y="3" width="36" height="34" rx="2"/></svg>
+<div class="shape-label">Квадратный</div>
+</div>
+</div>
+</div>
+
+<!-- 2. Dimensions -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">2</div>
+<div class="step-title">Размеры стола</div>
+</div>
+<div class="step-hint">Укажите длину и ширину столешницы в сантиметрах</div>
+<div class="dims">
+<div class="dim-field">
+<div class="dim-label">Длина (см)</div>
+<input class="dim-input" type="number" placeholder="180" id="dimL">
+</div>
+<div class="dim-x">×</div>
+<div class="dim-field">
+<div class="dim-label">Ширина (см)</div>
+<input class="dim-input" type="number" placeholder="90" id="dimW">
+</div>
+</div>
+</div>
+
+<!-- 3. Persons -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">3</div>
+<div class="step-title">Количество персон</div>
+</div>
+<div class="persons">
+<button class="per on" onclick="pickPer(this)">2</button>
+<button class="per" onclick="pickPer(this)">4</button>
+<button class="per" onclick="pickPer(this)">6</button>
+<button class="per" onclick="pickPer(this)">8</button>
+<button class="per" onclick="pickPer(this)">10</button>
+<button class="per" onclick="pickPer(this)">12</button>
+</div>
+</div>
+
+<!-- 4. Color -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">4</div>
+<div class="step-title">Цвет</div>
+</div>
+<div class="step-hint">Выберите из палитры или опишите желаемый оттенок в комментарии</div>
+<div class="swatches">
+<div class="sw on" style="background:#6a3a7a" data-name="Фиолетовый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#d4c5a0" data-name="Бежевый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#f0ece4;border:1px solid #aaa" data-name="Белый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#5eb8a8" data-name="Бирюза" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#2a2520;border:1px solid #555" data-name="Блек золото" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#8b6e3a" data-name="Бронза" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#8bb8d0" data-name="Голубой" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#4a4844" data-name="Графит" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#6b8a5e" data-name="Зелёный" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#c8a85a" data-name="Меланж золото" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#b0b0a8" data-name="Меланж серебро" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#787874" data-name="Меланж серый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#2e2e2c;border:1px solid #555" data-name="Меланж чёрный" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#c8c0b8" data-name="Платина" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#c0c0c0" data-name="Серебро" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#b088b0" data-name="Сиреневый" onclick="pickSw(this)"></div>
+<div class="sw" style="background:#3a7878" data-name="Тёмно-бирюзовый" onclick="pickSw(this)"></div>
+</div>
+<div class="color-chosen" id="colorLabel">Фиолетовый</div>
+</div>
+
+<!-- 5. Items -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">5</div>
+<div class="step-title">Что шьём</div>
+</div>
+<div class="step-hint">Включите нужные изделия и укажите количество</div>
+<div class="items-choose">
+<div class="ic-row">
+<div><div class="ic-name">Скатерть</div><div class="ic-size">По размерам вашего стола</div></div>
+<div class="ic-right">
+<div class="ic-toggle on" onclick="togItem(this)"><div class="ic-dot"></div></div>
+<div class="ic-qty"><button class="ic-qb" onclick="chgQ(this,-1)">−</button><span class="ic-qv">1</span><button class="ic-qb" onclick="chgQ(this,1)">+</button></div>
+</div>
+</div>
+<div class="ic-row">
+<div><div class="ic-name">Дорожка</div><div class="ic-size">По длине стола</div></div>
+<div class="ic-right">
+<div class="ic-toggle" onclick="togItem(this)"><div class="ic-dot"></div></div>
+<div class="ic-qty"><button class="ic-qb" onclick="chgQ(this,-1)">−</button><span class="ic-qv">1</span><button class="ic-qb" onclick="chgQ(this,1)">+</button></div>
+</div>
+</div>
+<div class="ic-row">
+<div><div class="ic-name">Салфетки</div><div class="ic-size">40 × 40 см</div></div>
+<div class="ic-right">
+<div class="ic-toggle on" onclick="togItem(this)"><div class="ic-dot"></div></div>
+<div class="ic-qty"><button class="ic-qb" onclick="chgQ(this,-1)">−</button><span class="ic-qv">4</span><button class="ic-qb" onclick="chgQ(this,1)">+</button></div>
+</div>
+</div>
+<div class="ic-row">
+<div><div class="ic-name">Куверты</div><div class="ic-size">9 × 24 см</div></div>
+<div class="ic-right">
+<div class="ic-toggle on" onclick="togItem(this)"><div class="ic-dot"></div></div>
+<div class="ic-qty"><button class="ic-qb" onclick="chgQ(this,-1)">−</button><span class="ic-qv">4</span><button class="ic-qb" onclick="chgQ(this,1)">+</button></div>
+</div>
+</div>
+</div>
+</div>
+
+<!-- 6. Options -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">6</div>
+<div class="step-title">Дополнительные опции</div>
+</div>
+<div class="options">
+<div class="opt-row">
+<input type="checkbox" class="opt-cb" id="optMono">
+<label for="optMono">
+<div class="opt-label">Монограмма / вышивка</div>
+<div class="opt-hint">Инициалы, логотип или рисунок на изделии</div>
+</label>
+</div>
+<div class="opt-row">
+<input type="checkbox" class="opt-cb" id="optEdge">
+<label for="optEdge">
+<div class="opt-label">Декоративная обработка края</div>
+<div class="opt-hint">Бахрома, оверлок контрастной нитью</div>
+</label>
+</div>
+<div class="opt-row">
+<input type="checkbox" class="opt-cb" id="optRings">
+<label for="optRings">
+<div class="opt-label">Кольца для салфеток</div>
+<div class="opt-hint">Золото или серебро, в комплект к салфеткам</div>
+</label>
+</div>
+</div>
+</div>
+
+<!-- 7. Upload -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">7</div>
+<div class="step-title">Фото или чертёж</div>
+</div>
+<div class="step-hint">Если есть фото стола, эскиз или чертёж — приложите</div>
+<div class="upload-area" onclick="document.getElementById('fileIn').click()">
+<div class="upload-icon">📎</div>
+<div class="upload-text"><strong>Нажмите или перетащите файл</strong><br>JPG, PNG, PDF — до 10 МБ</div>
+<input type="file" id="fileIn" style="display:none" accept="image/*,.pdf" multiple>
+</div>
+</div>
+
+<!-- 8. Contact -->
+<div class="step">
+<div class="step-head">
+<div class="step-num">8</div>
+<div class="step-title">Контактные данные</div>
+</div>
+<div class="contact">
+<div class="ct-row">
+<div class="ct-field">
+<div class="ct-label">Имя</div>
+<input class="ct-input" placeholder="Как к вам обращаться">
+</div>
+<div class="ct-field">
+<div class="ct-label">Телефон или Telegram</div>
+<input class="ct-input" placeholder="+7 (___) ___-__-__">
+</div>
+</div>
+<div class="ct-row">
+<div class="ct-field">
+<div class="ct-label">Комментарий</div>
+<textarea class="ct-input" placeholder="Опишите пожелания, особенности стола, или задайте вопрос"></textarea>
+</div>
+</div>
+</div>
+</div>
+
+<!-- SUMMARY -->
+<div class="summary" id="summary">
+<div class="sum-title">Ваша заявка</div>
+<div class="sum-row"><span class="sl">Форма стола</span><span class="sv" id="sumShape">Прямоугольный</span></div>
+<div class="sum-row"><span class="sl">Размер</span><span class="sv" id="sumSize">Укажите выше</span></div>
+<div class="sum-row"><span class="sl">Персоны</span><span class="sv" id="sumPers">2</span></div>
+<div class="sum-row"><span class="sl">Цвет</span><span class="sv" id="sumColor">Фиолетовый</span></div>
+<div class="sum-row"><span class="sl">Изделия</span><span class="sv" id="sumItems">Скатерть, салфетки ×4, куверты ×4</span></div>
+<div class="sum-note">Точную стоимость рассчитаем и сообщим в течение 2 часов после получения заявки. Предоплата 50%, срок изготовления 7–14 рабочих дней.</div>
+</div>
+
+<!-- SUBMIT -->
+<div class="submit-area">
+<div class="submit-info">Заявка будет отправлена в Telegram и на почту. Мы свяжемся с вами в течение 2 часов для уточнения деталей и расчёта стоимости.</div>
+<button class="btn-submit" onclick="submitOrder()">
+Отправить заявку →
+</button>
+</div>
+
+</div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-sec">
+<div class="faq-title">Частые вопросы</div>
+
+<div class="faq" onclick="togFaq(this)">
+<div class="faq-q">Сколько стоит индивидуальный пошив?</div>
+<div class="faq-a">Стоимость зависит от размера изделия и дополнительных опций. Ориентировочно: скатерть на стол 180×90 — от 3 500 ₽, комплект салфеток на 6 персон — от 2 100 ₽. Точную цену рассчитаем после получения заявки.</div>
+</div>
+
+<div class="faq" onclick="togFaq(this)">
+<div class="faq-q">Какие сроки изготовления?</div>
+<div class="faq-a">Стандартный срок — 7–14 рабочих дней. Для срочных заказов возможно изготовление за 3–5 дней с доплатой 30%.</div>
+</div>
+
+<div class="faq" onclick="togFaq(this)">
+<div class="faq-q">Можно ли заказать цвет, которого нет в палитре?</div>
+<div class="faq-a">Мы работаем с 17 цветами жаккардовой ткани. Если нужен оттенок вне палитры — напишите в комментарии, подберём ближайший вариант или предложим альтернативу.</div>
+</div>
+
+<div class="faq" onclick="togFaq(this)">
+<div class="faq-q">Как происходит оплата?</div>
+<div class="faq-a">Предоплата 50% при подтверждении заказа, остаток — перед отправкой. Оплата картой или переводом.</div>
+</div>
+
+<div class="faq" onclick="togFaq(this)">
+<div class="faq-q">Что если размер не подойдёт?</div>
+<div class="faq-a">Мы шьём точно по вашим размерам. Если возникла ошибка с нашей стороны — перешьём бесплатно. Рекомендуем измерить стол перед заказом и приложить фото.</div>
+</div>
+</section>
+
+<footer>
+<span>© 2026 LoraLeya · Сделано в России с любовью</span>
+<span>loraleya.ru</span>
+</footer>
+
+<script>
+function pickShape(el,type){
+document.querySelectorAll('.shape').forEach(s=>s.classList.remove('on'));
+el.classList.add('on');
+const names={rect:'Прямоугольный',oval:'Овальный',round:'Круглый',square:'Квадратный'};
+document.getElementById('sumShape').textContent=names[type];
+}
+function pickPer(el){
+document.querySelectorAll('.per').forEach(b=>b.classList.remove('on'));
+el.classList.add('on');
+document.getElementById('sumPers').textContent=el.textContent;
+}
+function pickSw(el){
+document.querySelectorAll('.sw').forEach(s=>s.classList.remove('on'));
+el.classList.add('on');
+document.getElementById('colorLabel').textContent=el.dataset.name;
+document.getElementById('sumColor').textContent=el.dataset.name;
+}
+function togItem(el){el.classList.toggle('on');updateSumItems()}
+function chgQ(btn,d){
+const v=btn.parentElement.querySelector('.ic-qv');
+let n=parseInt(v.textContent)+d;
+if(n<1)n=1;if(n>12)n=12;
+v.textContent=n;
+updateSumItems();
+}
+function updateSumItems(){
+let items=[];
+document.querySelectorAll('.ic-row').forEach(row=>{
+const on=row.querySelector('.ic-toggle').classList.contains('on');
+if(on){
+const name=row.querySelector('.ic-name').textContent;
+const qty=parseInt(row.querySelector('.ic-qv').textContent);
+items.push(qty>1?name+' ×'+qty:name);
+}
+});
+document.getElementById('sumItems').textContent=items.join(', ')||'Не выбрано';
+}
+function togFaq(el){
+document.querySelectorAll('.faq').forEach(f=>{if(f!==el)f.classList.remove('open')});
+el.classList.toggle('open');
+}
+function submitOrder(){alert('Заявка отправлена! Мы свяжемся с вами в течение 2 часов.')}
+
+// Update size summary on input
+document.getElementById('dimL').addEventListener('input',updateSize);
+document.getElementById('dimW').addEventListener('input',updateSize);
+function updateSize(){
+const l=document.getElementById('dimL').value;
+const w=document.getElementById('dimW').value;
+if(l&&w)document.getElementById('sumSize').textContent=l+' × '+w+' см';
+else document.getElementById('sumSize').textContent='Укажите выше';
+}
+</script>
+</body>
+</html>

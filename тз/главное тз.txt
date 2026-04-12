@@ -1,0 +1,163 @@
+# ТЗ: LoraLeya — Стилизация главной страницы
+
+## Проект
+- **Сайт:** loraleya.ru
+- **Бренд:** LoraLeya — российский бренд столового текстиля (скатерти, дорожки, салфетки, куверты)
+- **Платформа:** WordPress 6.9.4 + WooCommerce 10.6.2
+- **Хостинг:** Reg.ru Host-0
+- **Тема:** Кастомная "LoraLeya" (уже установлена и активна)
+- **Файловый менеджер:** Плагин "Диспетчер файлов WP" установлен — можно редактировать файлы темы через браузер
+- **Доступ:** loraleya.ru/wp-admin (логин kurenkova)
+
+## Концепция сайта
+"Конструктор стола" — покупатель выбирает не товар, а настроение/сценарий или цвет. Три точки входа в покупку: сценарии (как использовать), палитра цветов (что нравится), индивидуальный заказ (хочу своё). Покупка без отдельных карточек товара — добавление в корзину со страниц сценария/цвета.
+
+## Дизайн-система
+### Цвета (CSS-переменные уже в style.css)
+```
+--bg: #0e0e0c (основной фон)
+--bg2: #1a1917 (альтернативные секции)
+--bg3: #252420 (карточки, плейсхолдеры)
+--cream: #e8e0d0 (заголовки)
+--gold: #c5a55a (акцент, кнопки, eyebrow-тексты)
+--gold-light: #d4bc7c (ховер кнопок)
+--gold-dim: #8a7a4a (приглушённый золотой)
+--text: #c8c0b4 (основной текст)
+--text-muted: #8a847a (вторичный текст)
+```
+
+### Шрифты (уже подключены через Google Fonts)
+- **Заголовки:** Cormorant Garamond (300, 400, 500, 600; italic)
+- **Текст/навигация:** Raleway (300, 400, 500, 600)
+
+### Стиль
+- Тёмная luxury-эстетика с золотыми акцентами
+- Минимум границ, максимум воздуха
+- Золотой акцент только на ключевых элементах (eyebrow, кнопки, ховеры)
+- border: rgba(197, 165, 90, 0.06–0.15) — тонкие полупрозрачные золотые линии
+- Анимации: fadeUp на появление, плавные ховеры, scroll-эффект на шапку
+
+## Текущее состояние
+Тема установлена. Файлы:
+- `style.css` — базовые стили (переменные, reset, типографика, навигация, кнопки, футер, адаптив)
+- `functions.php` — подключение шрифтов, WooCommerce, CPT "Сценарии", таксономия "Цвета ткани", AJAX-корзина
+- `header.php` — шапка (логотип, навигация, корзина)
+- `footer.php` — футер (3 колонки + копирайт)
+- `front-page.php` — главная (hero, сценарии, палитра, изделия, бренд, CTA)
+- `page.php` — шаблон обычных страниц
+- `index.php` — fallback
+- `assets/js/main.js` — скролл-хедер, AJAX-корзина, анимации
+
+HTML-структура главной страницы (front-page.php) уже готова и работает на боевом сайте. Контент отображается, но **не стилизован** — нет стилей для hero-блока, карточек сценариев, палитры, блока изделий, блока бренда.
+
+## Задача
+Дописать CSS в style.css для полной стилизации главной страницы. Работать через файловый менеджер WP или давать готовый CSS для вставки.
+
+## Блоки главной страницы и требуемые стили
+
+### 1. HERO-блок
+**HTML-классы:** `.hero`, `.hero-bg`, `.hero-texture`, `.hero-content`, `.hero-sub`, `.hero-scroll`, `.scroll-line`
+**Что нужно:**
+- Полноэкранный (100vh), flex-центрирование контента
+- `.hero-bg` — градиентный фон: linear-gradient(135deg, #1a1410 0%, #0e0e0c 40%, #12110e 100%)
+- `.hero-texture` — тонкий геометрический паттерн (SVG ромбы) поверх фона, opacity 0.03
+- `.hero-content` — максимальная ширина 720px, текст по центру
+- Eyebrow-текст вверху (золотой, маленький, uppercase, letter-spacing 0.35em)
+- h1 — clamp(2.6rem, 6vw, 4.5rem), font-weight 300, em внутри — italic + gold
+- `.hero-sub` — приглушённый текст, max-width 520px
+- Кнопка `.btn--outline` со стрелкой SVG, ховер: заполняется золотом
+- `.hero-scroll` — абсолютное позиционирование внизу, текст "Листайте" + анимированная линия
+- **Анимации:** fadeUp с задержками (eyebrow 0.3s, h1 0.5s, sub 0.7s, btn 0.9s, scroll 1.2s)
+- `@keyframes fadeUp { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }`
+- `@keyframes scrollPulse { 0%,100% { opacity:.3 } 50% { opacity:1 } }`
+
+### 2. Секция СЦЕНАРИИ
+**HTML-классы:** `.scenarios-grid`, `.scenario-card`, `.scenario-bg`, `.scenario-bg--placeholder`, `.scenario-content`, `.scenario-num`, `.scenario-name`, `.scenario-hint`
+**Что нужно:**
+- `.scenarios-grid` — CSS grid 4 колонки, gap 1rem
+- `.scenario-card` — aspect-ratio 3/4, position relative, overflow hidden, border 1px solid rgba(197,165,90,0.08)
+- Чётные карточки — margin-top: 2rem (шахматная раскладка)
+- `.scenario-bg--placeholder` — разные градиенты для каждой карточки (через nth-child):
+  - 1: linear-gradient(160deg, #2d1828, #1a0f1e, #12080f) — романтика/фиолет
+  - 2: linear-gradient(160deg, #1e2418, #141a0e, #0c0f08) — семья/зелень
+  - 3: linear-gradient(160deg, #2a2010, #1a150a, #0f0c06) — праздник/золото
+  - 4: linear-gradient(160deg, #181e24, #0e1318, #080c0f) — повседневный/синий
+- `.scenario-content` — абсолютно внизу, padding 1.8rem, gradient overlay снизу
+- `.scenario-num` — 0.55rem, letter-spacing 0.3em, gold
+- `.scenario-name` — serif, 1.3rem, cream
+- `.scenario-hint` — 0.7rem, muted
+- **Ховер:** scale(1.05) на background, border-color ярче
+
+### 3. Секция ПАЛИТРА
+**HTML-классы:** `.colors-wheel`, `.color-swatch` (уже есть базовые стили в style.css)
+**Что нужно:**
+- `.colors-wheel` — flex, wrap, gap 0.6rem
+- Свотчи 72×72px (увеличить с текущих 40px), border-radius 50%
+- При ховере — tooltip с названием цвета (через data-attr + ::after)
+- `.section--alt` фон уже есть — применить к этой секции
+- `.section-desc` — стиль для описания секции (muted, 300, max-width 500px)
+
+### 4. Секция ИЗДЕЛИЯ
+**HTML-классы:** `.products-strip`, `.product-preview`, `.product-preview__icon`, `.product-preview__name`, `.product-preview__desc`
+**Что нужно:**
+- `.products-strip` — grid 4 колонки, gap 0
+- `.product-preview` — aspect-ratio 1, фон bg3, border тонкий, position relative
+- Ховер: overlay с информацией (opacity transition)
+- icon — крупный, золотой тусклый
+- name — serif, 1.1rem, cream
+- desc — 0.7rem, muted
+
+### 5. Секция БРЕНД
+**HTML-классы:** `.brand-grid`, `.brand-seal`, `.brand-seal__top`, `.brand-seal__logo`, `.brand-seal__bottom`, `.brand-quote`, `.brand-text`
+**Что нужно:**
+- `.brand-grid` — grid 2 колонки, gap 4rem, align-items center
+- `.brand-seal` — 180×180px, border-radius 50%, border 1px solid gold, flex column center
+- `.brand-seal__top/bottom` — 0.5rem, letter-spacing 0.3em, uppercase, gold
+- `.brand-seal__logo` — serif, 1.4rem, cream, italic
+- `.brand-quote` — serif, 1.4rem, italic, cream, line-height 1.5, margin-bottom 1.5rem
+- `.brand-text` — 0.82rem, muted, 300, line-height 1.9
+
+### 6. Финальный CTA
+- Текст по центру, h2 + описание + кнопка .btn--gold
+- Верхняя граница: 1px solid rgba(197,165,90,0.06)
+- Padding 5rem
+
+## Адаптивность
+### 1024px и меньше:
+- `.scenarios-grid` → 2 колонки, убрать margin-top на чётных
+- `.brand-grid` → 1 колонка
+- `.products-strip` → 2 колонки
+- `.container` padding → 1.5rem
+- Навигация `.main-nav` → display:none (уже есть)
+
+### 640px и меньше:
+- `.scenarios-grid` → 1 колонка
+- `.products-strip` → 1 колонка
+- footer → 1 колонка
+
+## Референс-прототип
+У нас есть утверждённый прототип главной страницы в виде HTML-файла (loraleya-homepage.html). CSS из этого файла — эталон визуала. Задача — перенести стили из прототипа в тему WordPress.
+
+## Рабочий процесс
+1. Я (пользователь) открываю файловый менеджер WP в браузере
+2. Claude даёт готовые блоки CSS
+3. Я вставляю их в style.css через файловый менеджер
+4. Обновляю страницу — проверяю результат
+5. Скидываю скриншот Claude — корректируем
+
+## Важные правила
+- CSS значения в rem, не px (кроме border-width)
+- Не использовать !important без крайней необходимости
+- Все цвета через CSS-переменные
+- Минимум стилей — максимум эффекта
+- Проверять на мобильных (адаптив обязателен)
+
+## Товарная матрица (для понимания контекста)
+- 17 цветов жаккардовой ткани (100% полиэстер)
+- На каждый цвет: 4 дорожки (140/175/240/300), 3 скатерти (175/220/240), салфетки 40×40, куверты 9×24
+- Наборы на 4 и 6 персон (дорожка + салфетки + куверты)
+- ~220 SKU общее количество
+- Ценовой диапазон: 250–4000₽
+
+## Палитра цветов LoraLeya (17 оттенков)
+Бежевый #d4c5a0, Белый #f0ece4, Бирюза #5eb8a8, Блек золото #2a2520, Бронза #8b6e3a, Голубой #8bb8d0, Графит #4a4844, Зелёный #6b8a5e, Меланж золото #c8a85a, Меланж серебро #b0b0a8, Меланж серый #787874, Меланж чёрный #2e2e2c, Платина #c8c0b8, Серебро #c0c0c0, Сиреневый #b088b0, Тёмно-бирюзовый #3a7878, Фиолетовый #6a3a7a

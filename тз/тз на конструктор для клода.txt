@@ -1,0 +1,300 @@
+# ТЗ: Страница сценария — Этап 2: Конструктор
+
+## Что делаем
+Добавляем блок «Конструктор» в файл `single-scenario.php` — интерактивный инструмент для сборки комплекта столового текстиля. HTML + CSS + JS. Без AJAX, без WooCommerce — чистая фронтенд-логика. Интеграция с WC — отдельный этап.
+
+## Куда вставлять
+Файл: `wp-content/themes/loraleya/single-scenario.php`
+Место: после блока «Рекомендуемые оттенки», перед блоком «Советы».
+CSS: добавить в конец `style.css` (после стилей этапа 1).
+JS: добавить в `assets/js/main.js` (или отдельный `constructor.js`, подключить в `functions.php`).
+
+---
+
+## HTML-структура блока
+
+Блок оборачивается в `<section class="section" id="constructor">`, внутри — `<div class="con">`.
+
+### Группа 1 — Выбор цвета
+
+```html
+<div class="grp">
+  <div class="grp-title"><span class="grp-num">1</span> Выберите цвет</div>
+  <div class="swatches" id="swatches">
+    <!-- 17 кружков. Рекомендуемые для сценария идут первыми. -->
+    <div class="sw on" style="background:#6a3a7a" data-name="Фиолетовый"></div>
+    <div class="sw" style="background:#4a4844" data-name="Графит"></div>
+    <div class="sw" style="background:#8b6e3a" data-name="Бронза"></div>
+    <div class="sw" style="background:#b088b0" data-name="Сиреневый"></div>
+    <div class="sw" style="background:#d4c5a0" data-name="Бежевый"></div>
+    <div class="sw" style="background:#f0ece4;border:1px solid rgba(197,165,90,.2)" data-name="Белый"></div>
+    <div class="sw" style="background:#5eb8a8" data-name="Бирюза"></div>
+    <div class="sw" style="background:#2a2520;border:1px solid rgba(197,165,90,.2)" data-name="Блек золото"></div>
+    <div class="sw" style="background:#8bb8d0" data-name="Голубой"></div>
+    <div class="sw" style="background:#6b8a5e" data-name="Зелёный"></div>
+    <div class="sw" style="background:#c8a85a" data-name="Меланж золото"></div>
+    <div class="sw" style="background:#b0b0a8" data-name="Меланж серебро"></div>
+    <div class="sw" style="background:#787874" data-name="Меланж серый"></div>
+    <div class="sw" style="background:#2e2e2c;border:1px solid rgba(197,165,90,.2)" data-name="Меланж чёрный"></div>
+    <div class="sw" style="background:#c8c0b8" data-name="Платина"></div>
+    <div class="sw" style="background:#c0c0c0" data-name="Серебро"></div>
+    <div class="sw" style="background:#3a7878" data-name="Тёмно-бирюзовый"></div>
+  </div>
+  <div id="colorLabel" class="sw-label">Фиолетовый</div>
+</div>
+```
+
+**Тёмные свотчи** (Блек золото, Меланж чёрный, Белый) — добавить `border: 1px solid rgba(197,165,90,.2)` инлайном, чтобы были видны на тёмном фоне.
+
+### Группа 2 — Количество персон
+
+```html
+<div class="grp">
+  <div class="grp-title"><span class="grp-num">2</span> Количество персон</div>
+  <div class="pbtn-row">
+    <button class="pbtn" data-persons="2">2 персоны</button>
+    <button class="pbtn" data-persons="4">4 персоны</button>
+    <button class="pbtn" data-persons="6">6 персон</button>
+  </div>
+</div>
+```
+
+**Дефолт зависит от сценария:**
+- Романтический ужин → `2` активна
+- Семейный обед → `4` активна
+- Праздничный стол → `6` активна
+- Каждый день → `2` активна
+
+Использовать `data-default-persons` атрибут на секции или PHP-переменную.
+
+### Блок «Готовый набор» (set-box)
+
+```html
+<div class="set-box" id="setBox">
+  <div>
+    <h4 id="setTitle">Готовый набор на 4 персоны — выгоднее на 15%</h4>
+    <p id="setDesc">Дорожка 40×140 + 4 салфетки + 4 куверта</p>
+  </div>
+  <div class="set-prices">
+    <span class="sp-old" id="setOld">2 100 ₽</span>
+    <span class="sp-new" id="setNew">1 790 ₽</span>
+  </div>
+  <button class="btn-s" id="addSetBtn">Добавить набор</button>
+</div>
+```
+
+**Критическая логика:**
+- При выборе **2 персоны** — блок `set-box` **скрывается** (`display: none`). Наборов на 2 нет в матрице.
+- При выборе **4 персоны** — показывать набор на 4 (дорожка 140 + 4 салф + 4 кув).
+- При выборе **6 персон** — показывать набор на 6 (дорожка 140 + 6 салф + 6 кув).
+- Цены наборов — хардкод на этапе 2. На этапе 3 подтянутся из WC.
+
+**Цены наборов (хардкод):**
+
+| Набор | Состав | Полная цена | Со скидкой 15% |
+|-------|--------|-------------|----------------|
+| 4 перс. / дорожка 140 | 890 + 4×350 + 4×250 = 3 290 | 2 797 ≈ 2 800 |
+| 4 перс. / дорожка 175 | 990 + 4×350 + 4×250 = 3 390 | 2 882 ≈ 2 880 |
+| 6 перс. / дорожка 140 | 890 + 6×350 + 6×250 = 4 490 | 3 817 ≈ 3 820 |
+| 6 перс. / дорожка 175 | 990 + 6×350 + 6×250 = 4 590 | 3 902 ≈ 3 900 |
+
+На этапе 2 показываем один набор (с дорожкой 140). Переключатель размера дорожки в наборе — можно добавить позже.
+
+### Группа 3 — Поштучный подбор
+
+Заголовок: `<span class="grp-num">3</span> Или соберите сами`
+
+4 категории, каждая в `<div class="cat">`:
+
+**Дорожки на стол:**
+
+| Товар | Цена | Примечание |
+|-------|------|------------|
+| Дорожка 40 × 140 см | 890 ₽ | Входит в наборы |
+| Дорожка 40 × 175 см | 990 ₽ | Входит в наборы |
+| Дорожка 40 × 240 см | 1 290 ₽ | Для длинных столов |
+| Дорожка 40 × 300 см | 1 590 ₽ | Максимальный размер |
+
+**Скатерти:**
+
+| Товар | Цена | Примечание |
+|-------|------|------------|
+| Скатерть 140 × 175 см | 2 490 ₽ | На 4 персоны |
+| Скатерть 140 × 220 см | 2 990 ₽ | На 6 персон |
+| Скатерть 140 × 240 см | 3 490 ₽ | На 8 персон |
+
+**Салфетки:**
+
+| Товар | Цена |
+|-------|------|
+| Салфетка 40 × 40 см | 350 ₽ / шт |
+
+**Куверты для приборов:**
+
+| Товар | Цена |
+|-------|------|
+| Куверт 9 × 24 см | 250 ₽ / шт |
+
+Каждая строка товара — `.ir` с кнопками +/−:
+```html
+<div class="ir" data-price="890">
+  <div>
+    <div class="ir-name">Дорожка 40 × 140 см</div>
+    <div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div>
+  </div>
+  <div class="ir-price">890 ₽</div>
+  <div class="ir-qty">
+    <button class="qb">−</button>
+    <span class="qv">0</span>
+    <button class="qb">+</button>
+  </div>
+  <div class="ir-sub">0 ₽</div>
+</div>
+```
+
+Все количества стартуют с 0. Максимум — 12. Минимум — 0.
+
+### Совет-плашка
+
+```html
+<div class="note-box">
+  <strong>Совет:</strong> Для стандартного стола подойдёт дорожка 140 или 175 см. 
+  Для длинных столов (от 200 см) выбирайте дорожку 240 или 300 см — 
+  в этом случае набор не подойдёт, собирайте поштучно.
+</div>
+```
+
+### Итого + В корзину (sticky)
+
+```html
+<div class="total-sticky" id="totalSticky">
+  <div class="total-inner">
+    <div class="total-left">
+      <span class="total-lbl">Итого</span>
+      <span class="total-sum" id="totalSum">0 ₽</span>
+      <span class="total-items" id="totalItems">—</span>
+    </div>
+    <button class="btn-cart" id="addCartBtn">В корзину →</button>
+  </div>
+</div>
+```
+
+---
+
+## CSS
+
+Все стили брать из прототипа `loraleya-scenario-v2.html`. Добавить в `style.css` в секцию `/* === SCENARIO CONSTRUCTOR === */`.
+
+### Sticky-бар — ДОПОЛНИТЕЛЬНЫЙ CSS (этого нет в прототипе):
+
+```css
+/* Sticky total bar */
+.total-sticky {
+  position: sticky;
+  bottom: 0;
+  z-index: 50;
+  background: var(--bg2);
+  border-top: 1px solid rgba(197, 165, 90, 0.15);
+  padding: 1rem 3rem;
+  margin: 0 -3rem -2.5rem;
+  backdrop-filter: blur(12px);
+  background: rgba(26, 25, 23, 0.95);
+}
+.total-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+```
+
+Остальные классы — копировать как есть из прототипа:
+`.con`, `.grp`, `.grp-title`, `.grp-num`, `.swatches`, `.sw`, `.sw.on`, `.sw-label`, `.pbtn-row`, `.pbtn`, `.pbtn.on`, `.set-box`, `.sp-old`, `.sp-new`, `.btn-s`, `.cat`, `.cat-label`, `.ir`, `.ir-name`, `.ir-size`, `.ir-price`, `.ir-qty`, `.qb`, `.qv`, `.ir-sub`, `.note-box`, `.total-left`, `.total-lbl`, `.total-sum`, `.total-items`, `.btn-cart`
+
+### Адаптив (добавить в существующие медиа-запросы):
+
+```css
+@media (max-width: 1024px) {
+  .con { padding: 2rem 1.5rem; }
+  .total-sticky { padding: 1rem 1.5rem; margin: 0 -1.5rem -2rem; }
+  .ir { grid-template-columns: 1fr; gap: 0.4rem; }
+  .ir-price, .ir-sub { text-align: left; }
+}
+
+@media (max-width: 640px) {
+  .total-inner { flex-direction: column; align-items: stretch; }
+  .btn-cart { justify-content: center; }
+  .set-box { flex-direction: column; text-align: center; }
+}
+```
+
+---
+
+## JavaScript
+
+Не использовать inline `onclick`. Все обработчики через `addEventListener` в JS-файле.
+
+### Функции:
+
+**1. pickSwatch(el)** — выбор цвета
+- Снять `.on` со всех `.sw`, поставить на кликнутый
+- Обновить `#colorLabel` текстом из `data-name`
+
+**2. pickPersons(el, n)** — выбор персон
+- Снять `.on` со всех `.pbtn`, поставить на кликнутый
+- Обновить количество салфеток и кувертов (`.qv`) на `n`
+- **Если n === 2** → скрыть `#setBox` (display: none)
+- **Если n === 4** → показать `#setBox`, обновить текст: «Готовый набор на 4 персоны — выгоднее на 15%», описание: «Дорожка 40×140 + 4 салфетки + 4 куверта», цены: старая 3 290 ₽, новая 2 800 ₽
+- **Если n === 6** → показать `#setBox`, обновить текст: «Готовый набор на 6 персон — выгоднее на 15%», описание: «Дорожка 40×140 + 6 салфеток + 6 кувертов», цены: старая 4 490 ₽, новая 3 820 ₽
+- Пересчитать итого
+
+**3. changeQty(btn, delta)** — кнопки +/−
+- Найти ближайший `.ir`, внутри него `.qv`
+- Текущее значение ± delta, ограничить [0, 12]
+- Обновить `.ir-sub` = цена × количество (форматирование с пробелами: `toLocaleString('ru-RU')`)
+- Пересчитать итого
+
+**4. recalcTotal()** — пересчёт итого
+- Пройти все `.ir`, для каждого: количество × цена из `data-price`
+- Обновить `#totalSum` и `#totalItems` (количество позиций с qty > 0)
+- Если итого === 0 → показать «0 ₽» и «—»
+
+**5. addToCart()** — кнопка «В корзину»
+- Если итого === 0 → ничего не делать (можно подсветить кнопку красным на 0.5с)
+- Иначе → кнопка меняет текст на «Добавлено ✓», фон на зелёный (#4a7a4a), через 2с возвращается обратно
+- Анимация cart-count в хедере (cartPop)
+- Реальный AJAX — этап 3
+
+**6. addSet()** — кнопка «Добавить набор»
+- Аналогично addToCart — визуальная обратная связь
+- Кнопка → «Добавлено ✓» на 2с
+- Анимация cart-count
+
+### Инициализация:
+При загрузке страницы — вызвать `pickPersons` с дефолтным количеством персон для текущего сценария. Дефолт передаётся через `data-default-persons` на `#constructor` или PHP-переменную в inline-скрипте:
+```html
+<section class="section" id="constructor" data-default-persons="2">
+```
+
+---
+
+## Что НЕ делать на этом этапе
+- Не подключать WooCommerce (AJAX add-to-cart, реальные товары) — это этап 3
+- Не делать переключатель размера дорожки внутри набора — упрощаем
+- Не делать анимации появления блоков при скролле — потом
+- Не добавлять наборы на 2 персоны — их нет в товарной матрице
+- Не менять HTML этапа 1 (hero, галерея, рекомендуемые оттенки, советы, другие сценарии)
+- Не использовать `!important`
+
+## Чеклист готовности
+- [ ] Конструктор отображается между «Рекомендуемые оттенки» и «Советы»
+- [ ] 17 свотчей кликабельны, подпись обновляется
+- [ ] 3 кнопки персон переключаются, салфетки/куверты обновляются
+- [ ] При 2 персонах — блок набора скрыт
+- [ ] При 4/6 — блок набора виден, цены корректны
+- [ ] Кнопки +/− работают, подитоги и итого пересчитываются
+- [ ] Sticky-бар прилипает к низу экрана
+- [ ] «В корзину» даёт визуальную обратную связь (не alert)
+- [ ] Адаптив: 1024px и 640px — всё читаемо и кликабельно
+- [ ] Нет inline onclick — все обработчики в JS-файле
