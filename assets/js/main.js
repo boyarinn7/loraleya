@@ -119,4 +119,99 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(el);
     });
 
+    // ===== COLOR PAGE =====
+    if (document.querySelector('.color-hero')) {
+
+        var colorCart = [];
+        var colorTotal = 0;
+
+        var colorPrices = {
+            'Дорожка 140': 890, 'Дорожка 175': 990,
+            'Дорожка 240': 1290, 'Дорожка 300': 1590,
+            'Скатерть 175': 2490, 'Скатерть 220': 2990, 'Скатерть 240': 3490,
+            'Салфетка': 350, 'Куверт': 250,
+            'Набор 4п/140': 2790, 'Набор 4п/175': 2970,
+            'Набор 6п/140': 3820, 'Набор 6п/175': 3990
+        };
+
+        function colorAddItem(name) {
+            colorCart.push(name);
+            colorTotal += colorPrices[name] || 0;
+
+            var cc = document.querySelector('.cart-count');
+            if (cc) {
+                cc.textContent = colorCart.length;
+                cc.style.animation = 'none';
+                cc.offsetHeight;
+                cc.style.animation = 'cartPop .3s';
+            }
+
+            var bar = document.getElementById('stickyBar');
+            if (bar) bar.classList.add('show');
+
+            var sbTotal = document.getElementById('sbTotal');
+            if (sbTotal) sbTotal.textContent = colorTotal.toLocaleString('ru-RU') + ' ₽';
+        }
+
+        document.querySelectorAll('.prod-add').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                colorAddItem(btn.dataset.item);
+                btn.textContent = '✓';
+                btn.style.background = 'rgba(74,122,74,.5)';
+                btn.style.borderColor = 'rgba(74,122,74,.5)';
+                setTimeout(function() {
+                    btn.textContent = '+';
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                }, 1000);
+            });
+        });
+
+        document.querySelectorAll('.btn-set').forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                colorAddItem(btn.dataset.item);
+                var orig = btn.textContent;
+                btn.textContent = 'Добавлено ✓';
+                btn.style.background = 'rgba(74,122,74,.5)';
+                btn.style.borderColor = 'rgba(74,122,74,.5)';
+                btn.style.color = '#fff';
+                setTimeout(function() {
+                    btn.textContent = orig;
+                    btn.style.background = '';
+                    btn.style.borderColor = '';
+                    btn.style.color = '';
+                }, 1500);
+            });
+        });
+
+        var sbBtn = document.getElementById('sbBtn');
+        if (sbBtn) {
+            sbBtn.addEventListener('click', function() {
+                if (colorCart.length === 0) return;
+                sbBtn.textContent = 'Переход в корзину...';
+            });
+        }
+    }
+
+    // Product size tabs
+    document.querySelectorAll('.prod--variants').forEach(function(card) {
+        var sizeBtns  = card.querySelectorAll('.prod-size-btn');
+        var sizeLabel = card.querySelector('.prod-size');
+        var priceOld  = card.querySelector('.prod-price-old');
+        var priceNow  = card.querySelector('.prod-price-now');
+        var addBtn    = card.querySelector('.btn-prod');
+
+        sizeBtns.forEach(function(btn) {
+            btn.addEventListener('click', function() {
+                sizeBtns.forEach(function(b) { b.classList.remove('is-active'); });
+                btn.classList.add('is-active');
+
+                if (sizeLabel) sizeLabel.textContent = btn.dataset.size;
+                if (priceNow)  priceNow.innerHTML    = btn.dataset.price;
+                if (priceOld)  priceOld.innerHTML    = btn.dataset.priceOld;
+                if (addBtn)    addBtn.dataset.item    = btn.dataset.item;
+            });
+        });
+    });
+
 });

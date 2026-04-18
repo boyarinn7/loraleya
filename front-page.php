@@ -138,7 +138,7 @@ get_header();
             </div>
             <div class="product-preview">
                 <div class="product-preview__label">Салфетки</div>
-                <div class="product-preview__size">40 × 40 см · 4 шт</div>
+                <div class="product-preview__size">40 × 40 см</div>
                 <div class="product-preview__price">от 350 ₽</div>
             </div>
             <div class="product-preview">

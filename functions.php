@@ -44,6 +44,9 @@ function loraleya_scripts() {
     // Main script
     wp_enqueue_script('loraleya-main', get_template_directory_uri() . '/assets/js/main.js', [], '1.0.0', true);
 
+    // Constructor script
+    wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], '1.0', true);
+
     // Pass data to JS
     wp_localize_script('loraleya-main', 'loraleya', [
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -83,6 +86,46 @@ function loraleya_register_post_types() {
     ]);
 }
 add_action('init', 'loraleya_register_post_types');
+
+// ===== FABRIC COLOR HEX FIELD =====
+// Поле при ДОБАВЛЕНИИ термина
+add_action('fabric_color_add_form_fields', function() {
+    ?>
+    <div class="form-field">
+        <label for="color_hex">HEX цвета</label>
+        <input type="text" name="color_hex" id="color_hex" value="" placeholder="#6a3a7a">
+        <p>Введите HEX-код цвета (например #6a3a7a)</p>
+    </div>
+    <?php
+});
+
+// Поле при РЕДАКТИРОВАНИИ термина
+add_action('fabric_color_edit_form_fields', function($term) {
+    $hex = get_term_meta($term->term_id, 'color_hex', true);
+    ?>
+    <tr class="form-field">
+        <th><label for="color_hex">HEX цвета</label></th>
+        <td>
+            <input type="text" name="color_hex" id="color_hex" value="<?php echo esc_attr($hex); ?>" placeholder="#6a3a7a">
+            <p class="description">Введите HEX-код цвета</p>
+        </td>
+    </tr>
+    <?php
+});
+
+// Сохранение при создании
+add_action('created_fabric_color', function($term_id) {
+    if (isset($_POST['color_hex'])) {
+        update_term_meta($term_id, 'color_hex', sanitize_text_field($_POST['color_hex']));
+    }
+});
+
+// Сохранение при редактировании
+add_action('edited_fabric_color', function($term_id) {
+    if (isset($_POST['color_hex'])) {
+        update_term_meta($term_id, 'color_hex', sanitize_text_field($_POST['color_hex']));
+    }
+});
 
 // ===== CUSTOM TAXONOMY: Colors =====
 function loraleya_register_taxonomies() {

@@ -10,6 +10,7 @@ $scenario_data = [
         'gradient'    => 'linear-gradient(160deg, #2d1828 0%, #1a0f1e 40%, #0e0e0c 100%)',
         'persons'     => '2 персоны',
         'time'        => '~5 мин на сборку',
+        'default_persons' => 2,
         'colors'      => [
             ['hex' => '#6a3a7a', 'name' => 'Фиолетовый', 'slug' => 'fioletovyj'],
             ['hex' => '#4a4844', 'name' => 'Графит', 'slug' => 'grafit'],
@@ -26,6 +27,7 @@ $scenario_data = [
         'gradient'    => 'linear-gradient(160deg, #1e2418 0%, #141a0e 40%, #0e0e0c 100%)',
         'persons'     => '4–6 персон',
         'time'        => '~5 мин на сборку',
+        'default_persons' => 4,
         'colors'      => [
             ['hex' => '#6b8a5e', 'name' => 'Зелёный', 'slug' => 'zelenyj'],
             ['hex' => '#d4c5a0', 'name' => 'Бежевый', 'slug' => 'bezhevyj'],
@@ -42,6 +44,7 @@ $scenario_data = [
         'gradient'    => 'linear-gradient(160deg, #2a2010 0%, #1a150a 40%, #0e0e0c 100%)',
         'persons'     => '6+ персон',
         'time'        => '~10 мин на сборку',
+        'default_persons' => 6,
         'colors'      => [
             ['hex' => '#c8a85a', 'name' => 'Меланж золото', 'slug' => 'melanzh-zoloto'],
             ['hex' => '#8b6e3a', 'name' => 'Бронза', 'slug' => 'bronza'],
@@ -58,6 +61,7 @@ $scenario_data = [
         'gradient'    => 'linear-gradient(160deg, #181e24 0%, #0e1318 40%, #0e0e0c 100%)',
         'persons'     => '2–4 персоны',
         'time'        => '~3 мин на сборку',
+        'default_persons' => 2,
         'colors'      => [
             ['hex' => '#b0b0a8', 'name' => 'Меланж серебро', 'slug' => 'melanzh-serebro'],
             ['hex' => '#787874', 'name' => 'Меланж серый', 'slug' => 'melanzh-seryj'],
@@ -73,6 +77,16 @@ $scenario_data = [
 ];
 
 $slug = get_post_field('post_name', get_the_ID());
+// Алиасы для кириллических slug'ов
+$slug_aliases = [
+    'романтический-ужин' => 'romanticheskij-uzhin',
+    'семейный-обед'      => 'semejnyj-obed',
+    'праздничный-стол'   => 'prazdnichnyj-stol',
+    'каждый-день'        => 'kazhdyj-den',
+];
+if (isset($slug_aliases[$slug])) {
+    $slug = $slug_aliases[$slug];
+}
 $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
 ?>
 
@@ -99,7 +113,7 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
 </section>
 
 <!-- GALLERY -->
-<section class="section">
+<section class="section" id="gallery">
     <div class="container">
         <div class="eyebrow">Галерея</div>
         <h2>Как это выглядит</h2>
@@ -120,7 +134,7 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
         <h2>Рекомендуемые оттенки</h2>
         <div class="sc-colors-rec">
             <?php foreach ($data['colors'] as $color) : ?>
-                <a class="sc-cr" href="<?php echo home_url('/color/' . $color['slug'] . '/'); ?>">
+                <a class="sc-cr" href="#gallery" data-color-name="<?php echo esc_attr($color['name']); ?>">
                     <div class="sc-cr-dot" style="background:<?php echo $color['hex']; ?>"></div>
                     <span class="sc-cr-name"><?php echo $color['name']; ?></span>
                 </a>
@@ -129,13 +143,175 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
     </div>
 </section>
 
-<!-- CONSTRUCTOR PLACEHOLDER (Этап 2) -->
-<section class="section" id="constructor">
+<!-- CONSTRUCTOR -->
+<section class="section" id="constructor" data-default-persons="<?php echo $data['default_persons']; ?>">
     <div class="container">
-        <div class="sc-constructor-placeholder" style="background:var(--bg2);border:1px dashed rgba(197,165,90,.15);padding:3rem;text-align:center">
-            <div class="eyebrow">Конструктор</div>
-            <h2>Соберите свой комплект</h2>
-            <p class="section-desc" style="margin:1rem auto 0">Блок конструктора будет добавлен на этапе 2</p>
+        <div class="con">
+
+            <div class="con-head">
+                <div>
+                    <div class="eyebrow">Конструктор</div>
+                    <h2>Соберите свой комплект</h2>
+                </div>
+            </div>
+
+            <!-- 1. Color -->
+            <div class="grp">
+                <div class="grp-title"><span class="grp-num">1</span> Выберите цвет</div>
+                <div class="swatches" id="swatches">
+                    <?php
+                    // Рекомендуемые цвета первыми
+                    $rec_hexes = array_column($data['colors'], 'hex');
+                    $all_colors = [
+                        ['hex'=>'#6a3a7a','name'=>'Фиолетовый'],['hex'=>'#4a4844','name'=>'Графит'],
+                        ['hex'=>'#8b6e3a','name'=>'Бронза'],['hex'=>'#b088b0','name'=>'Сиреневый'],
+                        ['hex'=>'#d4c5a0','name'=>'Бежевый'],['hex'=>'#f0ece4','name'=>'Белый'],
+                        ['hex'=>'#5eb8a8','name'=>'Бирюза'],['hex'=>'#2a2520','name'=>'Блек золото'],
+                        ['hex'=>'#8bb8d0','name'=>'Голубой'],['hex'=>'#6b8a5e','name'=>'Зелёный'],
+                        ['hex'=>'#c8a85a','name'=>'Меланж золото'],['hex'=>'#b0b0a8','name'=>'Меланж серебро'],
+                        ['hex'=>'#787874','name'=>'Меланж серый'],['hex'=>'#2e2e2c','name'=>'Меланж чёрный'],
+                        ['hex'=>'#c8c0b8','name'=>'Платина'],['hex'=>'#c0c0c0','name'=>'Серебро'],
+                        ['hex'=>'#3a7878','name'=>'Тёмно-бирюзовый'],
+                    ];
+                    // Сначала рекомендуемые, потом остальные
+                    $rec = array_filter($all_colors, fn($c) => in_array($c['hex'], $rec_hexes));
+                    $rest = array_filter($all_colors, fn($c) => !in_array($c['hex'], $rec_hexes));
+                    $sorted = array_merge(array_values($rec), array_values($rest));
+                    $first = true;
+                    $dark_borders = ['#f0ece4','#2a2520','#2e2e2c'];
+                    foreach ($sorted as $c) :
+                        $border = in_array($c['hex'], $dark_borders) ? 'border:1px solid rgba(197,165,90,.2);' : '';
+                        $on = $first ? ' on' : '';
+                    ?>
+                        <div class="sw<?php echo $on; ?>" style="background:<?php echo $c['hex']; ?>;<?php echo $border; ?>" data-name="<?php echo $c['name']; ?>"></div>
+                    <?php
+                        if ($first) $default_color_name = $c['name'];
+                        $first = false;
+                    endforeach;
+                    ?>
+                </div>
+
+            </div>
+
+            <!-- 2. Persons -->
+            <div class="grp">
+                <div class="grp-title"><span class="grp-num">2</span> Количество персон</div>
+                <div class="pbtn-row">
+                    <button class="pbtn<?php echo $data['default_persons'] === 2 ? ' on' : ''; ?>" data-persons="2">2 персоны</button>
+                    <button class="pbtn<?php echo $data['default_persons'] === 4 ? ' on' : ''; ?>" data-persons="4">4 персоны</button>
+                    <button class="pbtn<?php echo $data['default_persons'] === 6 ? ' on' : ''; ?>" data-persons="6">6 персон</button>
+                </div>
+            </div>
+
+            <!-- SET SHORTCUT -->
+            <div class="set-box" id="setBox" style="<?php echo $data['default_persons'] === 2 ? 'display:none' : ''; ?>">
+                <div>
+                    <h4 id="setTitle">Готовый набор на <?php echo $data['default_persons']; ?> персон<?php echo $data['default_persons'] === 4 ? 'ы' : ''; ?> — выгоднее на 15%</h4>
+                    <p id="setDesc">Дорожка 40×140 + <?php echo $data['default_persons']; ?> салфеток + <?php echo $data['default_persons']; ?> кувертов</p>
+                </div>
+                <div class="set-prices">
+                    <span class="sp-old" id="setOld"></span>
+                    <span class="sp-new" id="setNew"></span>
+                </div>
+                <button class="btn-s" id="addSetBtn">Добавить набор</button>
+            </div>
+
+            <!-- 3. ITEMS -->
+            <div class="grp">
+                <div class="grp-title"><span class="grp-num">3</span> Или соберите сами</div>
+
+                <!-- Дорожки -->
+                <div class="cat">
+                    <div class="cat-label">Дорожки на стол</div>
+                    <div class="ir" data-price="890">
+                        <div><div class="ir-name">Дорожка 40 × 140 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
+                        <div class="ir-price">890 ₽</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                    <div class="ir" data-price="990">
+                        <div><div class="ir-name">Дорожка 40 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
+                        <div class="ir-price">990 ₽</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                    <div class="ir" data-price="1290">
+                        <div><div class="ir-name">Дорожка 40 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · Для длинных столов</div></div>
+                        <div class="ir-price">1 290 ₽</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                    <div class="ir" data-price="1590">
+                        <div><div class="ir-name">Дорожка 40 × 300 см</div><div class="ir-size">Жаккард · 100% полиэстер · Максимальный размер</div></div>
+                        <div class="ir-price">1 590 ₽</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                </div>
+
+                <!-- Скатерти -->
+                <div class="cat">
+                    <div class="cat-label">Скатерти</div>
+                    <div class="ir" data-price="2490">
+                        <div><div class="ir-name">Скатерть 140 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 4 персоны</div></div>
+                        <div class="ir-price">2 490 ₽</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                    <div class="ir" data-price="2990">
+                        <div><div class="ir-name">Скатерть 140 × 220 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 6 персон</div></div>
+                        <div class="ir-price">2 990 ₽</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                    <div class="ir" data-price="3490">
+                        <div><div class="ir-name">Скатерть 140 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 8 персон</div></div>
+                        <div class="ir-price">3 490 ₽</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                </div>
+
+                <!-- Салфетки -->
+                <div class="cat">
+                    <div class="cat-label">Салфетки</div>
+                    <div class="ir" data-price="350" data-role="napkin">
+                        <div><div class="ir-name">Салфетка 40 × 40 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
+                        <div class="ir-price">350 ₽ / шт</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                </div>
+
+                <!-- Куверты -->
+                <div class="cat">
+                    <div class="cat-label">Куверты для приборов</div>
+                    <div class="ir" data-price="250" data-role="couverte">
+                        <div><div class="ir-name">Куверт 9 × 24 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
+                        <div class="ir-price">250 ₽ / шт</div>
+                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
+                        <div class="ir-sub">0 ₽</div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="note-box">
+                <strong>Совет:</strong> Для стандартного стола подойдёт дорожка 140 или 175 см. Для длинных столов (от 200 см) выбирайте дорожку 240 или 300 см — в этом случае набор не подойдёт, собирайте поштучно.
+            </div>
+
+            <!-- TOTAL (sticky) -->
+            <div class="total-sticky" id="totalSticky">
+                <div class="total-inner">
+                    <div class="total-left">
+                        <span class="total-lbl">Итого</span>
+                        <span class="total-sum" id="totalSum">0 ₽</span>
+                        <span class="total-items" id="totalItems">—</span>
+                    </div>
+                    <button class="btn-cart" id="addCartBtn">В корзину →</button>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
