@@ -143,27 +143,117 @@ function loraleya_register_taxonomies() {
 }
 add_action('init', 'loraleya_register_taxonomies');
 
+/**
+ * Регистрируем fabric_color в WC как атрибут вариаций.
+ * Позволяет использовать существующую таксономию для variable products.
+ */
+add_filter('woocommerce_attribute_taxonomies', function ($taxonomies) {
+    $custom = (object) [
+        'attribute_id'      => 0,
+        'attribute_name'    => 'fabric_color',
+        'attribute_label'   => 'Цвет ткани',
+        'attribute_type'    => 'select',
+        'attribute_orderby' => 'menu_order',
+        'attribute_public'  => 1,
+    ];
+    $taxonomies[] = $custom;
+    return $taxonomies;
+});
+
 // ===== AJAX ADD TO CART =====
 function loraleya_ajax_add_to_cart() {
     check_ajax_referer('loraleya_nonce', 'nonce');
 
-    $product_id = intval($_POST['product_id']);
-    $quantity   = intval($_POST['quantity']) ?: 1;
+    $product_id   = intval($_POST['product_id'] ?? 0);
+    $variation_id = intval($_POST['variation_id'] ?? 0);
+    $quantity     = intval($_POST['quantity'] ?? 1);
+    if ($quantity < 1) $quantity = 1;
 
-    if ($product_id > 0) {
-        $added = WC()->cart->add_to_cart($product_id, $quantity);
-        if ($added) {
-            wp_send_json_success([
-                'cart_count' => WC()->cart->get_cart_contents_count(),
-                'cart_total' => WC()->cart->get_cart_total(),
-            ]);
+    // Атрибуты вариации (если передаются)
+    $variation = [];
+    if (!empty($_POST['variation']) && is_array($_POST['variation'])) {
+        foreach ($_POST['variation'] as $key => $val) {
+            $variation[sanitize_text_field($key)] = sanitize_text_field($val);
         }
+    }
+
+    if ($product_id <= 0) {
+        wp_send_json_error('Не указан товар');
+    }
+
+    $added = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
+
+    if ($added) {
+        wp_send_json_success([
+            'cart_count' => WC()->cart->get_cart_contents_count(),
+            'cart_total' => WC()->cart->get_cart_total(),
+            'cart_key'   => $added,
+        ]);
     }
 
     wp_send_json_error('Не удалось добавить товар');
 }
 add_action('wp_ajax_loraleya_add_to_cart', 'loraleya_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_loraleya_add_to_cart', 'loraleya_ajax_add_to_cart');
+
+/**
+ * Обновить количество товара в корзине
+ */
+function loraleya_ajax_update_cart_item() {
+    check_ajax_referer('loraleya_nonce', 'nonce');
+
+    $cart_key = sanitize_text_field($_POST['cart_key'] ?? '');
+    $quantity = intval($_POST['quantity'] ?? 0);
+
+    if (empty($cart_key)) {
+        wp_send_json_error('Не указан ключ товара');
+    }
+
+    if ($quantity <= 0) {
+        WC()->cart->remove_cart_item($cart_key);
+    } else {
+        WC()->cart->set_quantity($cart_key, $quantity, true);
+    }
+
+    wp_send_json_success([
+        'cart_count' => WC()->cart->get_cart_contents_count(),
+        'cart_total' => WC()->cart->get_cart_total(),
+    ]);
+}
+add_action('wp_ajax_loraleya_update_cart_item', 'loraleya_ajax_update_cart_item');
+add_action('wp_ajax_nopriv_loraleya_update_cart_item', 'loraleya_ajax_update_cart_item');
+
+/**
+ * Получить содержимое корзины (для модалки)
+ */
+function loraleya_ajax_get_cart() {
+    check_ajax_referer('loraleya_nonce', 'nonce');
+
+    $items = [];
+    foreach (WC()->cart->get_cart() as $cart_key => $cart_item) {
+        $product = $cart_item['data'];
+        $items[] = [
+            'cart_key'     => $cart_key,
+            'product_id'   => $cart_item['product_id'],
+            'variation_id' => $cart_item['variation_id'],
+            'name'         => $product->get_name(),
+            'price'        => wc_price($product->get_price()),
+            'price_raw'    => $product->get_price(),
+            'quantity'     => $cart_item['quantity'],
+            'subtotal'     => wc_price($product->get_price() * $cart_item['quantity']),
+            'image'        => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail'),
+            'variation'    => $cart_item['variation'] ?? [],
+        ];
+    }
+
+    wp_send_json_success([
+        'items'      => $items,
+        'cart_count' => WC()->cart->get_cart_contents_count(),
+        'cart_total' => WC()->cart->get_cart_total(),
+    ]);
+}
+add_action('wp_ajax_loraleya_get_cart', 'loraleya_ajax_get_cart');
+add_action('wp_ajax_nopriv_loraleya_get_cart', 'loraleya_ajax_get_cart');
 
 // ===== CART COUNT FRAGMENT =====
 function loraleya_cart_count_fragment($fragments) {

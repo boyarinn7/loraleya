@@ -2,6 +2,96 @@
  * LoraLeya Theme - Main JS
  */
 
+// === Cart counter (localStorage) ===
+var CART_KEY = 'loraleya_cart';
+
+function cartRead() {
+    try {
+        var raw = localStorage.getItem(CART_KEY);
+        return raw ? JSON.parse(raw) : {};
+    } catch (e) {
+        return {};
+    }
+}
+
+function cartWrite(data) {
+    try {
+        localStorage.setItem(CART_KEY, JSON.stringify(data));
+    } catch (e) {}
+}
+
+function cartGet(item) {
+    return cartRead()[item] || 0;
+}
+
+function cartSet(item, count) {
+    var data = cartRead();
+    if (count <= 0) {
+        delete data[item];
+    } else {
+        data[item] = count;
+    }
+    cartWrite(data);
+}
+
+// === Cart button state rendering ===
+function renderCartBtn(btn) {
+    var item = btn.dataset.item;
+    if (!item) return;
+    var count = cartGet(item);
+    var baseClass = btn.classList.contains('btn-set') ? 'btn-set' : 'btn-prod';
+
+    if (count === 0) {
+        btn.innerHTML = 'В корзину';
+        btn.dataset.state = 'empty';
+        btn.classList.remove('qty-ctrl');
+        btn.classList.add(baseClass);
+    } else {
+        btn.innerHTML =
+            '<button type="button" class="qty-ctrl__btn" data-act="dec">−</button>' +
+            '<span class="qty-ctrl__val">' + count + '</span>' +
+            '<button type="button" class="qty-ctrl__btn" data-act="inc">+</button>';
+        btn.dataset.state = 'filled';
+        btn.classList.remove(baseClass);
+        btn.classList.add('qty-ctrl');
+    }
+}
+
+// === Init all cart buttons ===
+function initCartButtons() {
+    document.querySelectorAll('.btn-prod, .btn-set').forEach(function(btn) {
+        renderCartBtn(btn);
+    });
+
+    document.addEventListener('click', function(e) {
+        var target = e.target;
+
+        // Click on + or − inside counter
+        if (target.matches('.qty-ctrl__btn')) {
+            e.preventDefault();
+            e.stopPropagation();
+            var wrapper = target.closest('[data-item]');
+            if (!wrapper) return;
+            var item = wrapper.dataset.item;
+            var act = target.dataset.act;
+            var count = cartGet(item);
+            count = act === 'inc' ? count + 1 : Math.max(0, count - 1);
+            cartSet(item, count);
+            renderCartBtn(wrapper);
+            return;
+        }
+
+        // Click on "В корзину" button (first add)
+        if (target.matches('.btn-prod, .btn-set') && target.dataset.state === 'empty') {
+            e.preventDefault();
+            var item = target.dataset.item;
+            if (!item) return;
+            cartSet(item, 1);
+            renderCartBtn(target);
+        }
+    });
+}
+
 document.addEventListener('DOMContentLoaded', function() {
 
     // ===== HEADER SCROLL EFFECT =====
@@ -42,7 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
             .then(res => res.json())
             .then(data => {
                 if (data.success) {
-                    // Update cart count
                     document.querySelectorAll('.cart-count').forEach(function(el) {
                         el.textContent = data.data.cart_count;
                     });
@@ -122,72 +211,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // ===== COLOR PAGE =====
     if (document.querySelector('.color-hero')) {
 
-        var colorCart = [];
-        var colorTotal = 0;
-
-        var colorPrices = {
-            'Дорожка 140': 890, 'Дорожка 175': 990,
-            'Дорожка 240': 1290, 'Дорожка 300': 1590,
-            'Скатерть 175': 2490, 'Скатерть 220': 2990, 'Скатерть 240': 3490,
-            'Салфетка': 350, 'Куверт': 250,
-            'Набор 4п/140': 2790, 'Набор 4п/175': 2970,
-            'Набор 6п/140': 3820, 'Набор 6п/175': 3990
-        };
-
-        function colorAddItem(name) {
-            colorCart.push(name);
-            colorTotal += colorPrices[name] || 0;
-
-            var cc = document.querySelector('.cart-count');
-            if (cc) {
-                cc.textContent = colorCart.length;
-                cc.style.animation = 'none';
-                cc.offsetHeight;
-                cc.style.animation = 'cartPop .3s';
-            }
-
-            var bar = document.getElementById('stickyBar');
-            if (bar) bar.classList.add('show');
-
-            var sbTotal = document.getElementById('sbTotal');
-            if (sbTotal) sbTotal.textContent = colorTotal.toLocaleString('ru-RU') + ' ₽';
-        }
-
-        document.querySelectorAll('.prod-add').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                colorAddItem(btn.dataset.item);
-                btn.textContent = '✓';
-                btn.style.background = 'rgba(74,122,74,.5)';
-                btn.style.borderColor = 'rgba(74,122,74,.5)';
-                setTimeout(function() {
-                    btn.textContent = '+';
-                    btn.style.background = '';
-                    btn.style.borderColor = '';
-                }, 1000);
-            });
-        });
-
-        document.querySelectorAll('.btn-set').forEach(function(btn) {
-            btn.addEventListener('click', function() {
-                colorAddItem(btn.dataset.item);
-                var orig = btn.textContent;
-                btn.textContent = 'Добавлено ✓';
-                btn.style.background = 'rgba(74,122,74,.5)';
-                btn.style.borderColor = 'rgba(74,122,74,.5)';
-                btn.style.color = '#fff';
-                setTimeout(function() {
-                    btn.textContent = orig;
-                    btn.style.background = '';
-                    btn.style.borderColor = '';
-                    btn.style.color = '';
-                }, 1500);
-            });
-        });
-
         var sbBtn = document.getElementById('sbBtn');
         if (sbBtn) {
             sbBtn.addEventListener('click', function() {
-                if (colorCart.length === 0) return;
                 sbBtn.textContent = 'Переход в корзину...';
             });
         }
@@ -209,9 +235,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (sizeLabel) sizeLabel.textContent = btn.dataset.size;
                 if (priceNow)  priceNow.innerHTML    = btn.dataset.price;
                 if (priceOld)  priceOld.innerHTML    = btn.dataset.priceOld;
-                if (addBtn)    addBtn.dataset.item    = btn.dataset.item;
+                if (addBtn) {
+                    addBtn.dataset.item = btn.dataset.item;
+                    renderCartBtn(addBtn);
+                }
             });
         });
     });
+
+    // Init cart buttons
+    initCartButtons();
 
 });

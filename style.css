@@ -2393,3 +2393,45 @@ h4 { font-size: 1.1rem; }
 #palette {
     scroll-margin-top: 5rem;
 }
+
+/* Quantity control — shared for .btn-prod and .btn-set */
+.qty-ctrl {
+    display: inline-flex;
+    align-items: stretch;
+    border: 1px solid var(--gold);
+    background: transparent;
+    font-family: var(--sans);
+    font-weight: 500;
+    font-size: 0.6rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    height: 1.8rem;
+}
+
+.qty-ctrl__btn {
+    background: transparent;
+    border: 0;
+    color: var(--gold);
+    cursor: pointer;
+    padding: 0 0.9rem;
+    font-size: 1rem;
+    line-height: 1;
+    transition: all 0.2s;
+    font-family: inherit;
+}
+
+.qty-ctrl__btn:hover {
+    background: var(--gold);
+    color: var(--bg);
+}
+
+.qty-ctrl__val {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.4rem;
+    color: var(--gold);
+    font-size: 0.85rem;
+    letter-spacing: 0;
+    font-weight: 500;
+}
