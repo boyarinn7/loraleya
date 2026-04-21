@@ -143,22 +143,6 @@ function loraleya_register_taxonomies() {
 }
 add_action('init', 'loraleya_register_taxonomies');
 
-/**
- * Регистрируем fabric_color в WC как атрибут вариаций.
- * Позволяет использовать существующую таксономию для variable products.
- */
-add_filter('woocommerce_attribute_taxonomies', function ($taxonomies) {
-    $custom = (object) [
-        'attribute_id'      => 0,
-        'attribute_name'    => 'fabric_color',
-        'attribute_label'   => 'Цвет ткани',
-        'attribute_type'    => 'select',
-        'attribute_orderby' => 'menu_order',
-        'attribute_public'  => 1,
-    ];
-    $taxonomies[] = $custom;
-    return $taxonomies;
-});
 
 // ===== AJAX ADD TO CART =====
 function loraleya_ajax_add_to_cart() {
