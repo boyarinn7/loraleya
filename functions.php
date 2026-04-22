@@ -143,6 +143,46 @@ function loraleya_register_taxonomies() {
 }
 add_action('init', 'loraleya_register_taxonomies');
 
+/**
+ * Регистрируем fabric_color в WC как валидный атрибут вариаций, БЕЗ автоматического pa_ префикса.
+ *
+ * Используем фильтр woocommerce_attribute_taxonomies + переопределяем slug атрибута,
+ * чтобы WC не добавлял pa_ и не создавал дубль pa_fabric_color.
+ */
+add_filter('woocommerce_attribute_taxonomies', function ($taxonomies) {
+    foreach ($taxonomies as $t) {
+        if ($t->attribute_name === 'fabric_color') {
+            return $taxonomies;
+        }
+    }
+    $custom                    = new stdClass();
+    $custom->attribute_id      = 0;
+    $custom->attribute_name    = 'fabric_color';
+    $custom->attribute_label   = 'Цвет ткани';
+    $custom->attribute_type    = 'select';
+    $custom->attribute_orderby = 'menu_order';
+    $custom->attribute_public  = 1;
+    $taxonomies[] = $custom;
+    return $taxonomies;
+});
+
+/**
+ * Подменяем slug таксономии для fabric_color — чтобы WC не добавлял па_ префикс.
+ * По умолчанию wc_attribute_taxonomy_name('fabric_color') вернёт 'pa_fabric_color'.
+ */
+add_filter('woocommerce_attribute_taxonomy_slug', function ($slug, $name) {
+    if ($name === 'fabric_color') {
+        return 'fabric_color';
+    }
+    return $slug;
+}, 10, 2);
+
+/**
+ * Подтверждаем WC что fabric_color — известная таксономия атрибутов.
+ */
+add_filter('woocommerce_taxonomy_args_fabric_color', function ($args) {
+    return $args;
+});
 
 // ===== AJAX ADD TO CART =====
 function loraleya_ajax_add_to_cart() {
