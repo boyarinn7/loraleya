@@ -30,9 +30,9 @@ if (!class_exists('WooCommerce')) {
 }
 
 // ===== ПАРАМЕТР ЦВЕТА =====
-$color_slug = sanitize_title($_GET['color'] ?? 'biruza');
+$color_slug = sanitize_title($_GET['color'] ?? 'biryuza');
 if (empty($color_slug)) {
-    die('Укажите параметр color= в URL. Пример: ?color=biruza');
+    die('Укажите параметр color= в URL. Пример: ?color=biryuza');
 }
 
 $color_term = get_term_by('slug', $color_slug, 'fabric_color');
@@ -41,6 +41,15 @@ if (!$color_term) {
 }
 $color_term_id = $color_term->term_id;
 $color_name    = $color_term->name;
+
+// Сопоставление slug цвета → префикс имени файлов в медиатеке.
+// В LoraLeya slug'и и имена фото имеют разную транслитерацию — здесь мы их мапим.
+$photo_prefix_map = [
+    'biryuza'  => 'biruza',
+    'bezhevyj' => 'bezheviy',  // уточнить когда появятся фото
+    'bronza'   => 'bronza',    // совпадает
+];
+$photo_prefix = $photo_prefix_map[$color_slug] ?? $color_slug;
 
 // ===== КАТАЛОГ ТОВАРОВ =====
 $catalog = [
@@ -52,11 +61,11 @@ $catalog = [
         'category'          => 'Дорожки',
         'description'       => 'Жаккардовая дорожка на стол с характерным переливом. Изготавливается из 100% полиэстера.',
         'short_description' => '4 размера · жаккардовое плетение · 100% полиэстер',
-        'main_photo'        => $color_slug . '-dorozhka',
+        'main_photo'        => $photo_prefix . '-dorozhka',
         'gallery_photos'    => [
-            $color_slug . '-hero-servirovka',
-            $color_slug . '-macro-pereliv',
-            $color_slug . '-gallery-1',
+            $photo_prefix . '-hero-servirovka',
+            $photo_prefix . '-macro-pereliv',
+            $photo_prefix . '-gallery-1',
         ],
         'size_attribute'    => 'pa_razmer-dorozhki',
         'variants'          => [
@@ -74,10 +83,10 @@ $catalog = [
         'category'          => 'Скатерти',
         'description'       => 'Жаккардовая скатерть. Подходит для сервировки обычных и праздничных столов.',
         'short_description' => '3 размера · жаккардовое плетение · 100% полиэстер',
-        'main_photo'        => $color_slug . '-dorozhka',
+        'main_photo'        => $photo_prefix . '-dorozhka',
         'gallery_photos'    => [
-            $color_slug . '-hero-servirovka',
-            $color_slug . '-macro-faktura',
+            $photo_prefix . '-hero-servirovka',
+            $photo_prefix . '-macro-faktura',
         ],
         'size_attribute'    => 'pa_razmer-skaterti',
         'variants'          => [
@@ -94,11 +103,11 @@ $catalog = [
         'category'          => 'Салфетки',
         'description'       => 'Жаккардовая сервировочная салфетка 40×40 см. Продаётся поштучно.',
         'short_description' => '40 × 40 см · цена за 1 шт',
-        'main_photo'        => $color_slug . '-salfetka-tsvetok',
+        'main_photo'        => $photo_prefix . '-salfetka-tsvetok',
         'gallery_photos'    => [
-            $color_slug . '-salfetka-razvernutaya',
-            $color_slug . '-salfetka-koltso2',
-            $color_slug . '-macro-strochka',
+            $photo_prefix . '-salfetka-razvernutaya',
+            $photo_prefix . '-salfetka-koltso2',
+            $photo_prefix . '-macro-strochka',
         ],
         'price'             => 350,
         'regular_price'     => 410,
@@ -111,10 +120,10 @@ $catalog = [
         'category'          => 'Куверты',
         'description'       => 'Жаккардовый куверт для столовых приборов 9×24 см.',
         'short_description' => '9 × 24 см · цена за 1 шт',
-        'main_photo'        => $color_slug . '-kuvert',
+        'main_photo'        => $photo_prefix . '-kuvert',
         'gallery_photos'    => [
-            $color_slug . '-kuvert-reserve',
-            $color_slug . '-hero-detail',
+            $photo_prefix . '-kuvert-reserve',
+            $photo_prefix . '-hero-detail',
         ],
         'price'             => 250,
         'regular_price'     => 290,
@@ -127,11 +136,11 @@ $catalog = [
         'category'          => 'Готовые наборы',
         'description'       => 'Готовый комплект из дорожки, салфеток и кувертов. Выгоднее поштучных покупок на 15%.',
         'short_description' => 'Комплект сразу для сервировки',
-        'main_photo'        => $color_slug . '-nabor-4',
+        'main_photo'        => $photo_prefix . '-nabor-4',
         'gallery_photos'    => [
-            $color_slug . '-hero-servirovka',
-            $color_slug . '-gallery-1',
-            $color_slug . '-gallery-2',
+            $photo_prefix . '-hero-servirovka',
+            $photo_prefix . '-gallery-1',
+            $photo_prefix . '-gallery-2',
         ],
         'size_attribute'    => 'pa_razmer-nabora',
         'variants'          => [
