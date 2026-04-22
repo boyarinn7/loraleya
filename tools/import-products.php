@@ -487,11 +487,23 @@ foreach ($catalog as $item) {
             update_post_meta($variation_id, '_virtual',                         'no');
             update_post_meta($variation_id, 'attribute_fabric_color',           $color_slug);
             update_post_meta($variation_id, "attribute_{$attr_taxonomy}",       $size_slug);
+
+            // Привязать термины к самой вариации (нужно для таксономических атрибутов)
+            wp_set_object_terms($variation_id, [$color_slug], 'fabric_color');
+            wp_set_object_terms($variation_id, [$size_slug], $attr_taxonomy);
         }
 
-        // Синхронизировать цены родителя
+        // Синхронизировать цены и сток родителя
         WC_Product_Variable::sync($product_id);
+        WC_Product_Variable::sync_stock_status($product_id);
         wc_delete_product_transients($product_id);
+
+        // Принудительно instock у родителя (WC иногда ставит outofstock до первой продажи)
+        $parent = wc_get_product($product_id);
+        if ($parent && $parent->get_stock_status() !== 'instock') {
+            $parent->set_stock_status('instock');
+            $parent->save();
+        }
 
         $created_str = $variations_created > 0 ? "+{$variations_created} созданы" : '';
         $updated_str = $variations_updated > 0 ? "{$variations_updated} обновлены" : '';
