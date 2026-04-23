@@ -144,10 +144,11 @@ function loraleya_register_taxonomies() {
 add_action('init', 'loraleya_register_taxonomies');
 
 /**
- * Регистрируем fabric_color в WC как валидный атрибут вариаций, БЕЗ автоматического pa_ префикса.
+ * Регистрируем pa_fabric_color как WooCommerce атрибут товара.
  *
- * Используем фильтр woocommerce_attribute_taxonomies + переопределяем slug атрибута,
- * чтобы WC не добавлял pa_ и не создавал дубль pa_fabric_color.
+ * WC требует префикс pa_ для всех атрибутов, участвующих в вариациях.
+ * Фильтр woocommerce_attribute_taxonomies добавляет атрибут в реестр WC,
+ * что позволяет использовать его в вариативных товарах.
  */
 add_filter('woocommerce_attribute_taxonomies', function ($taxonomies) {
     foreach ($taxonomies as $t) {
@@ -167,20 +168,20 @@ add_filter('woocommerce_attribute_taxonomies', function ($taxonomies) {
 });
 
 /**
- * Подменяем slug таксономии для fabric_color — чтобы WC не добавлял па_ префикс.
- * По умолчанию wc_attribute_taxonomy_name('fabric_color') вернёт 'pa_fabric_color'.
+ * Переопределяем rewrite slug для pa_fabric_color: оставляем /color/{slug}/.
+ *
+ * Без этого фильтра WC подставит дефолтный slug от имени атрибута,
+ * и URL страницы цвета превратится в /pa_fabric_color/biryuza/ или аналогичный,
+ * что ломает внешние ссылки и внутреннюю навигацию (хлебные крошки, блок палитры).
  */
-add_filter('woocommerce_attribute_taxonomy_slug', function ($slug, $name) {
-    if ($name === 'fabric_color') {
-        return 'fabric_color';
-    }
-    return $slug;
-}, 10, 2);
-
-/**
- * Подтверждаем WC что fabric_color — известная таксономия атрибутов.
- */
-add_filter('woocommerce_taxonomy_args_fabric_color', function ($args) {
+add_filter('woocommerce_taxonomy_args_pa_fabric_color', function ($args) {
+    $args['rewrite'] = [
+        'slug'         => 'color',
+        'with_front'   => false,
+        'hierarchical' => false,
+    ];
+    $args['hierarchical'] = true;
+    $args['show_in_rest'] = true;
     return $args;
 });
 
