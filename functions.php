@@ -129,30 +129,6 @@ add_action('edited_pa_fabric_color', function($term_id) {
 
 
 /**
- * Регистрируем pa_fabric_color как WooCommerce атрибут товара.
- *
- * WC требует префикс pa_ для всех атрибутов, участвующих в вариациях.
- * Фильтр woocommerce_attribute_taxonomies добавляет атрибут в реестр WC,
- * что позволяет использовать его в вариативных товарах.
- */
-add_filter('woocommerce_attribute_taxonomies', function ($taxonomies) {
-    foreach ($taxonomies as $t) {
-        if ($t->attribute_name === 'fabric_color') {
-            return $taxonomies;
-        }
-    }
-    $custom                    = new stdClass();
-    $custom->attribute_id      = 0;
-    $custom->attribute_name    = 'fabric_color';
-    $custom->attribute_label   = 'Цвет ткани';
-    $custom->attribute_type    = 'select';
-    $custom->attribute_orderby = 'menu_order';
-    $custom->attribute_public  = 1;
-    $taxonomies[] = $custom;
-    return $taxonomies;
-});
-
-/**
  * Переопределяем rewrite slug для pa_fabric_color: оставляем /color/{slug}/.
  *
  * Без этого фильтра WC подставит дефолтный slug от имени атрибута,
