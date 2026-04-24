@@ -1,6 +1,6 @@
 <?php
 /**
- * Template: Страница цвета ткани (taxonomy: fabric_color)
+ * Template: Страница цвета ткани (taxonomy: pa_fabric_color)
  */
 
 $scenario_meta = [
@@ -572,7 +572,7 @@ get_header();
             <?php if ($is_current) : ?>
                 <span class="oc-link" style="background:<?php echo $oc['hex']; ?>;<?php echo $oc['border']; ?><?php echo $active_style; ?>" title="<?php echo esc_attr($oc['name']); ?>"></span>
             <?php else : ?>
-                <a class="oc-link" href="<?php echo home_url('/fabric_color/' . $oc['slug'] . '/'); ?>" style="background:<?php echo $oc['hex']; ?>;<?php echo $oc['border']; ?>" title="<?php echo esc_attr($oc['name']); ?>"></a>
+                <a class="oc-link" href="<?php echo home_url('/color/' . $oc['slug'] . '/'); ?>" style="background:<?php echo $oc['hex']; ?>;<?php echo $oc['border']; ?>" title="<?php echo esc_attr($oc['name']); ?>"></a>
             <?php endif; ?>
         <?php endforeach; ?>
     </div>

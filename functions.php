@@ -89,7 +89,7 @@ add_action('init', 'loraleya_register_post_types');
 
 // ===== FABRIC COLOR HEX FIELD =====
 // Поле при ДОБАВЛЕНИИ термина
-add_action('fabric_color_add_form_fields', function() {
+add_action('pa_fabric_color_add_form_fields', function() {
     ?>
     <div class="form-field">
         <label for="color_hex">HEX цвета</label>
@@ -100,7 +100,7 @@ add_action('fabric_color_add_form_fields', function() {
 });
 
 // Поле при РЕДАКТИРОВАНИИ термина
-add_action('fabric_color_edit_form_fields', function($term) {
+add_action('pa_fabric_color_edit_form_fields', function($term) {
     $hex = get_term_meta($term->term_id, 'color_hex', true);
     ?>
     <tr class="form-field">
@@ -114,34 +114,19 @@ add_action('fabric_color_edit_form_fields', function($term) {
 });
 
 // Сохранение при создании
-add_action('created_fabric_color', function($term_id) {
+add_action('created_pa_fabric_color', function($term_id) {
     if (isset($_POST['color_hex'])) {
         update_term_meta($term_id, 'color_hex', sanitize_text_field($_POST['color_hex']));
     }
 });
 
 // Сохранение при редактировании
-add_action('edited_fabric_color', function($term_id) {
+add_action('edited_pa_fabric_color', function($term_id) {
     if (isset($_POST['color_hex'])) {
         update_term_meta($term_id, 'color_hex', sanitize_text_field($_POST['color_hex']));
     }
 });
 
-// ===== CUSTOM TAXONOMY: Colors =====
-function loraleya_register_taxonomies() {
-    register_taxonomy('fabric_color', ['product'], [
-        'labels' => [
-            'name'          => 'Цвета ткани',
-            'singular_name' => 'Цвет ткани',
-            'add_new_item'  => 'Добавить цвет',
-        ],
-        'public'       => true,
-        'hierarchical' => true,
-        'rewrite'      => ['slug' => 'color'],
-        'show_in_rest' => true,
-    ]);
-}
-add_action('init', 'loraleya_register_taxonomies');
 
 /**
  * Регистрируем pa_fabric_color как WooCommerce атрибут товара.

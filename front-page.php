@@ -91,7 +91,7 @@ get_header();
 
         <div class="colors-wheel">
             <?php
-            $colors = get_terms(['taxonomy' => 'fabric_color', 'hide_empty' => false]);
+            $colors = get_terms(['taxonomy' => 'pa_fabric_color', 'hide_empty' => false]);
             if (!empty($colors) && !is_wp_error($colors)) :
                 foreach ($colors as $color) :
                     $hex = get_term_meta($color->term_id, 'color_hex', true) ?: '#888';
