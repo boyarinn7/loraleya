@@ -30,6 +30,8 @@
     </div>
 </footer>
 
+<?php get_template_part('cart-widget'); ?>
+
 <?php wp_footer(); ?>
 </body>
 </html>

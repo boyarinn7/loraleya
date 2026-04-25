@@ -339,7 +339,10 @@ get_header();
     <div class="sec-t">Выгоднее на 15% — всё в одном цвете</div>
     <div class="sec-d">Комплект сразу готов к сервировке. Выберите размер под свой стол.</div>
     <div class="sets-grid">
-        <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-4'); ?>
+        <?php
+        $item_map   = loraleya_build_item_map($slug);
+        $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-4');
+        ?>
 
         <div class="set">
             <?php if ($nabor_photo) : ?><div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор <?php echo esc_attr($color['name']); ?>" loading="lazy" style="width:100%;height:auto;margin-bottom:1rem;border:1px solid rgba(197,165,90,.06)"></div><?php endif; ?>
@@ -351,7 +354,13 @@ get_header();
                     <span class="set-old">3 290 ₽</span>
                     <span class="set-new">2 790 ₽</span>
                 </div>
-                <button class="btn-set" data-item="Набор 4п/140">В корзину</button>
+                <?php $bi = $item_map['Набор 4п/140'] ?? null; ?>
+                <button
+                    class="btn-set"
+                    data-item="Набор 4п/140"
+                    data-product-id="<?php echo (int)($bi['product_id'] ?? 0); ?>"
+                    data-variation-id="<?php echo (int)($bi['variation_id'] ?? 0); ?>"
+                >В корзину</button>
             </div>
         </div>
 
@@ -365,7 +374,13 @@ get_header();
                     <span class="set-old">3 490 ₽</span>
                     <span class="set-new">2 970 ₽</span>
                 </div>
-                <button class="btn-set" data-item="Набор 4п/175">В корзину</button>
+                <?php $bi = $item_map['Набор 4п/175'] ?? null; ?>
+                <button
+                    class="btn-set"
+                    data-item="Набор 4п/175"
+                    data-product-id="<?php echo (int)($bi['product_id'] ?? 0); ?>"
+                    data-variation-id="<?php echo (int)($bi['variation_id'] ?? 0); ?>"
+                >В корзину</button>
             </div>
         </div>
 
@@ -379,7 +394,13 @@ get_header();
                     <span class="set-old">4 490 ₽</span>
                     <span class="set-new">3 820 ₽</span>
                 </div>
-                <button class="btn-set" data-item="Набор 6п/140">В корзину</button>
+                <?php $bi = $item_map['Набор 6п/240'] ?? null; ?>
+                <button
+                    class="btn-set"
+                    data-item="Набор 6п/240"
+                    data-product-id="<?php echo (int)($bi['product_id'] ?? 0); ?>"
+                    data-variation-id="<?php echo (int)($bi['variation_id'] ?? 0); ?>"
+                >В корзину</button>
             </div>
         </div>
 
@@ -393,7 +414,13 @@ get_header();
                     <span class="set-old">4 690 ₽</span>
                     <span class="set-new">3 990 ₽</span>
                 </div>
-                <button class="btn-set" data-item="Набор 6п/175">В корзину</button>
+                <?php $bi = $item_map['Набор 6п/175'] ?? null; ?>
+                <button
+                    class="btn-set"
+                    data-item="Набор 6п/175"
+                    data-product-id="<?php echo (int)($bi['product_id'] ?? 0); ?>"
+                    data-variation-id="<?php echo (int)($bi['variation_id'] ?? 0); ?>"
+                >В корзину</button>
             </div>
         </div>
 
@@ -472,12 +499,15 @@ get_header();
                         $v_num = isset($vm[1]) ? (int) str_replace(' ', '', $vm[1]) : 0;
                         $v_old = $v_num > 0 ? round($v_num / 0.85 / 10) * 10 : 0;
                     ?>
+                        <?php $bi_v = $item_map[$v['item']] ?? null; ?>
                         <button
                             class="prod-size-btn<?php echo $i === $default ? ' is-active' : ''; ?>"
                             data-size="<?php echo esc_attr($v['size']); ?>"
                             data-price="<?php echo esc_attr($v['price']); ?>"
                             data-price-old="<?php echo $v_old > 0 ? number_format($v_old, 0, '.', ' ') . ' ₽' : ''; ?>"
                             data-item="<?php echo esc_attr($v['item']); ?>"
+                            data-product-id="<?php echo (int)($bi_v['product_id'] ?? 0); ?>"
+                            data-variation-id="<?php echo (int)($bi_v['variation_id'] ?? 0); ?>"
                             type="button"
                         ><?php echo esc_html($v['label']); ?></button>
                     <?php endforeach; ?>
@@ -502,7 +532,13 @@ get_header();
                     <?php endif; ?>
                     <span class="prod-price-now"><?php echo number_format($price_num, 0, '.', ' '); ?> ₽<?php echo $suffix; ?></span>
                 </div>
-                <button class="btn-prod" data-item="<?php echo esc_attr($current['item']); ?>">В корзину</button>
+                <?php $bi = $item_map[$current['item']] ?? null; ?>
+                <button
+                    class="btn-prod"
+                    data-item="<?php echo esc_attr($current['item']); ?>"
+                    data-product-id="<?php echo (int)($bi['product_id'] ?? 0); ?>"
+                    data-variation-id="<?php echo (int)($bi['variation_id'] ?? 0); ?>"
+                >В корзину</button>
             </div>
         </div>
         <?php endforeach; ?>
@@ -578,14 +614,5 @@ get_header();
     </div>
 </section>
 
-<!-- 9. STICKY BAR -->
-<div class="sticky-bar" id="stickyBar">
-    <div class="sb-info">
-        <div class="sb-dot" style="background:<?php echo $color['hex']; ?>"></div>
-        <span class="sb-text"><?php echo esc_html($color['name']); ?></span>
-        <span class="sb-total" id="sbTotal">0 ₽</span>
-    </div>
-    <button class="sb-btn" id="sbBtn">Оформить заказ →</button>
-</div>
 
 <?php get_footer(); ?>
