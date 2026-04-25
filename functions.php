@@ -177,7 +177,7 @@ function loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_
 
         $attrs = $variation->get_variation_attributes();
         $matches_color = ($attrs['attribute_pa_fabric_color'] ?? '') === $color_slug;
-        $matches_size  = ($attrs[$size_attr_key] ?? '') === $size_slug;
+        $matches_size  = urldecode($attrs[$size_attr_key] ?? '') === $size_slug;
 
         if ($matches_color && $matches_size) {
             return $variation_id;
@@ -208,11 +208,10 @@ function loraleya_build_item_map($color_slug) {
         'Салфетка'      => [48, null,     null],
         'Куверт'        => [49, null,     null],
         // Готовые наборы (variable, product_id = 50)
-        // Slug-и в БД хранятся URL-encoded: '4п-140' → '4%d0%bf-140' (где %d0%bf = URL-кодированная буква 'п')
-        'Набор 4п/140'  => [50, '4%d0%bf-140', 'razmer-nabora'],
-        'Набор 4п/175'  => [50, '4%d0%bf-175', 'razmer-nabora'],
-        'Набор 6п/240'  => [50, '6%d0%bf-140', 'razmer-nabora'],
-        'Набор 6п/175'  => [50, '6%d0%bf-175', 'razmer-nabora'],
+        'Набор 4п/140'  => [50, '4п-140', 'razmer-nabora'],
+        'Набор 4п/175'  => [50, '4п-175', 'razmer-nabora'],
+        'Набор 6п/240'  => [50, '6п-140', 'razmer-nabora'],
+        'Набор 6п/175'  => [50, '6п-175', 'razmer-nabora'],
     ];
 
     $map = [];
@@ -251,7 +250,8 @@ function loraleya_ajax_add_to_cart() {
     $variation = [];
     if (!empty($_POST['variation']) && is_array($_POST['variation'])) {
         foreach ($_POST['variation'] as $key => $val) {
-            $variation[sanitize_text_field($key)] = sanitize_text_field($val);
+            // Декодируем slug если он пришёл URL-encoded (4%d0%bf-140 → 4п-140)
+            $variation[sanitize_text_field($key)] = sanitize_text_field(urldecode($val));
         }
     }
 
