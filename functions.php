@@ -89,7 +89,7 @@ add_action('init', 'loraleya_register_post_types');
 
 // ===== FABRIC COLOR HEX FIELD =====
 // Поле при ДОБАВЛЕНИИ термина
-add_action('fabric_color_add_form_fields', function() {
+add_action('pa_fabric_color_add_form_fields', function() {
     ?>
     <div class="form-field">
         <label for="color_hex">HEX цвета</label>
@@ -100,7 +100,7 @@ add_action('fabric_color_add_form_fields', function() {
 });
 
 // Поле при РЕДАКТИРОВАНИИ термина
-add_action('fabric_color_edit_form_fields', function($term) {
+add_action('pa_fabric_color_edit_form_fields', function($term) {
     $hex = get_term_meta($term->term_id, 'color_hex', true);
     ?>
     <tr class="form-field">
@@ -114,73 +114,35 @@ add_action('fabric_color_edit_form_fields', function($term) {
 });
 
 // Сохранение при создании
-add_action('created_fabric_color', function($term_id) {
+add_action('created_pa_fabric_color', function($term_id) {
     if (isset($_POST['color_hex'])) {
         update_term_meta($term_id, 'color_hex', sanitize_text_field($_POST['color_hex']));
     }
 });
 
 // Сохранение при редактировании
-add_action('edited_fabric_color', function($term_id) {
+add_action('edited_pa_fabric_color', function($term_id) {
     if (isset($_POST['color_hex'])) {
         update_term_meta($term_id, 'color_hex', sanitize_text_field($_POST['color_hex']));
     }
 });
 
-// ===== CUSTOM TAXONOMY: Colors =====
-function loraleya_register_taxonomies() {
-    register_taxonomy('fabric_color', ['product'], [
-        'labels' => [
-            'name'          => 'Цвета ткани',
-            'singular_name' => 'Цвет ткани',
-            'add_new_item'  => 'Добавить цвет',
-        ],
-        'public'       => true,
-        'hierarchical' => true,
-        'rewrite'      => ['slug' => 'color'],
-        'show_in_rest' => true,
-    ]);
-}
-add_action('init', 'loraleya_register_taxonomies');
 
 /**
- * Регистрируем fabric_color в WC как валидный атрибут вариаций, БЕЗ автоматического pa_ префикса.
+ * Переопределяем rewrite slug для pa_fabric_color: оставляем /color/{slug}/.
  *
- * Используем фильтр woocommerce_attribute_taxonomies + переопределяем slug атрибута,
- * чтобы WC не добавлял pa_ и не создавал дубль pa_fabric_color.
+ * Без этого фильтра WC подставит дефолтный slug от имени атрибута,
+ * и URL страницы цвета превратится в /pa_fabric_color/biryuza/ или аналогичный,
+ * что ломает внешние ссылки и внутреннюю навигацию (хлебные крошки, блок палитры).
  */
-add_filter('woocommerce_attribute_taxonomies', function ($taxonomies) {
-    foreach ($taxonomies as $t) {
-        if ($t->attribute_name === 'fabric_color') {
-            return $taxonomies;
-        }
-    }
-    $custom                    = new stdClass();
-    $custom->attribute_id      = 0;
-    $custom->attribute_name    = 'fabric_color';
-    $custom->attribute_label   = 'Цвет ткани';
-    $custom->attribute_type    = 'select';
-    $custom->attribute_orderby = 'menu_order';
-    $custom->attribute_public  = 1;
-    $taxonomies[] = $custom;
-    return $taxonomies;
-});
-
-/**
- * Подменяем slug таксономии для fabric_color — чтобы WC не добавлял па_ префикс.
- * По умолчанию wc_attribute_taxonomy_name('fabric_color') вернёт 'pa_fabric_color'.
- */
-add_filter('woocommerce_attribute_taxonomy_slug', function ($slug, $name) {
-    if ($name === 'fabric_color') {
-        return 'fabric_color';
-    }
-    return $slug;
-}, 10, 2);
-
-/**
- * Подтверждаем WC что fabric_color — известная таксономия атрибутов.
- */
-add_filter('woocommerce_taxonomy_args_fabric_color', function ($args) {
+add_filter('woocommerce_taxonomy_args_pa_fabric_color', function ($args) {
+    $args['rewrite'] = [
+        'slug'         => 'color',
+        'with_front'   => false,
+        'hierarchical' => false,
+    ];
+    $args['hierarchical'] = true;
+    $args['show_in_rest'] = true;
     return $args;
 });
 

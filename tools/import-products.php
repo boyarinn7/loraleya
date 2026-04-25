@@ -35,9 +35,9 @@ if (empty($color_slug)) {
     die('Укажите параметр color= в URL. Пример: ?color=biryuza');
 }
 
-$color_term = get_term_by('slug', $color_slug, 'fabric_color');
+$color_term = get_term_by('slug', $color_slug, 'pa_fabric_color');
 if (!$color_term) {
-    die("Термин «{$color_slug}» не найден в таксономии fabric_color. Проверьте slug в Товары → Цвета ткани.");
+    die("Термин «{$color_slug}» не найден в таксономии pa_fabric_color. Проверьте slug в Товары → Цвета ткани.");
 }
 $color_term_id = $color_term->term_id;
 $color_name    = $color_term->name;
@@ -324,8 +324,8 @@ foreach ($catalog as $item) {
         $report_warnings[] = "Товар «{$item['name']}»: категория «{$item['category']}» не найдена";
     }
 
-    // --- 2.4. Цвет (fabric_color) — append=true, не перезаписывает существующие ---
-    wp_set_object_terms($product_id, [$color_term_id], 'fabric_color', true);
+    // --- 2.4. Цвет (pa_fabric_color) — append=true, не перезаписывает существующие ---
+    wp_set_object_terms($product_id, [$color_term_id], 'pa_fabric_color', true);
     echo "<li class='ok'>✓ Цвет привязан: «{$color_name}» (term_id: {$color_term_id})</li>";
 
     // --- 2.5. Фото ---
@@ -407,12 +407,12 @@ foreach ($catalog as $item) {
         }
 
         // Привязать цвет к родителю
-        wp_set_object_terms($product_id, [$color_slug], 'fabric_color', true);
+        wp_set_object_terms($product_id, [$color_slug], 'pa_fabric_color', true);
 
         // Сохранить _product_attributes
         $product_attributes = [
-            'fabric_color' => [
-                'name'         => 'fabric_color',
+            'pa_fabric_color' => [
+                'name'         => 'pa_fabric_color',
                 'value'        => '',
                 'position'     => 0,
                 'is_visible'   => 1,
@@ -448,7 +448,7 @@ foreach ($catalog as $item) {
                 'fields'      => 'ids',
             ]);
             foreach ($children as $child_id) {
-                $meta_color = get_post_meta($child_id, 'attribute_fabric_color', true);
+                $meta_color = get_post_meta($child_id, 'attribute_pa_fabric_color', true);
                 $meta_size  = get_post_meta($child_id, "attribute_{$attr_taxonomy}", true);
                 if ($meta_color === $color_slug && $meta_size === $size_slug) {
                     $existing_variation_id = $child_id;
@@ -485,11 +485,11 @@ foreach ($catalog as $item) {
             update_post_meta($variation_id, '_manage_stock',                    'no');
             update_post_meta($variation_id, '_stock_status',                    'instock');
             update_post_meta($variation_id, '_virtual',                         'no');
-            update_post_meta($variation_id, 'attribute_fabric_color',           $color_slug);
+            update_post_meta($variation_id, 'attribute_pa_fabric_color',        $color_slug);
             update_post_meta($variation_id, "attribute_{$attr_taxonomy}",       $size_slug);
 
             // Привязать термины к самой вариации (нужно для таксономических атрибутов)
-            wp_set_object_terms($variation_id, [$color_slug], 'fabric_color');
+            wp_set_object_terms($variation_id, [$color_slug], 'pa_fabric_color');
             wp_set_object_terms($variation_id, [$size_slug], $attr_taxonomy);
         }
 
@@ -560,7 +560,7 @@ foreach ($catalog as $item) {
 <ul>
     <li><a href="<?php echo get_admin_url(null, 'edit.php?post_type=product'); ?>" target="_blank">Все товары в админке</a></li>
     <li><a href="<?php echo get_admin_url(null, 'edit-tags.php?taxonomy=product_cat&post_type=product'); ?>" target="_blank">Категории товаров</a></li>
-    <li><a href="<?php echo get_admin_url(null, 'edit-tags.php?taxonomy=fabric_color&post_type=product'); ?>" target="_blank">Цвета ткани</a></li>
+    <li><a href="<?php echo get_admin_url(null, 'edit-tags.php?taxonomy=pa_fabric_color&post_type=product'); ?>" target="_blank">Цвета ткани</a></li>
     <li><a href="<?php echo site_url('/shop/'); ?>" target="_blank">Магазин на фронте</a></li>
 </ul>
 
