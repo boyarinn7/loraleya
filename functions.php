@@ -310,17 +310,32 @@ function loraleya_ajax_get_cart() {
     $items = [];
     foreach (WC()->cart->get_cart() as $cart_key => $cart_item) {
         $product = $cart_item['data'];
+
+        // Собрать человеческие названия атрибутов вариации
+        $variation_labels = [];
+        if (!empty($cart_item['variation']) && is_array($cart_item['variation'])) {
+            foreach ($cart_item['variation'] as $attr_key => $attr_value) {
+                // attr_key вида 'attribute_pa_fabric_color' → таксономия 'pa_fabric_color'
+                $taxonomy = str_replace('attribute_', '', $attr_key);
+                // Декодируем slug если он URL-encoded ('4%d0%bf-140' → '4п-140')
+                $term_slug = urldecode($attr_value);
+                $term = get_term_by('slug', $term_slug, $taxonomy);
+                $variation_labels[] = $term ? $term->name : $attr_value;
+            }
+        }
+
         $items[] = [
-            'cart_key'     => $cart_key,
-            'product_id'   => $cart_item['product_id'],
-            'variation_id' => $cart_item['variation_id'],
-            'name'         => $product->get_name(),
-            'price'        => wc_price($product->get_price()),
-            'price_raw'    => $product->get_price(),
-            'quantity'     => $cart_item['quantity'],
-            'subtotal'     => wc_price($product->get_price() * $cart_item['quantity']),
-            'image'        => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail'),
-            'variation'    => $cart_item['variation'] ?? [],
+            'cart_key'         => $cart_key,
+            'product_id'       => $cart_item['product_id'],
+            'variation_id'     => $cart_item['variation_id'],
+            'name'             => $product->get_name(),
+            'price'            => wc_price($product->get_price()),
+            'price_raw'        => $product->get_price(),
+            'quantity'         => $cart_item['quantity'],
+            'subtotal'         => wc_price($product->get_price() * $cart_item['quantity']),
+            'image'            => wp_get_attachment_image_url($product->get_image_id(), 'thumbnail'),
+            'variation'        => $cart_item['variation'] ?? [],
+            'variation_labels' => $variation_labels,
         ];
     }
 

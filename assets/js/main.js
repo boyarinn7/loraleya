@@ -466,8 +466,8 @@ document.addEventListener('DOMContentLoaded', function() {
         items.forEach(function(item) {
             var imgSrc = item.image || '';
             var variationText = '';
-            if (item.variation && Object.keys(item.variation).length > 0) {
-                variationText = Object.values(item.variation).filter(Boolean).join(' · ');
+            if (item.variation_labels && item.variation_labels.length > 0) {
+                variationText = item.variation_labels.join(' · ');
             }
 
             html += '<div class="ll-cart-item" data-cart-key="' + escapeHtml(item.cart_key) + '">';
