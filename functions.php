@@ -208,10 +208,11 @@ function loraleya_build_item_map($color_slug) {
         'Салфетка'      => [48, null,     null],
         'Куверт'        => [49, null,     null],
         // Готовые наборы (variable, product_id = 50)
-        'Набор 4п/140'  => [50, '4п-140', 'razmer-nabora'],
-        'Набор 4п/175'  => [50, '4п-175', 'razmer-nabora'],
-        'Набор 6п/240'  => [50, '6п-140', 'razmer-nabora'],
-        'Набор 6п/175'  => [50, '6п-175', 'razmer-nabora'],
+        // Slug-и в БД хранятся URL-encoded: '4п-140' → '4%d0%bf-140' (где %d0%bf = URL-кодированная буква 'п')
+        'Набор 4п/140'  => [50, '4%d0%bf-140', 'razmer-nabora'],
+        'Набор 4п/175'  => [50, '4%d0%bf-175', 'razmer-nabora'],
+        'Набор 6п/240'  => [50, '6%d0%bf-140', 'razmer-nabora'],
+        'Набор 6п/175'  => [50, '6%d0%bf-175', 'razmer-nabora'],
     ];
 
     $map = [];
