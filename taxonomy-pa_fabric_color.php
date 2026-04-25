@@ -614,14 +614,5 @@ get_header();
     </div>
 </section>
 
-<!-- 9. STICKY BAR -->
-<div class="sticky-bar" id="stickyBar">
-    <div class="sb-info">
-        <div class="sb-dot" style="background:<?php echo $color['hex']; ?>"></div>
-        <span class="sb-text"><?php echo esc_html($color['name']); ?></span>
-        <span class="sb-total" id="sbTotal">0 ₽</span>
-    </div>
-    <button class="sb-btn" id="sbBtn">Оформить заказ →</button>
-</div>
 
 <?php get_footer(); ?>

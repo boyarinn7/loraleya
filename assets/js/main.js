@@ -321,16 +321,6 @@ document.addEventListener('DOMContentLoaded', function() {
         observer.observe(el);
     });
 
-    // ===== COLOR PAGE =====
-    if (document.querySelector('.color-hero')) {
-
-        var sbBtn = document.getElementById('sbBtn');
-        if (sbBtn) {
-            sbBtn.addEventListener('click', function() {
-                sbBtn.textContent = 'Переход в корзину...';
-            });
-        }
-    }
 
     // Product size tabs
     document.querySelectorAll('.prod--variants').forEach(function(card) {
