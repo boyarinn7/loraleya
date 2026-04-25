@@ -53,6 +53,14 @@ function loraleya_scripts() {
         'nonce'    => wp_create_nonce('loraleya_nonce'),
         'cart_url' => wc_get_cart_url(),
     ]);
+
+    // Передать item-map для страницы цвета
+    if (is_tax('pa_fabric_color')) {
+        $color_term = get_queried_object();
+        if ($color_term && !is_wp_error($color_term)) {
+            wp_localize_script('loraleya-main', 'LORALEYA_ITEM_MAP', loraleya_build_item_map($color_term->slug));
+        }
+    }
 }
 add_action('wp_enqueue_scripts', 'loraleya_scripts');
 
@@ -145,6 +153,89 @@ add_filter('woocommerce_taxonomy_args_pa_fabric_color', function ($args) {
     $args['show_in_rest'] = true;
     return $args;
 });
+
+// ===== HELPERS =====
+
+/**
+ * Найти variation_id по комбинации цвета и размера.
+ *
+ * @param int    $product_id     ID родительского вариативного товара
+ * @param string $color_slug     slug термина pa_fabric_color (например 'biryuza')
+ * @param string $size_slug      slug термина размера (например '140' или '4p-140')
+ * @param string $size_taxonomy  имя таксономии размера БЕЗ префикса pa_ (razmer-dorozhki/razmer-skaterti/razmer-nabora)
+ * @return int variation_id или 0 если не найдено
+ */
+function loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_taxonomy) {
+    $product = wc_get_product($product_id);
+    if (!$product || !$product->is_type('variable')) return 0;
+
+    $size_attr_key = 'attribute_pa_' . $size_taxonomy;
+
+    foreach ($product->get_children() as $variation_id) {
+        $variation = wc_get_product($variation_id);
+        if (!$variation) continue;
+
+        $attrs = $variation->get_variation_attributes();
+        $matches_color = ($attrs['attribute_pa_fabric_color'] ?? '') === $color_slug;
+        $matches_size  = ($attrs[$size_attr_key] ?? '') === $size_slug;
+
+        if ($matches_color && $matches_size) {
+            return $variation_id;
+        }
+    }
+    return 0;
+}
+
+/**
+ * Карта data-item → WC сущности для страницы цвета.
+ * Используется в taxonomy-pa_fabric_color.php при рендере + локализуется в JS.
+ *
+ * @param string $color_slug текущий цвет (slug термина pa_fabric_color)
+ * @return array data-item => ['product_id' => int, 'variation_id' => int, 'attrs' => array]
+ */
+function loraleya_build_item_map($color_slug) {
+    $items = [
+        // Дорожки (variable, product_id = 39)
+        'Дорожка 140'   => [39, '140',    'razmer-dorozhki'],
+        'Дорожка 175'   => [39, '175',    'razmer-dorozhki'],
+        'Дорожка 240'   => [39, '240',    'razmer-dorozhki'],
+        'Дорожка 300'   => [39, '300',    'razmer-dorozhki'],
+        // Скатерти (variable, product_id = 44)
+        'Скатерть 175'  => [44, '175',    'razmer-skaterti'],
+        'Скатерть 220'  => [44, '220',    'razmer-skaterti'],
+        'Скатерть 240'  => [44, '240',    'razmer-skaterti'],
+        // Простые (simple, без variation)
+        'Салфетка'      => [48, null,     null],
+        'Куверт'        => [49, null,     null],
+        // Готовые наборы (variable, product_id = 50)
+        'Набор 4п/140'  => [50, '4p-140', 'razmer-nabora'],
+        'Набор 4п/175'  => [50, '4p-175', 'razmer-nabora'],
+        'Набор 6п/240'  => [50, '6p-140', 'razmer-nabora'],
+        'Набор 6п/175'  => [50, '6p-175', 'razmer-nabora'],
+    ];
+
+    $map = [];
+    foreach ($items as $data_item => [$product_id, $size_slug, $size_taxonomy]) {
+        if ($size_slug === null) {
+            $map[$data_item] = [
+                'product_id'   => $product_id,
+                'variation_id' => 0,
+                'attrs'        => new stdClass(),
+            ];
+        } else {
+            $variation_id = loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_taxonomy);
+            $map[$data_item] = [
+                'product_id'   => $product_id,
+                'variation_id' => $variation_id,
+                'attrs'        => [
+                    'attribute_pa_fabric_color'      => $color_slug,
+                    'attribute_pa_' . $size_taxonomy => $size_slug,
+                ],
+            ];
+        }
+    }
+    return $map;
+}
 
 // ===== AJAX ADD TO CART =====
 function loraleya_ajax_add_to_cart() {
