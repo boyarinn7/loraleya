@@ -364,3 +364,182 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
 });
+
+// === CART WIDGET (icon + modal) ===
+(function() {
+    var fab, fabBadge, modal, modalBody, modalFooter, modalTotal;
+
+    function $(sel) { return document.querySelector(sel); }
+
+    function init() {
+        fab         = $('#llCartFab');
+        fabBadge    = $('#llCartFabBadge');
+        modal       = $('#llCartModal');
+        modalBody   = $('#llCartModalBody');
+        modalFooter = $('#llCartModalFooter');
+        modalTotal  = $('#llCartModalTotal');
+
+        if (!fab || !modal) return;
+
+        fab.addEventListener('click', openModal);
+
+        modal.addEventListener('click', function(e) {
+            if (e.target.matches('[data-close]')) closeModal();
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('is-open')) closeModal();
+        });
+
+        document.addEventListener('loraleya:cart-updated', function(e) {
+            updateBadge(e.detail && e.detail.cart_count);
+        });
+
+        fetchCount();
+    }
+
+    function fetchCount() {
+        var body = new URLSearchParams();
+        body.append('action', 'loraleya_get_cart');
+        body.append('nonce', loraleya.nonce);
+
+        fetch(loraleya.ajax_url, { method: 'POST', body: body })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) updateBadge(res.data.cart_count);
+            });
+    }
+
+    function updateBadge(count) {
+        count = parseInt(count, 10) || 0;
+        fab.dataset.count = count;
+        if (count > 0) {
+            fabBadge.textContent = count;
+            fabBadge.removeAttribute('hidden');
+        } else {
+            fabBadge.setAttribute('hidden', '');
+        }
+    }
+
+    function openModal() {
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        loadCart();
+    }
+
+    function closeModal() {
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+    }
+
+    function loadCart() {
+        modalBody.innerHTML = '<div class="ll-cart-modal__empty">Загрузка…</div>';
+        modalFooter.setAttribute('hidden', '');
+
+        var body = new URLSearchParams();
+        body.append('action', 'loraleya_get_cart');
+        body.append('nonce', loraleya.nonce);
+
+        fetch(loraleya.ajax_url, { method: 'POST', body: body })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) renderCart(res.data);
+            })
+            .catch(function() {
+                modalBody.innerHTML = '<div class="ll-cart-modal__empty">Ошибка загрузки</div>';
+            });
+    }
+
+    function renderCart(data) {
+        var items = (data && data.items) || [];
+
+        if (items.length === 0) {
+            modalBody.innerHTML = '<div class="ll-cart-modal__empty">Корзина пуста</div>';
+            modalFooter.setAttribute('hidden', '');
+            updateBadge(0);
+            return;
+        }
+
+        var html = '';
+        items.forEach(function(item) {
+            var imgSrc = item.image || '';
+            var variationText = '';
+            if (item.variation && Object.keys(item.variation).length > 0) {
+                variationText = Object.values(item.variation).filter(Boolean).join(' · ');
+            }
+
+            html += '<div class="ll-cart-item" data-cart-key="' + escapeHtml(item.cart_key) + '">';
+            html += '  <img class="ll-cart-item__img" src="' + escapeHtml(imgSrc) + '" alt="">';
+            html += '  <div class="ll-cart-item__info">';
+            html += '    <div class="ll-cart-item__name">' + escapeHtml(item.name) + '</div>';
+            if (variationText) {
+                html += '    <div class="ll-cart-item__variation">' + escapeHtml(variationText) + '</div>';
+            }
+            html += '  </div>';
+            html += '  <div class="ll-cart-item__controls">';
+            html += '    <div class="ll-cart-item__price">' + item.subtotal + '</div>';
+            html += '    <div class="ll-cart-item__qty">';
+            html += '      <button type="button" data-act="dec" aria-label="Минус">−</button>';
+            html += '      <span>' + item.quantity + '</span>';
+            html += '      <button type="button" data-act="inc" aria-label="Плюс">+</button>';
+            html += '    </div>';
+            html += '  </div>';
+            html += '</div>';
+        });
+
+        modalBody.innerHTML = html;
+        modalTotal.innerHTML = data.cart_total;
+        modalFooter.removeAttribute('hidden');
+        updateBadge(data.cart_count);
+
+        modalBody.querySelectorAll('.ll-cart-item__qty button').forEach(function(btn) {
+            btn.addEventListener('click', handleQtyClick);
+        });
+    }
+
+    function handleQtyClick(e) {
+        var btn = e.currentTarget;
+        var item = btn.closest('.ll-cart-item');
+        var cartKey = item.dataset.cartKey;
+        var qtySpan = item.querySelector('.ll-cart-item__qty span');
+        var current = parseInt(qtySpan.textContent, 10);
+        var newQty = btn.dataset.act === 'inc' ? current + 1 : Math.max(0, current - 1);
+
+        item.querySelectorAll('button').forEach(function(b) { b.disabled = true; });
+
+        var body = new URLSearchParams();
+        body.append('action', 'loraleya_update_cart_item');
+        body.append('nonce', loraleya.nonce);
+        body.append('cart_key', cartKey);
+        body.append('quantity', newQty);
+
+        fetch(loraleya.ajax_url, { method: 'POST', body: body })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (res.success) {
+                    loadCart();
+                    document.dispatchEvent(new CustomEvent('loraleya:cart-updated', { detail: res.data }));
+                } else {
+                    item.querySelectorAll('button').forEach(function(b) { b.disabled = false; });
+                }
+            })
+            .catch(function() {
+                item.querySelectorAll('button').forEach(function(b) { b.disabled = false; });
+            });
+    }
+
+    function escapeHtml(str) {
+        if (str == null) return '';
+        return String(str).replace(/[&<>"']/g, function(c) {
+            return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
+})();
