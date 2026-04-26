@@ -1806,16 +1806,47 @@ h4 { font-size: 1.1rem; }
     font-weight: 400;
 }
 
+/* === Color page hero — asymmetric layout === */
 .chc-right {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 0.628fr;
     gap: 0.4rem;
-    aspect-ratio: 1;
+    align-items: stretch;
 }
 
-.chc-img {
+.chc-main {
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
     background: var(--bg3);
     border: 1px solid rgba(106,58,122,.08);
+    position: relative;
+}
+
+.chc-side {
+    display: grid;
+    grid-template-rows: 1fr 0.5625fr;
+    gap: 0.4rem;
+}
+
+.chc-detail {
+    aspect-ratio: 3 / 4;
+    overflow: hidden;
+    background: var(--bg3);
+    border: 1px solid rgba(106,58,122,.08);
+    position: relative;
+}
+
+.chc-kuvert {
+    aspect-ratio: 4 / 3;
+    overflow: hidden;
+    background: var(--bg3);
+    border: 1px solid rgba(106,58,122,.08);
+    position: relative;
+}
+
+.chc-ph {
+    position: absolute;
+    inset: 0;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1825,11 +1856,6 @@ h4 { font-size: 1.1rem; }
     letter-spacing: 0.1em;
     text-transform: uppercase;
     padding: 0.5rem;
-}
-
-.chc-img:first-child {
-    grid-column: 1 / 3;
-    aspect-ratio: 2 / 1;
 }
 
 /* Video placeholder */
@@ -2267,7 +2293,9 @@ h4 { font-size: 1.1rem; }
 }
 
 
-.chc-img img,
+.chc-main img,
+.chc-detail img,
+.chc-kuvert img,
 .macro-item img,
 .prod-img img {
     width: 100%;
@@ -2304,9 +2332,27 @@ h4 { font-size: 1.1rem; }
 .sets-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* Color page hero — mobile column */
 @media (max-width: 640px) {
-    .chc-right { grid-template-columns: 1fr; }
-    .chc-img:first-child { grid-column: 1; }
+    .chc-right {
+        grid-template-columns: 1fr;
+        gap: 0.6rem;
+    }
+    .chc-side {
+        display: contents;
+    }
+    .chc-main {
+        order: 1;
+    }
+    .chc-kuvert {
+        order: 2;
+    }
+    .chc-detail {
+        order: 3;
+    }
+}
+
+@media (max-width: 640px) {
     .products { grid-template-columns: 1fr; }
     .sets-grid { grid-template-columns: 1fr; }
 }

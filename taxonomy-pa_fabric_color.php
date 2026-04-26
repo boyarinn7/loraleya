@@ -300,25 +300,36 @@ get_header();
         </div>
         <div class="chc-right">
             <?php
-            $hero_main    = loraleya_color_photo($upload_url, $photo_prefix, 'hero-servirovka');
-            $hero_faktura = loraleya_color_photo($upload_url, $photo_prefix, 'kuvert');
-            $hero_detail  = loraleya_color_photo($upload_url, $photo_prefix, 'hero-detail');
+            $hero_main   = loraleya_color_photo($upload_url, $photo_prefix, 'hero-servirovka');
+            $hero_kuvert = loraleya_color_photo($upload_url, $photo_prefix, 'kuvert');
+            $hero_detail = loraleya_color_photo($upload_url, $photo_prefix, 'hero-detail');
             ?>
-            <?php if ($hero_main) : ?>
-                <div class="chc-img"><img src="<?php echo esc_url($hero_main); ?>" alt="Сервировка <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
-            <?php else : ?>
-                <div class="chc-img">Фото · сервировка в этом цвете</div>
-            <?php endif; ?>
-            <?php if ($hero_faktura) : ?>
-                <div class="chc-img"><img src="<?php echo esc_url($hero_faktura); ?>" alt="Фактура <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
-            <?php else : ?>
-                <div class="chc-img">Макро · фактура</div>
-            <?php endif; ?>
-            <?php if ($hero_detail) : ?>
-                <div class="chc-img"><img src="<?php echo esc_url($hero_detail); ?>" alt="Детали <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
-            <?php else : ?>
-                <div class="chc-img">Детали · салфетка</div>
-            <?php endif; ?>
+
+            <div class="chc-main">
+                <?php if ($hero_main) : ?>
+                    <img src="<?php echo esc_url($hero_main); ?>" alt="Сервировка <?php echo esc_attr($color['name']); ?>" loading="lazy">
+                <?php else : ?>
+                    <span class="chc-ph">Фото · сервировка в этом цвете</span>
+                <?php endif; ?>
+            </div>
+
+            <div class="chc-side">
+                <div class="chc-detail">
+                    <?php if ($hero_detail) : ?>
+                        <img src="<?php echo esc_url($hero_detail); ?>" alt="Детали · салфетка <?php echo esc_attr($color['name']); ?>" loading="lazy">
+                    <?php else : ?>
+                        <span class="chc-ph">Детали · салфетка</span>
+                    <?php endif; ?>
+                </div>
+                <div class="chc-kuvert">
+                    <?php if ($hero_kuvert) : ?>
+                        <img src="<?php echo esc_url($hero_kuvert); ?>" alt="Куверт <?php echo esc_attr($color['name']); ?>" loading="lazy">
+                    <?php else : ?>
+                        <span class="chc-ph">Куверт · веер</span>
+                    <?php endif; ?>
+                </div>
+            </div>
+
         </div>
     </div>
 </section>
