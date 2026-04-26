@@ -654,10 +654,10 @@ $current_name = $color['name'] ?? '';
 
   <!-- Кнопка-палитра -->
   <button class="lcs-btn" id="lcsBtn" aria-label="Открыть палитру цветов" aria-expanded="false">
-    <svg class="lcs-icon" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg class="lcs-icon" viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <!-- форма палитры живописца -->
       <path d="M12 3.5C7.3 3.5 3.5 7 3.5 11.4c0 2.6 1.5 4.4 3.6 4.4 1 0 1.5-.4 1.5-1.2 0-.4-.1-.7-.3-1-.2-.4-.3-.7-.3-1.1 0-1 .8-1.6 2-1.6h2.4c3 0 5.1-1.7 5.1-4.4 0-1.7-1.7-2.9-5.5-2.9z"
-            fill="none" stroke="#c8a85a" stroke-width="1.3"/>
+            fill="none" stroke="#c8a85a" stroke-width="1.6"/>
       <!-- три статичные точки + одна динамическая -->
       <circle cx="10" cy="6.5" r="1" fill="#b088b0"/>
       <circle cx="13.5" cy="6.2" r="1" fill="#8bb8d0"/>
@@ -699,16 +699,16 @@ $current_name = $color['name'] ?? '';
 /* === Floating Color Switcher === */
 .lcs-root {
     position: fixed;
-    right: 18px;
-    bottom: 78px; /* над корзиной WC, корзина обычно на bottom: 18px */
+    right: 16px;
+    bottom: 90px; /* над корзиной WC, корзина обычно на bottom: 18px */
     z-index: 9998; /* ниже корзины WC чтобы корзина не перекрывалась если они окажутся рядом */
     pointer-events: none; /* для panel; кнопка ниже включает обратно */
 }
 
 .lcs-btn {
     pointer-events: auto;
-    width: 46px;
-    height: 46px;
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
     background: #1a1814;
     border: 0.5px solid rgba(200,168,90,.4);
@@ -761,7 +761,8 @@ $current_name = $color['name'] ?? '';
 }
 
 .lcs-panel-title {
-    font-size: 9px;
+    font-size: 11px;
+    font-weight: 600;
     letter-spacing: .18em;
     color: #8a7a55;
     text-transform: uppercase;
