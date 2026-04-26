@@ -44,10 +44,28 @@ $color_name    = $color_term->name;
 
 // Сопоставление slug цвета → префикс имени файлов в медиатеке.
 // В LoraLeya slug'и и имена фото имеют разную транслитерацию — здесь мы их мапим.
+// Карта-переходник: slug цвета (таксономия pa_fabric_color) → префикс файлов в Media Library.
+// Обе записи выверены по факту: slug-и таксономии и реально загруженные имена в WP.
+// Цвета где slug == префикс (blek-zoloto, bronza, grafit, melanzh-zoloto, melanzh-serebro,
+// platina, serebro) тоже перечислены явно для прозрачности.
 $photo_prefix_map = [
-    'biryuza'  => 'biruza',
-    'bezhevyj' => 'bezheviy',  // уточнить когда появятся фото
-    'bronza'   => 'bronza',    // совпадает
+    'belyj'             => 'beliy',
+    'bezhevyj'          => 'bezheviy',
+    'biryuza'           => 'biruza',
+    'blek-zoloto'       => 'blek-zoloto',
+    'bronza'            => 'bronza',
+    'goluboj'           => 'goluboy',
+    'grafit'            => 'grafit',
+    'zelenyj'           => 'zeleniy',
+    'melanzh-zoloto'    => 'melanzh-zoloto',
+    'melanzh-serebro'   => 'melanzh-serebro',
+    'melanzh-seryj'     => 'melanzh-seriy',
+    'melanzh-chernyj'   => 'melanzh-cherniy',
+    'platina'           => 'platina',
+    'serebro'           => 'serebro',
+    'sirenevyj'         => 'sireneviy',
+    'temno-biryuzovyj'  => 'temno-biruza',
+    'fioletovyj'        => 'fioletoviy',
 ];
 $photo_prefix = $photo_prefix_map[$color_slug] ?? $color_slug;
 
