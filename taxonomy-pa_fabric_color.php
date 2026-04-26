@@ -599,23 +599,25 @@ get_header();
     <div class="other-colors">
         <?php
         $all_oc = [
-            ['slug' => 'bezhevyj',        'hex' => '#d4c5a0', 'name' => 'Бежевый',        'border' => ''],
+            // Ряд 1 — светлые → тёплые → холодные цветные
             ['slug' => 'belyj',           'hex' => '#f0ece4', 'name' => 'Белый',           'border' => 'border:1px solid #aaa;'],
-            ['slug' => 'biryuza',         'hex' => '#5eb8a8', 'name' => 'Бирюза',          'border' => ''],
-            ['slug' => 'blek-zoloto',     'hex' => '#2a2520', 'name' => 'Блек золото',     'border' => 'border:1px solid #555;'],
-            ['slug' => 'bronza',          'hex' => '#8b6e3a', 'name' => 'Бронза',          'border' => ''],
-            ['slug' => 'goluboj',         'hex' => '#8bb8d0', 'name' => 'Голубой',         'border' => ''],
-            ['slug' => 'grafit',          'hex' => '#4a4844', 'name' => 'Графит',          'border' => ''],
-            ['slug' => 'zelenyj',         'hex' => '#6b8a5e', 'name' => 'Зелёный',         'border' => ''],
+            ['slug' => 'bezhevyj',        'hex' => '#d4c5a0', 'name' => 'Бежевый',        'border' => ''],
+            ['slug' => 'platina',         'hex' => '#c8c0b8', 'name' => 'Платина',         'border' => ''],
             ['slug' => 'melanzh-zoloto',  'hex' => '#c8a85a', 'name' => 'Меланж золото',   'border' => ''],
+            ['slug' => 'bronza',          'hex' => '#8b6e3a', 'name' => 'Бронза',          'border' => ''],
+            ['slug' => 'sirenevyj',       'hex' => '#b088b0', 'name' => 'Сиреневый',       'border' => ''],
+            ['slug' => 'fioletovyj',      'hex' => '#6a3a7a', 'name' => 'Фиолетовый',     'border' => ''],
+            ['slug' => 'goluboj',         'hex' => '#8bb8d0', 'name' => 'Голубой',         'border' => ''],
+            ['slug' => 'biryuza',         'hex' => '#5eb8a8', 'name' => 'Бирюза',          'border' => ''],
+            // Ряд 2 — средние → серые → тёмные
+            ['slug' => 'zelenyj',         'hex' => '#6b8a5e', 'name' => 'Зелёный',         'border' => ''],
+            ['slug' => 'temno-biryuzovyj','hex' => '#3a7878', 'name' => 'Тёмно-бирюзовый','border' => ''],
+            ['slug' => 'serebro',         'hex' => '#c0c0c0', 'name' => 'Серебро',         'border' => ''],
             ['slug' => 'melanzh-serebro', 'hex' => '#b0b0a8', 'name' => 'Меланж серебро',  'border' => ''],
             ['slug' => 'melanzh-seryj',   'hex' => '#787874', 'name' => 'Меланж серый',    'border' => ''],
+            ['slug' => 'grafit',          'hex' => '#4a4844', 'name' => 'Графит',          'border' => ''],
             ['slug' => 'melanzh-chernyj', 'hex' => '#2e2e2c', 'name' => 'Меланж чёрный',  'border' => 'border:1px solid #555;'],
-            ['slug' => 'platina',         'hex' => '#c8c0b8', 'name' => 'Платина',         'border' => ''],
-            ['slug' => 'serebro',         'hex' => '#c0c0c0', 'name' => 'Серебро',         'border' => ''],
-            ['slug' => 'sirenevyj',       'hex' => '#b088b0', 'name' => 'Сиреневый',       'border' => ''],
-            ['slug' => 'temno-biryuzovyj','hex' => '#3a7878', 'name' => 'Тёмно-бирюзовый','border' => ''],
-            ['slug' => 'fioletovyj',      'hex' => '#6a3a7a', 'name' => 'Фиолетовый',     'border' => ''],
+            ['slug' => 'blek-zoloto',     'hex' => '#2a2520', 'name' => 'Блек золото',     'border' => 'border:1px solid #555;'],
         ];
         foreach ($all_oc as $oc) :
             $is_current = ($oc['slug'] === $slug);
@@ -630,5 +632,287 @@ get_header();
     </div>
 </section>
 
+
+<!-- FLOATING COLOR SWITCHER -->
+<?php
+// Текущий цвет — для подсветки на иконке-палитре и обводки в шторке
+$current_hex = $color['hex'] ?? '#c8a85a';
+$current_name = $color['name'] ?? '';
+?>
+<div class="lcs-root" id="lcsRoot">
+
+  <!-- Кнопка-палитра -->
+  <button class="lcs-btn" id="lcsBtn" aria-label="Открыть палитру цветов" aria-expanded="false">
+    <svg class="lcs-icon" viewBox="0 0 24 24" width="22" height="22" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <!-- форма палитры живописца -->
+      <path d="M12 3.5C7.3 3.5 3.5 7 3.5 11.4c0 2.6 1.5 4.4 3.6 4.4 1 0 1.5-.4 1.5-1.2 0-.4-.1-.7-.3-1-.2-.4-.3-.7-.3-1.1 0-1 .8-1.6 2-1.6h2.4c3 0 5.1-1.7 5.1-4.4 0-1.7-1.7-2.9-5.5-2.9z"
+            fill="none" stroke="#c8a85a" stroke-width="1.3"/>
+      <!-- три статичные точки + одна динамическая -->
+      <circle cx="10" cy="6.5" r="1" fill="#b088b0"/>
+      <circle cx="13.5" cy="6.2" r="1" fill="#8bb8d0"/>
+      <circle cx="16" cy="8.5" r="1" fill="#c8a85a"/>
+      <!-- главный мазок — цвет текущей страницы -->
+      <circle class="lcs-dot-active" cx="7.2" cy="9" r="1.4" fill="<?php echo esc_attr($current_hex); ?>"/>
+    </svg>
+  </button>
+
+  <!-- Шторка с палитрой -->
+  <div class="lcs-panel" id="lcsPanel" role="dialog" aria-label="Палитра цветов" aria-hidden="true">
+    <div class="lcs-panel-title">палитра</div>
+    <div class="lcs-grid">
+      <?php foreach ($all_oc as $oc) :
+        $is_current = ($oc['slug'] === $slug);
+      ?>
+        <?php if ($is_current) : ?>
+          <span class="lcs-swatch lcs-swatch--active"
+                style="background:<?php echo $oc['hex']; ?>;<?php echo $oc['border']; ?>"
+                data-name="<?php echo esc_attr($oc['name']); ?>"
+                title="<?php echo esc_attr($oc['name']); ?> · текущий"></span>
+        <?php else : ?>
+          <a href="<?php echo esc_url(home_url('/color/' . $oc['slug'] . '/')); ?>"
+             class="lcs-swatch"
+             style="background:<?php echo $oc['hex']; ?>;<?php echo $oc['border']; ?>"
+             data-name="<?php echo esc_attr($oc['name']); ?>"
+             title="<?php echo esc_attr($oc['name']); ?>"
+             aria-label="<?php echo esc_attr($oc['name']); ?>"></a>
+        <?php endif; ?>
+      <?php endforeach; ?>
+    </div>
+    <div class="lcs-current" id="lcsCurrent"><?php echo esc_html($current_name); ?> · текущий</div>
+    <button class="lcs-close" id="lcsClose" aria-label="Закрыть палитру">×</button>
+  </div>
+
+</div>
+
+<style>
+/* === Floating Color Switcher === */
+.lcs-root {
+    position: fixed;
+    right: 18px;
+    bottom: 78px; /* над корзиной WC, корзина обычно на bottom: 18px */
+    z-index: 9998; /* ниже корзины WC чтобы корзина не перекрывалась если они окажутся рядом */
+    pointer-events: none; /* для panel; кнопка ниже включает обратно */
+}
+
+.lcs-btn {
+    pointer-events: auto;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    background: #1a1814;
+    border: 0.5px solid rgba(200,168,90,.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: border-color .25s ease, box-shadow .25s ease, transform .15s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+.lcs-btn:hover { border-color: rgba(200,168,90,.7); }
+.lcs-btn:active { transform: scale(.96); }
+.lcs-btn[aria-expanded="true"] {
+    border-color: rgba(200,168,90,.7);
+    box-shadow: 0 0 0 2px rgba(200,168,90,.15);
+}
+
+.lcs-icon { display: block; }
+.lcs-dot-active {
+    /* мягкая пульсация активного цвета на палитре */
+    animation: lcsDotPulse 3s ease-in-out infinite;
+    transform-origin: 7.2px 9px;
+}
+@keyframes lcsDotPulse {
+    0%, 100% { transform: scale(1); }
+    50%      { transform: scale(1.25); }
+}
+
+.lcs-panel {
+    pointer-events: none;
+    position: absolute;
+    right: 0;
+    bottom: 60px; /* над кнопкой с зазором 14px */
+    width: 250px;
+    background: rgba(20,18,14,.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 0.5px solid rgba(200,168,90,.3);
+    border-radius: 10px;
+    padding: 14px 12px 12px;
+    opacity: 0;
+    transform: scale(.95) translateY(6px);
+    transition: opacity .25s ease, transform .25s ease;
+}
+.lcs-panel--open {
+    pointer-events: auto;
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.lcs-panel-title {
+    font-size: 9px;
+    letter-spacing: .18em;
+    color: #8a7a55;
+    text-transform: uppercase;
+    text-align: center;
+    margin-bottom: 10px;
+}
+
+.lcs-grid {
+    display: grid;
+    grid-template-columns: repeat(9, 1fr);
+    gap: 6px;
+}
+
+.lcs-swatch {
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+    display: block;
+    cursor: pointer;
+    transition: transform .15s ease, outline-color .15s ease;
+    text-decoration: none;
+}
+.lcs-swatch:hover { transform: scale(1.15); }
+
+.lcs-swatch--active {
+    outline: 1.5px solid #c8a85a;
+    outline-offset: 1.5px;
+    cursor: default;
+}
+.lcs-swatch--active:hover { transform: none; }
+
+.lcs-current {
+    text-align: center;
+    font-size: 11px;
+    color: #aaa49a;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-style: italic;
+    margin-top: 10px;
+    padding-top: 8px;
+    border-top: 0.5px solid rgba(200,168,90,.15);
+    transition: opacity .15s ease;
+}
+
+.lcs-close {
+    display: none; /* по умолчанию скрыт, на мобиле показываем */
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    background: transparent;
+    border: 0;
+    color: #aaa49a;
+    font-size: 22px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 4px 8px;
+}
+
+/* Мобильная версия — фуллскрин */
+@media (max-width: 640px) {
+    .lcs-panel {
+        position: fixed;
+        right: 0;
+        left: 0;
+        bottom: 0;
+        top: 0;
+        width: auto;
+        border-radius: 0;
+        padding: 60px 24px 24px;
+        background: rgba(14,14,12,.97);
+        transform: translateY(100%);
+        transition: transform .3s ease, opacity .3s ease;
+    }
+    .lcs-panel--open {
+        transform: translateY(0);
+    }
+    .lcs-panel-title {
+        font-size: 11px;
+        margin-bottom: 24px;
+    }
+    .lcs-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+        max-width: 360px;
+        margin: 0 auto;
+    }
+    .lcs-swatch {
+        position: relative;
+    }
+    /* Имя цвета снизу под каждым кружком */
+    .lcs-swatch::after {
+        content: attr(data-name);
+        position: absolute;
+        bottom: -22px;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 10px;
+        color: #aaa49a;
+        white-space: nowrap;
+        font-family: 'Cormorant Garamond', Georgia, serif;
+        font-style: italic;
+    }
+    .lcs-grid {
+        gap: 18px 8px;
+        row-gap: 36px;
+    }
+    .lcs-current { display: none; }
+    .lcs-close { display: block; top: 16px; right: 16px; font-size: 28px; }
+}
+</style>
+
+<script>
+(function(){
+    var root = document.getElementById('lcsRoot');
+    if (!root) return;
+    var btn = document.getElementById('lcsBtn');
+    var panel = document.getElementById('lcsPanel');
+    var closeBtn = document.getElementById('lcsClose');
+    var current = document.getElementById('lcsCurrent');
+    var defaultCurrentText = current ? current.textContent : '';
+
+    function open(){
+        panel.classList.add('lcs-panel--open');
+        btn.setAttribute('aria-expanded', 'true');
+        panel.setAttribute('aria-hidden', 'false');
+    }
+    function close(){
+        panel.classList.remove('lcs-panel--open');
+        btn.setAttribute('aria-expanded', 'false');
+        panel.setAttribute('aria-hidden', 'true');
+        if (current) current.textContent = defaultCurrentText;
+    }
+    function toggle(){
+        if (panel.classList.contains('lcs-panel--open')) close(); else open();
+    }
+
+    btn.addEventListener('click', function(e){ e.stopPropagation(); toggle(); });
+    if (closeBtn) closeBtn.addEventListener('click', close);
+
+    // Клик вне панели — закрыть
+    document.addEventListener('click', function(e){
+        if (!root.contains(e.target)) close();
+    });
+
+    // Esc — закрыть
+    document.addEventListener('keydown', function(e){
+        if (e.key === 'Escape') close();
+    });
+
+    // Hover по кружкам — обновляем подпись (только на десктопе, на мобиле подпись под каждым)
+    if (current) {
+        var swatches = panel.querySelectorAll('.lcs-swatch');
+        swatches.forEach(function(s){
+            s.addEventListener('mouseenter', function(){
+                var name = s.getAttribute('data-name');
+                if (name) current.textContent = name;
+            });
+            s.addEventListener('mouseleave', function(){
+                current.textContent = defaultCurrentText;
+            });
+        });
+    }
+})();
+</script>
+<!-- /FLOATING COLOR SWITCHER -->
 
 <?php get_footer(); ?>
