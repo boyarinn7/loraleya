@@ -466,7 +466,7 @@ get_header();
             [
                 'cat'   => 'Скатерть',
                 'name'  => 'Скатерть',
-                'photo' => 'dorozhka',
+                'photo' => 'skatert',
                 'default' => 0,
                 'variants' => [
                     ['label' => '175', 'size' => '140 × 175 см · На 4 персоны', 'price' => '2 490 ₽', 'item' => 'Скатерть 175'],

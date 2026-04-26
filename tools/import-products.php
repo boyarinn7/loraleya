@@ -101,7 +101,7 @@ $catalog = [
         'category'          => 'Скатерти',
         'description'       => 'Жаккардовая скатерть. Подходит для сервировки обычных и праздничных столов.',
         'short_description' => '3 размера · жаккардовое плетение · 100% полиэстер',
-        'main_photo'        => $photo_prefix . '-dorozhka',
+        'main_photo'        => $photo_prefix . '-skatert',
         'gallery_photos'    => [
             $photo_prefix . '-hero-servirovka',
             $photo_prefix . '-macro-faktura',
