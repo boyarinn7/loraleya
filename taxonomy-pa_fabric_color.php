@@ -665,16 +665,12 @@ $current_name = $color['name'] ?? '';
 
   <!-- Кнопка-палитра -->
   <button class="lcs-btn" id="lcsBtn" aria-label="Открыть палитру цветов" aria-expanded="false">
-    <svg class="lcs-icon" viewBox="0 0 24 24" width="55" height="55" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-      <!-- форма палитры живописца -->
-      <path d="M12 3.5C7.3 3.5 3.5 7 3.5 11.4c0 2.6 1.5 4.4 3.6 4.4 1 0 1.5-.4 1.5-1.2 0-.4-.1-.7-.3-1-.2-.4-.3-.7-.3-1.1 0-1 .8-1.6 2-1.6h2.4c3 0 5.1-1.7 5.1-4.4 0-1.7-1.7-2.9-5.5-2.9z"
-            fill="none" stroke="#c8a85a" stroke-width="1.6"/>
-      <!-- три статичные точки + одна динамическая -->
-      <circle cx="10" cy="6.5" r="1" fill="#b088b0"/>
-      <circle cx="13.5" cy="6.2" r="1" fill="#8bb8d0"/>
-      <circle cx="16" cy="8.5" r="1" fill="#c8a85a"/>
-      <!-- главный мазок — цвет текущей страницы -->
-      <circle class="lcs-dot-active" cx="7.2" cy="9" r="1.4" fill="<?php echo esc_attr($current_hex); ?>"/>
+    <svg class="lcs-icon" viewBox="0 0 32 32" width="36" height="36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <circle cx="11" cy="9" r="3.5" fill="#c8a85a"/>
+      <circle cx="21" cy="11" r="3.5" fill="#5eb8a8"/>
+      <circle cx="9" cy="20" r="3.5" fill="#b088b0"/>
+      <circle cx="22" cy="22" r="3.5" fill="#8bb8d0"/>
+      <circle class="lcs-dot-active" cx="16" cy="16" r="3.5" fill="<?php echo esc_attr($current_hex); ?>"/>
     </svg>
   </button>
 
@@ -742,7 +738,7 @@ $current_name = $color['name'] ?? '';
 .lcs-dot-active {
     /* мягкая пульсация активного цвета на палитре */
     animation: lcsDotPulse 3s ease-in-out infinite;
-    transform-origin: 7.2px 9px;
+    transform-origin: 16px 16px;
 }
 @keyframes lcsDotPulse {
     0%, 100% { transform: scale(1); }
