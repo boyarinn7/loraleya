@@ -367,12 +367,14 @@ get_header();
     <div class="sec-d">Комплект сразу готов к сервировке. Выберите размер под свой стол.</div>
     <div class="sets-grid">
         <?php
-        $item_map   = loraleya_build_item_map($slug);
-        $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-4');
+        $item_map = loraleya_build_item_map($slug);
         ?>
 
         <div class="set">
-            <?php if ($nabor_photo) : ?><div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор <?php echo esc_attr($color['name']); ?>" loading="lazy" style="width:100%;height:auto;margin-bottom:1rem;border:1px solid rgba(197,165,90,.06)"></div><?php endif; ?>
+            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-4-140'); ?>
+            <?php if ($nabor_photo) : ?>
+                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 4п · дорожка 140 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php endif; ?>
             <div class="set-badge">Хит</div>
             <div class="set-name">Набор на 4 персоны · дорожка 140</div>
             <div class="set-contents">Дорожка 40×140 + 4 салфетки 40×40 + 4 куверта 9×24</div>
@@ -392,7 +394,10 @@ get_header();
         </div>
 
         <div class="set">
-            <?php if ($nabor_photo) : ?><div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор <?php echo esc_attr($color['name']); ?>" loading="lazy" style="width:100%;height:auto;margin-bottom:1rem;border:1px solid rgba(197,165,90,.06)"></div><?php endif; ?>
+            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-4-175'); ?>
+            <?php if ($nabor_photo) : ?>
+                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 4п · дорожка 175 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php endif; ?>
             <div class="set-badge">Хит плюс</div>
             <div class="set-name">Набор на 4 персоны · дорожка 175</div>
             <div class="set-contents">Дорожка 40×175 + 4 салфетки 40×40 + 4 куверта 9×24</div>
@@ -412,7 +417,10 @@ get_header();
         </div>
 
         <div class="set">
-            <?php if ($nabor_photo) : ?><div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор <?php echo esc_attr($color['name']); ?>" loading="lazy" style="width:100%;height:auto;margin-bottom:1rem;border:1px solid rgba(197,165,90,.06)"></div><?php endif; ?>
+            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-6-240'); ?>
+            <?php if ($nabor_photo) : ?>
+                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 6п · дорожка 240 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php endif; ?>
             <div class="set-badge">Семейный</div>
             <div class="set-name">Набор на 6 персон · дорожка 240</div>
             <div class="set-contents">Дорожка 40×240 + 6 салфеток 40×40 + 6 кувертов 9×24</div>
@@ -432,7 +440,10 @@ get_header();
         </div>
 
         <div class="set">
-            <?php if ($nabor_photo) : ?><div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор <?php echo esc_attr($color['name']); ?>" loading="lazy" style="width:100%;height:auto;margin-bottom:1rem;border:1px solid rgba(197,165,90,.06)"></div><?php endif; ?>
+            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-6-300'); ?>
+            <?php if ($nabor_photo) : ?>
+                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 6п · дорожка 300 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php endif; ?>
             <div class="set-badge">Для большого стола</div>
             <div class="set-name">Набор на 6 персон · дорожка 300</div>
             <div class="set-contents">Дорожка 40×300 + 6 салфеток 40×40 + 6 кувертов 9×24</div>
@@ -654,7 +665,7 @@ $current_name = $color['name'] ?? '';
 
   <!-- Кнопка-палитра -->
   <button class="lcs-btn" id="lcsBtn" aria-label="Открыть палитру цветов" aria-expanded="false">
-    <svg class="lcs-icon" viewBox="0 0 24 24" width="32" height="32" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <svg class="lcs-icon" viewBox="0 0 24 24" width="55" height="55" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
       <!-- форма палитры живописца -->
       <path d="M12 3.5C7.3 3.5 3.5 7 3.5 11.4c0 2.6 1.5 4.4 3.6 4.4 1 0 1.5-.4 1.5-1.2 0-.4-.1-.7-.3-1-.2-.4-.3-.7-.3-1.1 0-1 .8-1.6 2-1.6h2.4c3 0 5.1-1.7 5.1-4.4 0-1.7-1.7-2.9-5.5-2.9z"
             fill="none" stroke="#c8a85a" stroke-width="1.6"/>
@@ -699,16 +710,16 @@ $current_name = $color['name'] ?? '';
 /* === Floating Color Switcher === */
 .lcs-root {
     position: fixed;
-    right: 16px;
-    bottom: 90px; /* над корзиной WC, корзина обычно на bottom: 18px */
+    right: 30px;
+    bottom: 120px; /* над корзиной WC, корзина обычно на bottom: 18px */
     z-index: 9998; /* ниже корзины WC чтобы корзина не перекрывалась если они окажутся рядом */
     pointer-events: none; /* для panel; кнопка ниже включает обратно */
 }
 
 .lcs-btn {
     pointer-events: auto;
-    width: 56px;
-    height: 56px;
+    width: 69px;
+    height: 69px;
     border-radius: 50%;
     background: #1a1814;
     border: 0.5px solid rgba(200,168,90,.4);
