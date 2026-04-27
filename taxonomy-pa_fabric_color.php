@@ -554,7 +554,7 @@ get_header();
             [
                 'cat'   => 'Куверт',
                 'name'  => 'Куверт для приборов',
-                'photo' => 'kuvert',
+                'photo' => 'kuvert-vert',
                 'size'  => '9 × 24 см · Цена за 1 шт',
                 'price' => '250 ₽ <span>/ шт</span>',
                 'item'  => 'Куверт',
