@@ -269,6 +269,42 @@ function loraleya_color_photo($upload_url, $prefix, $type, $ext = 'webp') {
     return '';
 }
 
+function loraleya_color_video($prefix) {
+    $search_title = $prefix . '-video';
+
+    $attachment = get_posts([
+        'post_type'      => 'attachment',
+        'post_status'    => 'inherit',
+        'post_mime_type' => 'video',
+        'numberposts'    => 1,
+        'title'          => $search_title,
+    ]);
+
+    if (!empty($attachment)) {
+        return [
+            'url'  => wp_get_attachment_url($attachment[0]->ID),
+            'mime' => get_post_mime_type($attachment[0]->ID),
+        ];
+    }
+
+    $attachment = get_posts([
+        'post_type'      => 'attachment',
+        'post_status'    => 'inherit',
+        'post_mime_type' => 'video',
+        'numberposts'    => 1,
+        's'              => $search_title,
+    ]);
+
+    if (!empty($attachment)) {
+        return [
+            'url'  => wp_get_attachment_url($attachment[0]->ID),
+            'mime' => get_post_mime_type($attachment[0]->ID),
+        ];
+    }
+
+    return null;
+}
+
 get_header();
 ?>
 
@@ -334,14 +370,25 @@ get_header();
     </div>
 </section>
 
-<!-- 2. VIDEO/PHOTO PLACEHOLDER -->
+<!-- 2. VIDEO -->
 <section class="video-sec">
-    <div class="video-box">
-        <div class="vplay">
-            <svg viewBox="0 0 24 24"><polygon points="8,5 19,12 8,19"/></svg>
+    <?php $color_video = loraleya_color_video($photo_prefix); ?>
+
+    <?php if ($color_video) : ?>
+        <div class="video-box video-box--playable">
+            <video
+                src="<?php echo esc_url($color_video['url']); ?>"
+                preload="metadata"
+                controls
+                playsinline
+                aria-label="Сервировка <?php echo esc_attr(mb_strtolower($color['name'])); ?> при разном освещении"
+            ></video>
         </div>
-        <div class="vlabel">Видео · сервировка <?php echo esc_html(mb_strtolower($color['name'])); ?> при разном освещении</div>
-    </div>
+    <?php else : ?>
+        <div class="video-box video-box--empty">
+            <div class="vlabel">Видео · сервировка <?php echo esc_html(mb_strtolower($color['name'])); ?> при разном освещении</div>
+        </div>
+    <?php endif; ?>
 </section>
 
 <!-- 3. MACRO STRIP -->

@@ -1866,36 +1866,27 @@ h4 { font-size: 1.1rem; }
 .video-box {
     background: var(--bg3);
     border: 1px solid rgba(106,58,122,.06);
-    aspect-ratio: 16 / 7;
+    aspect-ratio: 16 / 9;
+    position: relative;
+    overflow: hidden;
+}
+
+.video-box--playable {
+    cursor: pointer;
+}
+
+.video-box--empty {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    position: relative;
-    cursor: pointer;
 }
 
-.video-box:hover .vplay {
-    transform: scale(1.1);
-}
-
-.vplay {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    border: 2px solid var(--gold-dim);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.3s;
-    margin-bottom: 0.8rem;
-}
-
-.vplay svg {
-    width: 18px;
-    height: 18px;
-    fill: var(--gold-dim);
-    margin-left: 3px;
+.video-box video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .vlabel {
