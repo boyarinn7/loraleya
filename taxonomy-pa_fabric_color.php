@@ -691,11 +691,15 @@ get_header();
         foreach ($all_oc as $oc) :
             $is_current = ($oc['slug'] === $slug);
             $active_style = $is_current ? 'border-color:var(--gold);' : '';
+            $swatch_url   = loraleya_color_swatch_url($oc['slug']);
+            $bg_style = $swatch_url
+                ? 'background-image:url(' . esc_url($swatch_url) . ');background-size:cover;background-position:center;'
+                : 'background:' . $oc['hex'] . ';';
         ?>
             <?php if ($is_current) : ?>
-                <span class="oc-link" style="background:<?php echo $oc['hex']; ?>;<?php echo $oc['border']; ?><?php echo $active_style; ?>" title="<?php echo esc_attr($oc['name']); ?>"></span>
+                <span class="oc-link" style="<?php echo $bg_style; ?><?php echo $oc['border']; ?><?php echo $active_style; ?>" title="<?php echo esc_attr($oc['name']); ?>"></span>
             <?php else : ?>
-                <a class="oc-link" href="<?php echo home_url('/color/' . $oc['slug'] . '/'); ?>" style="background:<?php echo $oc['hex']; ?>;<?php echo $oc['border']; ?>" title="<?php echo esc_attr($oc['name']); ?>"></a>
+                <a class="oc-link" href="<?php echo home_url('/color/' . $oc['slug'] . '/'); ?>" style="<?php echo $bg_style; ?><?php echo $oc['border']; ?>" title="<?php echo esc_attr($oc['name']); ?>"></a>
             <?php endif; ?>
         <?php endforeach; ?>
     </div>

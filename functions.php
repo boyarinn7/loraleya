@@ -388,3 +388,50 @@ function loraleya_body_classes($classes) {
     return $classes;
 }
 add_filter('body_class', 'loraleya_body_classes');
+
+function loraleya_color_swatch_url($slug) {
+    static $cache = [];
+    if (isset($cache[$slug])) {
+        return $cache[$slug];
+    }
+
+    $prefix_map = [
+        'belyj'             => 'beliy',
+        'bezhevyj'          => 'bezheviy',
+        'biryuza'           => 'biruza',
+        'blek-zoloto'       => 'blek-zoloto',
+        'bronza'            => 'bronza',
+        'goluboj'           => 'goluboy',
+        'grafit'            => 'grafit',
+        'zelenyj'           => 'zeleniy',
+        'melanzh-zoloto'    => 'melanzh-zoloto',
+        'melanzh-serebro'   => 'melanzh-serebro',
+        'melanzh-seryj'     => 'melanzh-seriy',
+        'melanzh-chernyj'   => 'melanzh-cherniy',
+        'platina'           => 'platina',
+        'serebro'           => 'serebro',
+        'sirenevyj'         => 'sireneviy',
+        'temno-biryuzovyj'  => 'temno-biruza',
+        'fioletovyj'        => 'fioletoviy',
+    ];
+
+    $prefix = $prefix_map[$slug] ?? $slug;
+    $search_title = $prefix . '-macro-pereliv';
+
+    $attachment = get_posts([
+        'post_type'      => 'attachment',
+        'post_status'    => 'inherit',
+        'post_mime_type' => 'image',
+        'numberposts'    => 1,
+        'title'          => $search_title,
+    ]);
+
+    if (!empty($attachment)) {
+        $url = wp_get_attachment_image_url($attachment[0]->ID, 'thumbnail');
+        $cache[$slug] = $url ?: '';
+        return $cache[$slug];
+    }
+
+    $cache[$slug] = '';
+    return '';
+}

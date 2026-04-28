@@ -96,8 +96,12 @@ get_header();
                 foreach ($colors as $color) :
                     $hex = get_term_meta($color->term_id, 'color_hex', true) ?: '#888';
                     $link = get_term_link($color);
+                    $swatch_url = function_exists('loraleya_color_swatch_url') ? loraleya_color_swatch_url($color->slug) : '';
+                    $bg_style = $swatch_url
+                        ? 'background-image:url(' . esc_url($swatch_url) . ');background-size:cover;background-position:center;'
+                        : 'background:' . esc_attr($hex) . ';';
             ?>
-                <a href="<?php echo $link; ?>" class="color-swatch" style="background:<?php echo esc_attr($hex); ?>" title="<?php echo esc_attr($color->name); ?>"></a>
+                <a href="<?php echo $link; ?>" class="color-swatch" style="<?php echo $bg_style; ?>" title="<?php echo esc_attr($color->name); ?>"></a>
             <?php
                 endforeach;
             else :

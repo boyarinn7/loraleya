@@ -163,15 +163,23 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
                     // Рекомендуемые цвета первыми
                     $rec_hexes = array_column($data['colors'], 'hex');
                     $all_colors = [
-                        ['hex'=>'#6a3a7a','name'=>'Фиолетовый'],['hex'=>'#4a4844','name'=>'Графит'],
-                        ['hex'=>'#8b6e3a','name'=>'Бронза'],['hex'=>'#b088b0','name'=>'Сиреневый'],
-                        ['hex'=>'#d4c5a0','name'=>'Бежевый'],['hex'=>'#f0ece4','name'=>'Белый'],
-                        ['hex'=>'#5eb8a8','name'=>'Бирюза'],['hex'=>'#2a2520','name'=>'Блек золото'],
-                        ['hex'=>'#8bb8d0','name'=>'Голубой'],['hex'=>'#6b8a5e','name'=>'Зелёный'],
-                        ['hex'=>'#c8a85a','name'=>'Меланж золото'],['hex'=>'#b0b0a8','name'=>'Меланж серебро'],
-                        ['hex'=>'#787874','name'=>'Меланж серый'],['hex'=>'#2e2e2c','name'=>'Меланж чёрный'],
-                        ['hex'=>'#c8c0b8','name'=>'Платина'],['hex'=>'#c0c0c0','name'=>'Серебро'],
-                        ['hex'=>'#3a7878','name'=>'Тёмно-бирюзовый'],
+                        ['slug'=>'fioletovyj','hex'=>'#6a3a7a','name'=>'Фиолетовый'],
+                        ['slug'=>'grafit','hex'=>'#4a4844','name'=>'Графит'],
+                        ['slug'=>'bronza','hex'=>'#8b6e3a','name'=>'Бронза'],
+                        ['slug'=>'sirenevyj','hex'=>'#b088b0','name'=>'Сиреневый'],
+                        ['slug'=>'bezhevyj','hex'=>'#d4c5a0','name'=>'Бежевый'],
+                        ['slug'=>'belyj','hex'=>'#f0ece4','name'=>'Белый'],
+                        ['slug'=>'biryuza','hex'=>'#5eb8a8','name'=>'Бирюза'],
+                        ['slug'=>'blek-zoloto','hex'=>'#2a2520','name'=>'Блек золото'],
+                        ['slug'=>'goluboj','hex'=>'#8bb8d0','name'=>'Голубой'],
+                        ['slug'=>'zelenyj','hex'=>'#6b8a5e','name'=>'Зелёный'],
+                        ['slug'=>'melanzh-zoloto','hex'=>'#c8a85a','name'=>'Меланж золото'],
+                        ['slug'=>'melanzh-serebro','hex'=>'#b0b0a8','name'=>'Меланж серебро'],
+                        ['slug'=>'melanzh-seryj','hex'=>'#787874','name'=>'Меланж серый'],
+                        ['slug'=>'melanzh-chernyj','hex'=>'#2e2e2c','name'=>'Меланж чёрный'],
+                        ['slug'=>'platina','hex'=>'#c8c0b8','name'=>'Платина'],
+                        ['slug'=>'serebro','hex'=>'#c0c0c0','name'=>'Серебро'],
+                        ['slug'=>'temno-biryuzovyj','hex'=>'#3a7878','name'=>'Тёмно-бирюзовый'],
                     ];
                     // Сначала рекомендуемые, потом остальные
                     $rec = array_filter($all_colors, fn($c) => in_array($c['hex'], $rec_hexes));
@@ -183,7 +191,13 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
                         $border = in_array($c['hex'], $dark_borders) ? 'border:1px solid rgba(197,165,90,.2);' : '';
                         $on = $first ? ' on' : '';
                     ?>
-                        <div class="sw<?php echo $on; ?>" style="background:<?php echo $c['hex']; ?>;<?php echo $border; ?>" data-name="<?php echo $c['name']; ?>"></div>
+                        <?php
+                        $swatch_url = function_exists('loraleya_color_swatch_url') ? loraleya_color_swatch_url($c['slug']) : '';
+                        $bg_style = $swatch_url
+                            ? 'background-image:url(' . esc_url($swatch_url) . ');background-size:cover;background-position:center;'
+                            : 'background:' . $c['hex'] . ';';
+                        ?>
+                        <div class="sw<?php echo $on; ?>" style="<?php echo $bg_style; ?><?php echo $border; ?>" data-name="<?php echo $c['name']; ?>"></div>
                     <?php
                         if ($first) $default_color_name = $c['name'];
                         $first = false;
