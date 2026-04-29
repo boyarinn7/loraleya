@@ -45,7 +45,7 @@ get_header();
             ?>
                 <a href="<?php the_permalink(); ?>" class="scenario-card">
                     <?php if (has_post_thumbnail()) : ?>
-                        <div class="scenario-bg" style="background-image:url(<?php echo get_the_post_thumbnail_url(get_the_ID(), 'gallery'); ?>)"></div>
+                        <div class="scenario-bg" style="background-image:url(<?php echo get_the_post_thumbnail_url(get_the_ID(), 'scenario-card'); ?>)"></div>
                     <?php else : ?>
                         <div class="scenario-bg scenario-bg--placeholder"></div>
                     <?php endif; ?>

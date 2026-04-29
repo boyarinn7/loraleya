@@ -22,6 +22,7 @@ function loraleya_setup() {
     // Image sizes
     add_image_size('hero', 1920, 1080, true);
     add_image_size('gallery', 800, 600, true);
+    add_image_size('scenario-card', 600, 800, true);
     add_image_size('product-card', 600, 450, true);
     add_image_size('swatch', 200, 200, true);
     add_image_size('macro', 400, 300, true);
