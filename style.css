@@ -562,21 +562,6 @@ h4 { font-size: 1.1rem; }
     transition: transform 0.4s ease, border-color 0.4s ease;
 }
 
-/* Overlay затемнения для читаемости текста */
-.scenario-card::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.28);
-    z-index: 1;
-    pointer-events: none;
-    transition: background 0.4s ease;
-}
-
-.scenario-card:hover::before {
-    background: rgba(0, 0, 0, 0.15);
-}
-
 .scenario-card:nth-child(even) {
     margin-top: 2rem;
 }
@@ -584,7 +569,10 @@ h4 { font-size: 1.1rem; }
 /* Gradient backgrounds */
 .scenario-bg {
     position: absolute;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 70%;
     background-size: cover;
     background-position: center;
     transition: transform 0.6s ease;
@@ -612,11 +600,13 @@ h4 { font-size: 1.1rem; }
     bottom: 0;
     left: 0;
     right: 0;
-    padding: 4rem 1.8rem 1.8rem;
-    background: linear-gradient(to top,
-        rgba(0, 0, 0, 0.85) 0%,
-        rgba(0, 0, 0, 0.5) 45%,
-        transparent 100%);
+    height: 30%;
+    padding: 1rem 1.4rem;
+    background: var(--bg2);
+    border-top: 1px solid rgba(197, 165, 90, 0.2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     z-index: 2;
 }
 
@@ -625,22 +615,24 @@ h4 { font-size: 1.1rem; }
     font-size: 0.55rem;
     letter-spacing: 0.3em;
     color: var(--gold);
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.35rem;
     text-transform: uppercase;
 }
 
 .scenario-name {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 1.3rem;
+    font-size: 1.25rem;
     color: var(--cream);
-    margin-bottom: 0.3rem;
+    margin-bottom: 0.25rem;
+    line-height: 1.1;
 }
 
 .scenario-hint {
     font-family: 'Raleway', sans-serif;
     font-size: 0.7rem;
-    color: rgba(232, 224, 208, 0.72);
+    color: var(--text-muted);
     letter-spacing: 0.02em;
+    line-height: 1.4;
 }
 
 /* Arrow button (pseudo-element) */
