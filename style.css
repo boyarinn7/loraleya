@@ -718,7 +718,7 @@ h4 { font-size: 1.1rem; }
     height: 4.5rem;
     border-radius: 50%;
     cursor: pointer;
-    border: 2px solid transparent;
+    border: 1px solid rgba(197, 165, 90, 0.3);
     transition: all 0.3s ease;
     position: relative;
     flex-shrink: 0;
@@ -727,6 +727,7 @@ h4 { font-size: 1.1rem; }
 .colors-wheel .color-swatch:hover {
     border-color: var(--gold);
     transform: scale(1.12);
+    box-shadow: 0 0 0 2px rgba(197, 165, 90, 0.15);
 }
 
 /* Tooltip с названием цвета */
