@@ -417,7 +417,7 @@ function loraleya_color_swatch_url($slug) {
     ];
 
     $prefix = $prefix_map[$slug] ?? $slug;
-    $search_title = $prefix . '-macro-pereliv';
+    $search_title = $prefix . '-macro-faktura';
 
     $attachment = get_posts([
         'post_type'      => 'attachment',
