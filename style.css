@@ -722,6 +722,8 @@ h4 { font-size: 1.1rem; }
     transition: all 0.3s ease;
     position: relative;
     flex-shrink: 0;
+    background-size: 130% !important;
+    background-position: center !important;
 }
 
 .colors-wheel .color-swatch:hover {
