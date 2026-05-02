@@ -231,6 +231,26 @@ h4 { font-size: 1.1rem; }
   width: 100%;
 }
 
+/* Активный пункт меню (текущая страница) */
+.main-nav .current-menu-item > a,
+.main-nav .current_page_item > a,
+.main-nav .current-menu-parent > a,
+.main-nav .current-menu-ancestor > a,
+.main-nav .current_page_parent > a,
+.main-nav .current_page_ancestor > a {
+    color: var(--gold);
+}
+
+.main-nav .current-menu-item > a::after,
+.main-nav .current_page_item > a::after,
+.main-nav .current-menu-parent > a::after,
+.main-nav .current-menu-ancestor > a::after,
+.main-nav .current_page_parent > a::after,
+.main-nav .current_page_ancestor > a::after {
+    width: 100%;
+}
+
+
 .header-cart {
   display: flex;
   align-items: center;
