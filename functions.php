@@ -62,6 +62,11 @@ function loraleya_scripts() {
             wp_localize_script('loraleya-main', 'LORALEYA_ITEM_MAP', loraleya_build_item_map($color_term->slug));
         }
     }
+
+    // Custom order page script
+    if (is_page('custom-order')) {
+        wp_enqueue_script('loraleya-custom-order', get_template_directory_uri() . '/assets/js/custom-order.js', [], '1.0.0', true);
+    }
 }
 add_action('wp_enqueue_scripts', 'loraleya_scripts');
 
