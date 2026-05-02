@@ -232,21 +232,11 @@ h4 { font-size: 1.1rem; }
 }
 
 /* Активный пункт меню (текущая страница) */
-.main-nav .current-menu-item > a,
-.main-nav .current_page_item > a,
-.main-nav .current-menu-parent > a,
-.main-nav .current-menu-ancestor > a,
-.main-nav .current_page_parent > a,
-.main-nav .current_page_ancestor > a {
+.main-nav a.current-menu-item {
     color: var(--gold);
 }
 
-.main-nav .current-menu-item > a::after,
-.main-nav .current_page_item > a::after,
-.main-nav .current-menu-parent > a::after,
-.main-nav .current-menu-ancestor > a::after,
-.main-nav .current_page_parent > a::after,
-.main-nav .current_page_ancestor > a::after {
+.main-nav a.current-menu-item::after {
     width: 100%;
 }
 
