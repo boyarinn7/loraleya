@@ -441,3 +441,179 @@ function loraleya_color_swatch_url($slug) {
     $cache[$slug] = '';
     return '';
 }
+
+/* =============================================
+   CUSTOM ORDER FORM HANDLER
+   ============================================= */
+
+function loraleya_handle_custom_order() {
+
+    // 1. Honeypot: если заполнен — это бот, тихо завершаем как успех
+    if (!empty($_POST['website'])) {
+        wp_send_json_success(['message' => 'OK']);
+        return;
+    }
+
+    // 2. Проверка nonce
+    if (!isset($_POST['co_nonce']) || !wp_verify_nonce($_POST['co_nonce'], 'loraleya_custom_order')) {
+        wp_send_json_error(['message' => 'Истёк сеанс. Обновите страницу и попробуйте снова.'], 403);
+        return;
+    }
+
+    // 3. Валидация обязательных полей
+    $name    = isset($_POST['customer_name'])    ? sanitize_text_field(wp_unslash($_POST['customer_name']))    : '';
+    $contact = isset($_POST['customer_contact']) ? sanitize_text_field(wp_unslash($_POST['customer_contact'])) : '';
+    $consent = !empty($_POST['consent']);
+
+    if ($name === '' || $contact === '') {
+        wp_send_json_error(['message' => 'Заполните имя и контакт.'], 400);
+        return;
+    }
+
+    if (mb_strlen($name) > 100 || mb_strlen($contact) > 100) {
+        wp_send_json_error(['message' => 'Слишком длинные значения в имени или контакте.'], 400);
+        return;
+    }
+
+    if (!$consent) {
+        wp_send_json_error(['message' => 'Нужно согласие на обработку персональных данных.'], 400);
+        return;
+    }
+
+    // 4. Сбор остальных полей формы (необязательные)
+    $shape_name  = isset($_POST['shape_name'])      ? sanitize_text_field(wp_unslash($_POST['shape_name']))      : '';
+    $dim_length  = isset($_POST['dim_length'])      ? absint($_POST['dim_length'])                               : 0;
+    $dim_width   = isset($_POST['dim_width'])       ? absint($_POST['dim_width'])                                : 0;
+    $persons     = isset($_POST['persons'])         ? absint($_POST['persons'])                                  : 0;
+    $color_name  = isset($_POST['color_name'])      ? sanitize_text_field(wp_unslash($_POST['color_name']))      : '';
+    $items_text  = isset($_POST['items_summary'])   ? sanitize_text_field(wp_unslash($_POST['items_summary']))   : '';
+    $opt_mono    = !empty($_POST['opt_monogram']);
+    $opt_edge    = !empty($_POST['opt_edge']);
+    $opt_rings   = !empty($_POST['opt_rings']);
+    $notes       = isset($_POST['customer_notes'])  ? sanitize_textarea_field(wp_unslash($_POST['customer_notes'])) : '';
+
+    if (mb_strlen($notes) > 2000) {
+        $notes = mb_substr($notes, 0, 2000) . '…';
+    }
+
+    // 5. Сборка тела сообщения
+    $opts_list = [];
+    if ($opt_mono)  $opts_list[] = 'Монограмма / вышивка';
+    if ($opt_edge)  $opts_list[] = 'Декоративная обработка края';
+    if ($opt_rings) $opts_list[] = 'Кольца для салфеток';
+
+    $size_text = ($dim_length && $dim_width) ? "{$dim_length} × {$dim_width} см" : 'Не указан';
+
+    $lines = [
+        '🪡 Новая заявка с loraleya.ru',
+        '',
+        "Имя: {$name}",
+        "Контакт: {$contact}",
+        '',
+        '— Параметры заказа —',
+        "Форма стола: " . ($shape_name ?: '—'),
+        "Размер: {$size_text}",
+        "Персон: " . ($persons ?: '—'),
+        "Цвет: " . ($color_name ?: '—'),
+        "Изделия: " . ($items_text ?: '—'),
+    ];
+
+    if (!empty($opts_list)) {
+        $lines[] = "Опции: " . implode(', ', $opts_list);
+    }
+
+    if ($notes !== '') {
+        $lines[] = '';
+        $lines[] = '— Комментарий —';
+        $lines[] = $notes;
+    }
+
+    $lines[] = '';
+    $lines[] = 'Дата: ' . wp_date('d.m.Y H:i');
+
+    $body    = implode("\n", $lines);
+    $subject = "LoraLeya: заявка от {$name}";
+
+    // 6. Отправка через канальный helper
+    $sent = loraleya_send_notification($subject, $body);
+
+    if ($sent) {
+        wp_send_json_success(['message' => 'Заявка отправлена. Свяжемся в течение 2 часов.']);
+    } else {
+        wp_send_json_error(['message' => 'Не удалось отправить заявку. Попробуйте позже или напишите нам напрямую.'], 500);
+    }
+}
+add_action('wp_ajax_loraleya_custom_order',        'loraleya_handle_custom_order');
+add_action('wp_ajax_nopriv_loraleya_custom_order', 'loraleya_handle_custom_order');
+
+/**
+ * Канальная отправка уведомлений: email + Telegram.
+ * Возвращает true если хотя бы один канал сработал.
+ */
+function loraleya_send_notification($subject, $body) {
+    $any_success = false;
+
+    // Канал 1: Email
+    $email_to = defined('LORALEYA_NOTIFY_EMAIL') ? LORALEYA_NOTIFY_EMAIL : 'loraleya-tex@yandex.ru';
+    $headers  = [
+        'Content-Type: text/plain; charset=UTF-8',
+        'From: LoraLeya <noreply@loraleya.ru>',
+    ];
+    $email_ok = wp_mail($email_to, $subject, $body, $headers);
+    if ($email_ok) {
+        $any_success = true;
+    } else {
+        error_log('[LoraLeya] wp_mail failed for ' . $email_to);
+    }
+
+    // Канал 2: Telegram
+    if (defined('LORALEYA_TG_BOT_TOKEN') && defined('LORALEYA_TG_CHAT_ID')) {
+        $tg_ok = loraleya_send_telegram(LORALEYA_TG_BOT_TOKEN, LORALEYA_TG_CHAT_ID, $body);
+        if ($tg_ok) {
+            $any_success = true;
+        }
+    } else {
+        error_log('[LoraLeya] Telegram constants not defined in wp-config.php');
+    }
+
+    return $any_success;
+}
+
+/**
+ * Отправка сообщения в Telegram через Bot API.
+ */
+function loraleya_send_telegram($token, $chat_id, $text) {
+    if (empty($token) || empty($chat_id) || empty($text)) {
+        return false;
+    }
+
+    if (mb_strlen($text) > 4090) {
+        $text = mb_substr($text, 0, 4080) . "\n…";
+    }
+
+    $url      = 'https://api.telegram.org/bot' . $token . '/sendMessage';
+    $response = wp_remote_post($url, [
+        'timeout' => 10,
+        'body'    => [
+            'chat_id'                  => $chat_id,
+            'text'                     => $text,
+            'disable_web_page_preview' => true,
+        ],
+    ]);
+
+    if (is_wp_error($response)) {
+        error_log('[LoraLeya] Telegram WP_Error: ' . $response->get_error_message());
+        return false;
+    }
+
+    $code = wp_remote_retrieve_response_code($response);
+    $body = wp_remote_retrieve_body($response);
+    $data = json_decode($body, true);
+
+    if ($code !== 200 || empty($data['ok'])) {
+        error_log('[LoraLeya] Telegram API error: ' . $body);
+        return false;
+    }
+
+    return true;
+}

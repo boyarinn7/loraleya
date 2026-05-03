@@ -276,8 +276,11 @@ $colors = get_terms([
                             </div>
                         </div>
 
-                        <!-- Honeypot — скрытое поле для отлова ботов (заработает в ТЗ-2) -->
+                        <!-- Honeypot — скрытое поле для отлова ботов -->
                         <input type="text" name="website" class="co-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+
+                        <!-- WordPress nonce для защиты от CSRF -->
+                        <?php wp_nonce_field('loraleya_custom_order', 'co_nonce'); ?>
 
                         <!-- Согласие на обработку ПД -->
                         <div class="co-consent">

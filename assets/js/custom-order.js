@@ -108,11 +108,74 @@
         });
     });
 
-    /* ── Submit stub ── */
+    /* ── Submit (реальная отправка через AJAX) ── */
     var form       = document.getElementById('customOrderForm');
     var btnSubmit  = form ? form.querySelector('.co-btn-submit') : null;
     var resSuccess = document.getElementById('coResultSuccess');
     var resError   = document.getElementById('coResultError');
+
+    function showError(msg) {
+        if (!resError) return;
+        resError.hidden = false;
+        if (msg) {
+            resError.innerHTML = '<strong>Ошибка отправки.</strong> ' + msg;
+        }
+        resError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function showSuccess(msg) {
+        if (!resSuccess) return;
+        resSuccess.hidden = false;
+        if (msg) {
+            resSuccess.innerHTML = '<strong>Заявка отправлена!</strong> ' + msg;
+        }
+        resSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    function collectFormData() {
+        var fd = new FormData();
+
+        fd.append('action', 'loraleya_custom_order');
+
+        var nonceEl = form.querySelector('input[name="co_nonce"]');
+        if (nonceEl) fd.append('co_nonce', nonceEl.value);
+
+        var honey = form.querySelector('input[name="website"]');
+        if (honey) fd.append('website', honey.value);
+
+        fd.append('customer_name',    document.getElementById('coName').value.trim());
+        fd.append('customer_contact', document.getElementById('coContact').value.trim());
+        fd.append('customer_notes',   document.getElementById('coNotes').value.trim());
+
+        if (document.getElementById('coConsent').checked) fd.append('consent', '1');
+
+        var shapeOn = document.querySelector('.co-shape.co-shape--on');
+        if (shapeOn) {
+            fd.append('shape',      shapeOn.dataset.value || '');
+            fd.append('shape_name', shapeOn.dataset.name  || '');
+        }
+
+        fd.append('dim_length', document.getElementById('coDimL').value || '');
+        fd.append('dim_width',  document.getElementById('coDimW').value || '');
+
+        var persOn = document.querySelector('.co-per.co-per--on');
+        if (persOn) fd.append('persons', persOn.dataset.value || '');
+
+        var colorOn = document.querySelector('.co-sw.co-sw--on');
+        if (colorOn) {
+            fd.append('color',      colorOn.dataset.value || '');
+            fd.append('color_name', colorOn.dataset.name  || '');
+        }
+
+        var itemsEl = document.getElementById('coSumItems');
+        if (itemsEl) fd.append('items_summary', itemsEl.textContent.trim());
+
+        if (document.getElementById('coOptMono').checked)  fd.append('opt_monogram', '1');
+        if (document.getElementById('coOptEdge').checked)  fd.append('opt_edge',     '1');
+        if (document.getElementById('coOptRings').checked) fd.append('opt_rings',    '1');
+
+        return fd;
+    }
 
     if (form) {
         form.addEventListener('submit', function (e) {
@@ -135,12 +198,41 @@
 
             if (!valid) return;
 
+            if (resError)   resError.hidden = true;
+            if (resSuccess) resSuccess.hidden = true;
             if (btnSubmit)  btnSubmit.disabled = true;
-            if (resError)   resError.hidden    = true;
-            if (resSuccess) {
-                resSuccess.hidden = false;
-                resSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }
+            if (btnSubmit)  btnSubmit.textContent = 'Отправляется…';
+
+            var ajaxUrl = (window.loraleya && window.loraleya.ajax_url)
+                ? window.loraleya.ajax_url
+                : '/wp-admin/admin-ajax.php';
+
+            fetch(ajaxUrl, {
+                method: 'POST',
+                credentials: 'same-origin',
+                body: collectFormData()
+            })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                if (data && data.success) {
+                    showSuccess(data.data && data.data.message ? data.data.message : '');
+                    if (btnSubmit) btnSubmit.textContent = 'Отправлено ✓';
+                } else {
+                    var msg = (data && data.data && data.data.message) ? data.data.message : 'Попробуйте ещё раз.';
+                    showError(msg);
+                    if (btnSubmit) {
+                        btnSubmit.disabled = false;
+                        btnSubmit.textContent = 'Отправить заявку →';
+                    }
+                }
+            })
+            .catch(function () {
+                showError('Проблема с сетью. Проверьте подключение и попробуйте снова.');
+                if (btnSubmit) {
+                    btnSubmit.disabled = false;
+                    btnSubmit.textContent = 'Отправить заявку →';
+                }
+            });
         });
     }
 
