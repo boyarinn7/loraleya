@@ -131,24 +131,24 @@ $colors = get_terms([
                             $first = true;
                             foreach ($colors as $color) {
                                 $hex = get_term_meta($color->term_id, 'color_hex', true) ?: '#888';
+                                $swatch_url = function_exists('loraleya_color_swatch_url')
+                                    ? loraleya_color_swatch_url($color->slug)
+                                    : '';
+                                $bg_style = $swatch_url
+                                    ? 'background-image:url(' . esc_url($swatch_url) . ');background-color:' . esc_attr($hex) . ';'
+                                    : 'background:' . esc_attr($hex) . ';';
                                 $cls = 'co-sw' . ($first ? ' co-sw--on' : '');
                                 printf(
-                                    '<div class="%s" data-value="%s" data-name="%s" style="background:%s" title="%s"></div>',
+                                    '<div class="%s" data-value="%s" data-name="%s" style="%s" title="%s"><span class="co-sw-label">%s</span></div>',
                                     esc_attr($cls),
                                     esc_attr($color->slug),
                                     esc_attr($color->name),
-                                    esc_attr($hex),
-                                    esc_attr($color->name)
+                                    $bg_style,
+                                    esc_attr($color->name),
+                                    esc_html($color->name)
                                 );
                                 $first = false;
                             }
-                        }
-                        ?>
-                    </div>
-                    <div class="co-color-chosen" id="coColorLabel">
-                        <?php
-                        if (!empty($colors) && !is_wp_error($colors)) {
-                            echo esc_html($colors[0]->name);
                         }
                         ?>
                     </div>

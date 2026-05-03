@@ -32,9 +32,7 @@
         el.addEventListener('click', function () {
             swatches.forEach(function (s) { s.classList.remove('co-sw--on'); });
             el.classList.add('co-sw--on');
-            var name = el.dataset.name || '';
-            if (colorLabel) colorLabel.textContent = name;
-            if (sumColor)   sumColor.textContent   = name;
+            if (sumColor) sumColor.textContent = el.dataset.name || '';
         });
     });
 
