@@ -2910,8 +2910,6 @@ h4 { font-size: 1.1rem; }
     background: var(--bg2);
     border: 1px solid rgba(197,165,90,.1);
     padding: 2.5rem;
-    max-width: 860px;
-    margin: 0 auto;
 }
 
 /* Step */
@@ -3103,7 +3101,6 @@ h4 { font-size: 1.1rem; }
     flex-wrap: wrap;
     margin-bottom: 0.7rem;
     margin-left: 2.2rem;
-    margin-right: -10rem;
 }
 
 .co-sw {
@@ -3314,6 +3311,7 @@ h4 { font-size: 1.1rem; }
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-width: 700px;
 }
 
 .co-ct-row {
@@ -3567,9 +3565,6 @@ textarea.co-ct-input {
         min-width: 100px;
         padding: 1rem;
     }
-    .co-swatches {
-        margin-right: 0;
-    }
 }
 
 @media (max-width: 640px) {
@@ -3605,8 +3600,5 @@ textarea.co-ct-input {
     .co-consent,
     .co-step-hint {
         margin-left: 0;
-    }
-    .co-swatches {
-        margin-right: 0;
     }
 }
