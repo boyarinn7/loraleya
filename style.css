@@ -3485,6 +3485,37 @@ textarea.co-ct-input {
     color: #e08080;
 }
 
+/* Подсветка ошибки на блоке согласия с ПД */
+.co-consent--error {
+    border: 1px solid rgba(180,80,80,.6);
+    background: rgba(180,80,80,.06);
+    padding: 0.8rem 1rem;
+    margin-left: -1rem;
+    margin-right: -1rem;
+    transition: all 0.3s ease;
+}
+
+.co-consent--error .co-opt-cb {
+    border-color: #b45050;
+    box-shadow: 0 0 0 2px rgba(180,80,80,.2);
+}
+
+/* Inline-сообщение об ошибке валидации */
+.co-form-error {
+    font-size: 0.7rem;
+    color: #d97676;
+    font-weight: 400;
+    margin-top: 0.8rem;
+    padding: 0.6rem 0.8rem;
+    background: rgba(180,80,80,.08);
+    border-left: 2px solid #b45050;
+    line-height: 1.5;
+}
+
+.co-form-error[hidden] {
+    display: none;
+}
+
 /* FAQ */
 .co-faq-sec {
     padding: 3rem 0 4rem;

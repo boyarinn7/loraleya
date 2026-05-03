@@ -168,7 +168,7 @@ $colors = get_terms([
                                 <div class="co-item-size">По размерам вашего стола</div>
                             </div>
                             <div class="co-item-right">
-                                <div class="co-toggle co-toggle--on" data-on="1"><div class="co-toggle-dot"></div></div>
+                                <div class="co-toggle" data-on="0"><div class="co-toggle-dot"></div></div>
                                 <div class="co-qty">
                                     <button type="button" class="co-qty-btn" data-delta="-1">−</button>
                                     <span class="co-qty-val">1</span>
@@ -196,10 +196,10 @@ $colors = get_terms([
                                 <div class="co-item-size">40 × 40 см</div>
                             </div>
                             <div class="co-item-right">
-                                <div class="co-toggle co-toggle--on" data-on="1"><div class="co-toggle-dot"></div></div>
+                                <div class="co-toggle" data-on="0"><div class="co-toggle-dot"></div></div>
                                 <div class="co-qty">
                                     <button type="button" class="co-qty-btn" data-delta="-1">−</button>
-                                    <span class="co-qty-val">4</span>
+                                    <span class="co-qty-val">1</span>
                                     <button type="button" class="co-qty-btn" data-delta="1">+</button>
                                 </div>
                             </div>
@@ -210,10 +210,10 @@ $colors = get_terms([
                                 <div class="co-item-size">9 × 24 см</div>
                             </div>
                             <div class="co-item-right">
-                                <div class="co-toggle co-toggle--on" data-on="1"><div class="co-toggle-dot"></div></div>
+                                <div class="co-toggle" data-on="0"><div class="co-toggle-dot"></div></div>
                                 <div class="co-qty">
                                     <button type="button" class="co-qty-btn" data-delta="-1">−</button>
-                                    <span class="co-qty-val">4</span>
+                                    <span class="co-qty-val">1</span>
                                     <button type="button" class="co-qty-btn" data-delta="1">+</button>
                                 </div>
                             </div>

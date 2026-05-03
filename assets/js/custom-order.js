@@ -2,6 +2,54 @@
 (function () {
     'use strict';
 
+    /* ── Inline-сообщение об ошибках формы ── */
+    var formErrorEl = null;
+    function ensureFormErrorEl() {
+        if (formErrorEl) return formErrorEl;
+        formErrorEl = document.createElement('div');
+        formErrorEl.className = 'co-form-error';
+        formErrorEl.hidden = true;
+        var btn = document.querySelector('.co-btn-submit');
+        if (btn && btn.parentNode) {
+            btn.parentNode.appendChild(formErrorEl);
+        }
+        return formErrorEl;
+    }
+
+    function showFormError(msg, scrollTarget) {
+        var el = ensureFormErrorEl();
+        el.textContent = msg;
+        el.hidden = false;
+        if (scrollTarget && scrollTarget.scrollIntoView) {
+            scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }
+
+    function hideFormError() {
+        if (formErrorEl) formErrorEl.hidden = true;
+    }
+
+    /* Снимать ошибочную подсветку с блока согласия как только клиент поставил галочку */
+    var initialConsentEl = document.getElementById('coConsent');
+    var initialConsentBlock = document.querySelector('.co-consent');
+    if (initialConsentEl && initialConsentBlock) {
+        initialConsentEl.addEventListener('change', function () {
+            if (initialConsentEl.checked) {
+                initialConsentBlock.classList.remove('co-consent--error');
+                hideFormError();
+            }
+        });
+    }
+
+    /* На старте: затемнить .co-qty в строках где тоггл выключен */
+    document.querySelectorAll('.co-item-row').forEach(function (row) {
+        var toggle = row.querySelector('.co-toggle');
+        var qty    = row.querySelector('.co-qty');
+        if (toggle && qty && toggle.dataset.on !== '1') {
+            qty.style.opacity = '0.3';
+        }
+    });
+
     /* ── Shape selector ── */
     var shapes = document.querySelectorAll('.co-shape');
     var sumShape = document.getElementById('coSumShape');
@@ -181,23 +229,43 @@
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
-            var nameEl    = document.getElementById('coName');
-            var contactEl = document.getElementById('coContact');
-            var consentEl = document.getElementById('coConsent');
+            var nameEl       = document.getElementById('coName');
+            var contactEl    = document.getElementById('coContact');
+            var consentEl    = document.getElementById('coConsent');
+            var consentBlock = document.querySelector('.co-consent');
 
-            var valid = true;
+            // Сбрасываем предыдущие визуальные ошибки
+            hideFormError();
+            if (consentBlock) consentBlock.classList.remove('co-consent--error');
+            [nameEl, contactEl].forEach(function (el) {
+                if (el) el.classList.remove('co-ct-input--error');
+            });
+
+            // Валидация имени и контакта
+            var missingFields = false;
             [nameEl, contactEl].forEach(function (el) {
                 if (!el || !el.value.trim()) {
                     if (el) el.classList.add('co-ct-input--error');
-                    valid = false;
-                } else {
-                    if (el) el.classList.remove('co-ct-input--error');
+                    missingFields = true;
                 }
             });
-            if (!consentEl || !consentEl.checked) valid = false;
 
-            if (!valid) return;
+            if (missingFields) {
+                showFormError('Заполните имя и контактный номер.', nameEl);
+                return;
+            }
 
+            // Валидация согласия с ПД
+            if (!consentEl || !consentEl.checked) {
+                if (consentBlock) consentBlock.classList.add('co-consent--error');
+                showFormError(
+                    'Чтобы отправить заявку, отметьте согласие с политикой обработки персональных данных.',
+                    consentBlock
+                );
+                return;
+            }
+
+            // Всё ок, отправляем
             if (resError)   resError.hidden = true;
             if (resSuccess) resSuccess.hidden = true;
             if (btnSubmit)  btnSubmit.disabled = true;
@@ -217,6 +285,7 @@
                 if (data && data.success) {
                     showSuccess(data.data && data.data.message ? data.data.message : '');
                     if (btnSubmit) btnSubmit.textContent = 'Отправлено ✓';
+                    setTimeout(function () { resetFormToInitial(); }, 5000);
                 } else {
                     var msg = (data && data.data && data.data.message) ? data.data.message : 'Попробуйте ещё раз.';
                     showError(msg);
@@ -234,6 +303,82 @@
                 }
             });
         });
+    }
+
+    /* ── Автосброс формы в начальное состояние ── */
+    function resetFormToInitial() {
+        if (!form) return;
+
+        if (resSuccess) resSuccess.hidden = true;
+        if (resError)   resError.hidden   = true;
+        hideFormError();
+
+        if (btnSubmit) {
+            btnSubmit.disabled    = false;
+            btnSubmit.textContent = 'Отправить заявку →';
+        }
+
+        ['coName', 'coContact', 'coNotes', 'coDimL', 'coDimW'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) {
+                el.value = '';
+                el.classList.remove('co-ct-input--error');
+            }
+        });
+
+        ['coOptMono', 'coOptEdge', 'coOptRings', 'coConsent'].forEach(function (id) {
+            var el = document.getElementById(id);
+            if (el) el.checked = false;
+        });
+
+        var consentBlock = document.querySelector('.co-consent');
+        if (consentBlock) consentBlock.classList.remove('co-consent--error');
+
+        var allShapes = document.querySelectorAll('.co-shape');
+        allShapes.forEach(function (s) { s.classList.remove('co-shape--on'); });
+        if (allShapes.length) {
+            allShapes[0].classList.add('co-shape--on');
+            var sumShape = document.getElementById('coSumShape');
+            if (sumShape) sumShape.textContent = allShapes[0].dataset.name || '';
+        }
+
+        var allPers = document.querySelectorAll('.co-per');
+        allPers.forEach(function (p) { p.classList.remove('co-per--on'); });
+        if (allPers.length) {
+            allPers[0].classList.add('co-per--on');
+            var sumPers = document.getElementById('coSumPers');
+            if (sumPers) sumPers.textContent = allPers[0].dataset.value || '';
+        }
+
+        var allSw = document.querySelectorAll('.co-sw');
+        allSw.forEach(function (s) { s.classList.remove('co-sw--on'); });
+        if (allSw.length) {
+            allSw[0].classList.add('co-sw--on');
+            var sumColor = document.getElementById('coSumColor');
+            if (sumColor) sumColor.textContent = allSw[0].dataset.name || '';
+        }
+
+        document.querySelectorAll('.co-item-row').forEach(function (row) {
+            var toggle   = row.querySelector('.co-toggle');
+            var qty      = row.querySelector('.co-qty-val');
+            var qtyBlock = row.querySelector('.co-qty');
+            if (toggle) {
+                toggle.dataset.on = '0';
+                toggle.classList.remove('co-toggle--on');
+            }
+            if (qty) qty.textContent = '1';
+            if (qtyBlock) qtyBlock.style.opacity = '0.3';
+        });
+
+        var sumSize = document.getElementById('coSumSize');
+        if (sumSize) sumSize.textContent = 'Укажите выше';
+
+        updateItemsSummary();
+
+        var configSection = document.querySelector('.co-config');
+        if (configSection) {
+            configSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
     }
 
 })();
