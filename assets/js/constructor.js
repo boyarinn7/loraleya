@@ -161,6 +161,17 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- INIT ---
+    // Активировать дефолтный свотч по data-default-color на контейнере палитры
+    var swatchesContainer = constructor.querySelector('.swatches');
+    var defaultColor = swatchesContainer ? swatchesContainer.dataset.defaultColor : null;
+    if (defaultColor) {
+        var defaultSwatch = constructor.querySelector('.sw[data-color="' + defaultColor + '"]');
+        if (defaultSwatch) {
+            constructor.querySelectorAll('.sw').forEach(function (s) { s.classList.remove('on'); });
+            defaultSwatch.classList.add('on');
+        }
+    }
+
     var defaultPersons = parseInt(constructor.dataset.defaultPersons) || 2;
     var defaultBtn = constructor.querySelector('.pbtn[data-persons="' + defaultPersons + '"]');
     if (defaultBtn) defaultBtn.click();

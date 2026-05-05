@@ -442,6 +442,25 @@ function loraleya_color_swatch_url($slug) {
     return '';
 }
 
+/**
+ * Возвращает дефолтные цвет и количество персон для конкретного сценария.
+ *
+ * @param string $scenario_slug Slug сценария (post_name CPT scenario)
+ * @return array ['color' => slug_цвета, 'persons' => число_персон]
+ */
+function loraleya_get_scenario_defaults($scenario_slug) {
+    $defaults = [
+        'romanticheskij-uzhin' => ['color' => 'fioletovyj',      'persons' => 4],
+        'semejnyj-obed'        => ['color' => 'zelenyj',         'persons' => 4],
+        'prazdnichnyj-stol'    => ['color' => 'melanzh-zoloto',  'persons' => 6],
+        'kazhdyj-den'          => ['color' => 'melanzh-serebro', 'persons' => 4],
+    ];
+
+    $fallback = ['color' => 'bezhevyj', 'persons' => 4];
+
+    return $defaults[$scenario_slug] ?? $fallback;
+}
+
 /* =============================================
    CUSTOM ORDER FORM HANDLER
    ============================================= */

@@ -88,6 +88,10 @@ if (isset($slug_aliases[$slug])) {
     $slug = $slug_aliases[$slug];
 }
 $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
+
+// Дефолтный цвет и персоны для текущего сценария
+$scenario_defaults = loraleya_get_scenario_defaults($slug);
+$default_color     = $scenario_defaults['color'];
 ?>
 
 <!-- HERO -->
@@ -158,7 +162,7 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
             <!-- 1. Color -->
             <div class="grp">
                 <div class="grp-title"><span class="grp-num">1</span> Выберите цвет</div>
-                <div class="swatches" id="swatches">
+                <div class="swatches" id="swatches" data-default-color="<?php echo esc_attr($default_color); ?>">
                     <?php
                     // Рекомендуемые цвета первыми
                     $rec_hexes = array_column($data['colors'], 'hex');
@@ -185,24 +189,17 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
                     $rec = array_filter($all_colors, fn($c) => in_array($c['hex'], $rec_hexes));
                     $rest = array_filter($all_colors, fn($c) => !in_array($c['hex'], $rec_hexes));
                     $sorted = array_merge(array_values($rec), array_values($rest));
-                    $first = true;
                     $dark_borders = ['#f0ece4','#2a2520','#2e2e2c'];
                     foreach ($sorted as $c) :
                         $border = in_array($c['hex'], $dark_borders) ? 'border:1px solid rgba(197,165,90,.2);' : '';
-                        $on = $first ? ' on' : '';
-                    ?>
-                        <?php
+                        $on = ($c['slug'] === $default_color) ? ' on' : '';
                         $swatch_url = function_exists('loraleya_color_swatch_url') ? loraleya_color_swatch_url($c['slug']) : '';
                         $bg_style = $swatch_url
                             ? 'background-image:url(' . esc_url($swatch_url) . ');background-size:cover;background-position:center;'
                             : 'background:' . $c['hex'] . ';';
-                        ?>
-                        <div class="sw<?php echo $on; ?>" style="<?php echo $bg_style; ?><?php echo $border; ?>" data-name="<?php echo $c['name']; ?>"></div>
-                    <?php
-                        if ($first) $default_color_name = $c['name'];
-                        $first = false;
-                    endforeach;
                     ?>
+                        <div class="sw<?php echo $on; ?>" style="<?php echo $bg_style; ?><?php echo $border; ?>" data-color="<?php echo esc_attr($c['slug']); ?>" data-name="<?php echo esc_attr($c['name']); ?>"></div>
+                    <?php endforeach; ?>
                 </div>
 
             </div>
