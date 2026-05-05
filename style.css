@@ -1488,22 +1488,25 @@ h4 { font-size: 1.1rem; }
 }
 
 .btn-s {
-    padding: 0.5rem 1.3rem;
+    min-width: 200px;
+    padding: 0.85rem 2rem;
     border: 1px solid var(--gold);
-    color: var(--gold);
-    background: transparent;
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
+    background: var(--gold);
+    color: var(--bg);
+    font-size: 0.65rem;
+    letter-spacing: 0.16em;
     text-transform: uppercase;
     cursor: pointer;
     transition: all 0.3s;
     font-family: var(--sans);
-    font-weight: 500;
+    font-weight: 600;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .btn-s:hover {
-    background: var(--gold);
-    color: var(--bg);
+    background: var(--gold-light);
+    border-color: var(--gold-light);
 }
 
 /* Product categories */
@@ -1646,8 +1649,8 @@ h4 { font-size: 1.1rem; }
 
 .total-left {
     display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
+    flex-direction: column;
+    align-items: flex-start;
 }
 
 .total-lbl {
@@ -1673,25 +1676,42 @@ h4 { font-size: 1.1rem; }
     margin-left: 0.5rem;
 }
 
+.total-row {
+    display: flex;
+    align-items: baseline;
+    gap: 0.7rem;
+}
+
+.total-hint {
+    font-size: 0.55rem;
+    color: var(--text-muted);
+    font-family: var(--sans);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+    margin-top: 0.25rem;
+}
+
 .btn-cart {
     display: flex;
     align-items: center;
     gap: 0.7rem;
     padding: 0.9rem 2.2rem;
-    background: var(--gold);
-    color: var(--bg);
+    background: transparent;
+    color: var(--gold);
     font-size: 0.65rem;
     letter-spacing: 0.16em;
     text-transform: uppercase;
     font-weight: 600;
-    border: none;
+    border: 1px solid var(--gold);
     cursor: pointer;
     transition: all 0.3s;
     font-family: var(--sans);
+    white-space: nowrap;
 }
 
 .btn-cart:hover {
-    background: var(--gold-light);
+    background: var(--gold);
+    color: var(--bg);
 }
 
 /* Cart pop animation */

@@ -214,6 +214,7 @@ function loraleya_build_item_map($color_slug) {
         'Салфетка'      => [48, null,     null],
         'Куверт'        => [49, null,     null],
         // Готовые наборы (variable, product_id = 50)
+        'Набор 2п/140'  => [50, '2п-140', 'razmer-nabora'],
         'Набор 4п/140'  => [50, '4п-140', 'razmer-nabora'],
         'Набор 4п/175'  => [50, '4п-175', 'razmer-nabora'],
         'Набор 6п/240'  => [50, '6п-140', 'razmer-nabora'],

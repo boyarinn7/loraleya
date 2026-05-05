@@ -273,7 +273,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             </div>
 
             <!-- SET SHORTCUT -->
-            <div class="set-box" id="setBox" style="<?php echo $data['default_persons'] === 2 ? 'display:none' : ''; ?>">
+            <div class="set-box" id="setBox">
                 <div>
                     <h4 id="setTitle">Готовый набор на <?php echo $data['default_persons']; ?> персон<?php echo $data['default_persons'] === 4 ? 'ы' : ''; ?> — выгоднее на 15%</h4>
                     <p id="setDesc">Дорожка 40×140 + <?php echo $data['default_persons']; ?> салфеток + <?php echo $data['default_persons']; ?> кувертов</p>
@@ -294,25 +294,25 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
                     <div class="cat-label">Дорожки на стол</div>
                     <div class="ir" data-price="890">
                         <div><div class="ir-name">Дорожка 40 × 140 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
-                        <div class="ir-price">890 ₽</div>
+                        <div class="ir-price">890 ₽ / шт</div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
                     <div class="ir" data-price="990">
                         <div><div class="ir-name">Дорожка 40 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
-                        <div class="ir-price">990 ₽</div>
+                        <div class="ir-price">990 ₽ / шт</div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
                     <div class="ir" data-price="1290">
                         <div><div class="ir-name">Дорожка 40 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · Для длинных столов</div></div>
-                        <div class="ir-price">1 290 ₽</div>
+                        <div class="ir-price">1 290 ₽ / шт</div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
                     <div class="ir" data-price="1590">
                         <div><div class="ir-name">Дорожка 40 × 300 см</div><div class="ir-size">Жаккард · 100% полиэстер · Максимальный размер</div></div>
-                        <div class="ir-price">1 590 ₽</div>
+                        <div class="ir-price">1 590 ₽ / шт</div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
@@ -323,19 +323,19 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
                     <div class="cat-label">Скатерти</div>
                     <div class="ir" data-price="2490">
                         <div><div class="ir-name">Скатерть 140 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 4 персоны</div></div>
-                        <div class="ir-price">2 490 ₽</div>
+                        <div class="ir-price">2 490 ₽ / шт</div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
                     <div class="ir" data-price="2990">
                         <div><div class="ir-name">Скатерть 140 × 220 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 6 персон</div></div>
-                        <div class="ir-price">2 990 ₽</div>
+                        <div class="ir-price">2 990 ₽ / шт</div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
                     <div class="ir" data-price="3490">
                         <div><div class="ir-name">Скатерть 140 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 8 персон</div></div>
-                        <div class="ir-price">3 490 ₽</div>
+                        <div class="ir-price">3 490 ₽ / шт</div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
@@ -373,9 +373,12 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             <div class="total-sticky" id="totalSticky">
                 <div class="total-inner">
                     <div class="total-left">
-                        <span class="total-lbl">Итого</span>
-                        <span class="total-sum" id="totalSum">0 ₽</span>
-                        <span class="total-items" id="totalItems">—</span>
+                        <div class="total-row">
+                            <span class="total-lbl">Итого</span>
+                            <span class="total-sum" id="totalSum">0 ₽</span>
+                            <span class="total-items" id="totalItems">—</span>
+                        </div>
+                        <div class="total-hint">Сумма выбранных позиций. Чтобы увидеть полный заказ, откройте корзину</div>
                     </div>
                     <button class="btn-cart" id="addCartBtn">В корзину →</button>
                 </div>

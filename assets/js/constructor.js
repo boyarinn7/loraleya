@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // --- SET DATA ---
     const setData = {
+        2: { title: 'Готовый набор на 2 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 2 салфетки + 2 куверта', oldPrice: 2090, newPrice: 1780 },
         4: { title: 'Готовый набор на 4 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 4 салфетки + 4 куверта', oldPrice: 3290, newPrice: 2800 },
         6: { title: 'Готовый набор на 6 персон — выгоднее на 15%', desc: 'Дорожка 40×140 + 6 салфеток + 6 кувертов', oldPrice: 4490, newPrice: 3820 }
     };
@@ -30,13 +31,11 @@ document.addEventListener('DOMContentLoaded', function() {
             if (napkin) { napkin.textContent = n; updateRowSub(napkin.closest('.ir')); }
             if (couverte) { couverte.textContent = n; updateRowSub(couverte.closest('.ir')); }
 
-            // Show/hide set box
+            // Update set box for selected persons count
             var setBox = document.getElementById('setBox');
-            if (n === 2) {
-                setBox.style.display = 'none';
-            } else {
-                setBox.style.display = 'flex';
-                var d = setData[n];
+            setBox.style.display = 'flex';
+            var d = setData[n];
+            if (d) {
                 document.getElementById('setTitle').textContent = d.title;
                 document.getElementById('setDesc').textContent = d.desc;
                 document.getElementById('setOld').textContent = formatPrice(d.oldPrice);
@@ -228,21 +227,17 @@ document.addEventListener('DOMContentLoaded', function() {
 
         var setBox = document.getElementById('setBox');
         if (setBox) {
-            if (defaultPersons === 2) {
-                setBox.style.display = 'none';
-            } else {
-                setBox.style.display = 'flex';
-                var d = setData[defaultPersons];
-                if (d) {
-                    var t  = document.getElementById('setTitle');
-                    var s  = document.getElementById('setDesc');
-                    var op = document.getElementById('setOld');
-                    var np = document.getElementById('setNew');
-                    if (t)  t.textContent  = d.title;
-                    if (s)  s.textContent  = d.desc;
-                    if (op) op.textContent = formatPrice(d.oldPrice);
-                    if (np) np.textContent = formatPrice(d.newPrice);
-                }
+            setBox.style.display = 'flex';
+            var d = setData[defaultPersons];
+            if (d) {
+                var t  = document.getElementById('setTitle');
+                var s  = document.getElementById('setDesc');
+                var op = document.getElementById('setOld');
+                var np = document.getElementById('setNew');
+                if (t)  t.textContent  = d.title;
+                if (s)  s.textContent  = d.desc;
+                if (op) op.textContent = formatPrice(d.oldPrice);
+                if (np) np.textContent = formatPrice(d.newPrice);
             }
         }
     }
