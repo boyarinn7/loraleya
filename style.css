@@ -2796,6 +2796,33 @@ h4 { font-size: 1.1rem; }
     color: var(--bg);
 }
 
+/* Outline-кнопка "Добавить в другом цвете" */
+.ll-cart-modal__add-more {
+    display: block;
+    padding: 0.85rem 1.5rem;
+    background: transparent;
+    color: var(--gold);
+    font-family: var(--sans);
+    font-size: 0.65rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    text-align: center;
+    border: 1px solid var(--gold);
+    cursor: pointer;
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.ll-cart-modal__add-more:hover {
+    background: var(--gold);
+    color: var(--bg);
+}
+
+.ll-cart-modal__add-more[hidden] {
+    display: none;
+}
+
 /* Mobile: bottom-sheet */
 @media (pointer: coarse) and (max-width: 767px) {
     .ll-cart-modal__panel {

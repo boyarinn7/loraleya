@@ -40,6 +40,7 @@
                 <span class="ll-cart-modal__total-sum" id="llCartModalTotal">0 ₽</span>
             </div>
             <a href="<?php echo esc_url(wc_get_cart_url()); ?>" class="ll-cart-modal__checkout">Оформить заказ →</a>
+            <button type="button" class="ll-cart-modal__add-more" id="llCartAddMore" hidden>+ Добавить в другом цвете</button>
         </div>
     </div>
 </div>

@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // === CART WIDGET (icon + modal) ===
 (function() {
-    var fab, fabBadge, modal, modalBody, modalFooter, modalTotal;
+    var fab, fabBadge, modal, modalBody, modalFooter, modalTotal, addMoreBtn;
 
     function $(sel) { return document.querySelector(sel); }
 
@@ -368,8 +368,15 @@ document.addEventListener('DOMContentLoaded', function() {
         modalBody   = $('#llCartModalBody');
         modalFooter = $('#llCartModalFooter');
         modalTotal  = $('#llCartModalTotal');
+        addMoreBtn  = $('#llCartAddMore');
 
         if (!fab || !modal) return;
+
+        // "Добавить в другом цвете" доступна только на страницах с конструктором
+        if (addMoreBtn && hasConstructor()) {
+            addMoreBtn.removeAttribute('hidden');
+            addMoreBtn.addEventListener('click', handleAddMore);
+        }
 
         fab.addEventListener('click', openModal);
 
@@ -518,6 +525,17 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(function() {
                 item.querySelectorAll('button').forEach(function(b) { b.disabled = false; });
             });
+    }
+
+    function hasConstructor() {
+        return !!document.getElementById('constructor');
+    }
+
+    function handleAddMore() {
+        closeModal();
+        setTimeout(function() {
+            document.dispatchEvent(new CustomEvent('loraleya:constructor-reset'));
+        }, 300);
     }
 
     function escapeHtml(str) {

@@ -241,4 +241,20 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
     }
+
+    // --- LISTEN FOR EXTERNAL RESET (от кнопки "Добавить в другом цвете") ---
+    document.addEventListener('loraleya:constructor-reset', function() {
+        constructor.querySelectorAll('.ir').forEach(function(row) {
+            var qv = row.querySelector('.qv');
+            if (qv) qv.textContent = '0';
+            updateRowSub(row);
+        });
+
+        recalcTotal();
+
+        var firstStep = constructor.querySelector('.grp');
+        if (firstStep) {
+            firstStep.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+    });
 });
