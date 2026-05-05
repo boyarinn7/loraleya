@@ -1101,6 +1101,13 @@ h4 { font-size: 1.1rem; }
     display: flex;
     align-items: center;
     justify-content: center;
+    background-size: cover;
+    background-position: center;
+    transition: background-image 0.4s ease;
+}
+
+.sc-gallery-item .sc-gallery-ph {
+    pointer-events: none;
 }
 
 .sc-gallery-item:first-child {

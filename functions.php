@@ -636,3 +636,80 @@ function loraleya_send_telegram($token, $chat_id, $text) {
 
     return true;
 }
+
+/**
+ * Возвращает URL фото из медиабиблиотеки по slug цвета и типу.
+ *
+ * @param string $color_slug Slug цвета из таксономии pa_fabric_color
+ * @param string $type       Тип: 'salfetka-tsvetok', 'kuvert', 'macro-faktura',
+ *                           'nabor-4-140', 'nabor-4-175', 'nabor-6-300' и т.д.
+ * @return string URL или пустая строка
+ */
+function loraleya_get_color_photo_url($color_slug, $type) {
+    static $cache = [];
+    $cache_key = $color_slug . '|' . $type;
+    if (isset($cache[$cache_key])) {
+        return $cache[$cache_key];
+    }
+
+    $prefix_map = [
+        'bezhevyj'          => 'bezheviy',
+        'belyj'             => 'beliy',
+        'biryuza'           => 'biruza',
+        'blek-zoloto'       => 'blek-zoloto',
+        'bronza'            => 'bronza',
+        'goluboj'           => 'goluboy',
+        'grafit'            => 'grafit',
+        'zelyonyj'          => 'zeleniy',
+        'zelenyj'           => 'zeleniy',
+        'melanzh-zoloto'    => 'melanzh-zoloto',
+        'melanzh-serebro'   => 'melanzh-serebro',
+        'melanzh-seryj'     => 'melanzh-seriy',
+        'melanzh-chyornyj'  => 'melanzh-cherniy',
+        'melanzh-chernyj'   => 'melanzh-cherniy',
+        'platina'           => 'platina',
+        'serebro'           => 'serebro',
+        'sirenevyj'         => 'sireneviy',
+        'tyomno-biryuzovyj' => 'temno-biruza',
+        'temno-biryuzovyj'  => 'temno-biruza',
+        'fioletovyj'        => 'fioletoviy',
+    ];
+
+    $prefix = $prefix_map[$color_slug] ?? null;
+    if (!$prefix) {
+        $cache[$cache_key] = '';
+        return '';
+    }
+
+    $title = $prefix . '-' . $type;
+
+    $attachments = get_posts([
+        'post_type'      => 'attachment',
+        'name'           => $title,
+        'posts_per_page' => 1,
+        'post_status'    => 'inherit',
+    ]);
+
+    if (!empty($attachments)) {
+        $url = wp_get_attachment_image_url($attachments[0]->ID, 'large');
+        $cache[$cache_key] = $url ?: '';
+        return $cache[$cache_key];
+    }
+
+    // Фолбэк: scaled-суффикс
+    $attachments = get_posts([
+        'post_type'      => 'attachment',
+        'name'           => $title . '-scaled',
+        'posts_per_page' => 1,
+        'post_status'    => 'inherit',
+    ]);
+
+    if (!empty($attachments)) {
+        $url = wp_get_attachment_image_url($attachments[0]->ID, 'large');
+        $cache[$cache_key] = $url ?: '';
+        return $cache[$cache_key];
+    }
+
+    $cache[$cache_key] = '';
+    return '';
+}

@@ -92,6 +92,24 @@ $data = $scenario_data[$slug] ?? $scenario_data['romanticheskij-uzhin'];
 // Дефолтный цвет и персоны для текущего сценария
 $scenario_defaults = loraleya_get_scenario_defaults($slug);
 $default_color     = $scenario_defaults['color'];
+
+// Готовим карту фото для всех цветов — для динамического обновления галереи в JS
+$gallery_photo_map = [];
+$all_color_slugs = [
+    'fioletovyj','grafit','bronza','sirenevyj','bezhevyj','belyj','biryuza',
+    'blek-zoloto','goluboj','zelenyj','melanzh-zoloto','melanzh-serebro',
+    'melanzh-seryj','melanzh-chernyj','platina','serebro','tyomno-biryuzovyj',
+];
+foreach ($all_color_slugs as $cs) {
+    $gallery_photo_map[$cs] = [
+        'napkin'      => loraleya_get_color_photo_url($cs, 'salfetka-tsvetok'),
+        'kuvert'      => loraleya_get_color_photo_url($cs, 'kuvert'),
+        'faktura'     => loraleya_get_color_photo_url($cs, 'macro-faktura'),
+        'nabor-4-140' => loraleya_get_color_photo_url($cs, 'nabor-4-140'),
+        'nabor-4-175' => loraleya_get_color_photo_url($cs, 'nabor-4-175'),
+        'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300'),
+    ];
+}
 ?>
 
 <!-- HERO -->
@@ -117,16 +135,56 @@ $default_color     = $scenario_defaults['color'];
 </section>
 
 <!-- GALLERY -->
+<?php
+$nabor_suffix_by_persons = [
+    2 => 'nabor-4-140',
+    4 => 'nabor-4-175',
+    6 => 'nabor-6-300',
+];
+$default_persons_int = (int) $data['default_persons'];
+$default_nabor_type  = $nabor_suffix_by_persons[$default_persons_int] ?? 'nabor-4-175';
+
+$slot_overall = loraleya_get_color_photo_url($default_color, $default_nabor_type);
+$slot_napkin  = loraleya_get_color_photo_url($default_color, 'salfetka-tsvetok');
+$slot_kuvert  = loraleya_get_color_photo_url($default_color, 'kuvert');
+$slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
+?>
 <section class="section" id="gallery">
     <div class="container">
         <div class="eyebrow">Галерея</div>
         <h2>Как это выглядит</h2>
         <p class="section-desc">Реальные фото сервировок при разном освещении</p>
-        <div class="sc-gallery">
-            <div class="sc-gallery-item"><div class="sc-gallery-ph">Фото · общий план стола</div></div>
-            <div class="sc-gallery-item"><div class="sc-gallery-ph">Детали · салфетка</div></div>
-            <div class="sc-gallery-item"><div class="sc-gallery-ph">Детали · куверт</div></div>
-            <div class="sc-gallery-item"><div class="sc-gallery-ph">Макро · фактура ткани</div></div>
+        <div class="sc-gallery"
+             data-color="<?php echo esc_attr($default_color); ?>"
+             data-persons="<?php echo esc_attr($default_persons_int); ?>">
+
+            <div class="sc-gallery-item" data-slot="overall"
+                 style="<?php echo $slot_overall ? 'background-image:url(' . esc_url($slot_overall) . ')' : ''; ?>">
+                <?php if (!$slot_overall): ?>
+                    <div class="sc-gallery-ph">Фото · общий план стола</div>
+                <?php endif; ?>
+            </div>
+
+            <div class="sc-gallery-item" data-slot="napkin"
+                 style="<?php echo $slot_napkin ? 'background-image:url(' . esc_url($slot_napkin) . ')' : ''; ?>">
+                <?php if (!$slot_napkin): ?>
+                    <div class="sc-gallery-ph">Детали · салфетка</div>
+                <?php endif; ?>
+            </div>
+
+            <div class="sc-gallery-item" data-slot="kuvert"
+                 style="<?php echo $slot_kuvert ? 'background-image:url(' . esc_url($slot_kuvert) . ')' : ''; ?>">
+                <?php if (!$slot_kuvert): ?>
+                    <div class="sc-gallery-ph">Детали · куверт</div>
+                <?php endif; ?>
+            </div>
+
+            <div class="sc-gallery-item" data-slot="faktura"
+                 style="<?php echo $slot_faktura ? 'background-image:url(' . esc_url($slot_faktura) . ')' : ''; ?>">
+                <?php if (!$slot_faktura): ?>
+                    <div class="sc-gallery-ph">Макро · фактура ткани</div>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 </section>
@@ -375,4 +433,7 @@ $default_color     = $scenario_defaults['color'];
     </div>
 </section>
 
+<script>
+window.LORALEYA_GALLERY_PHOTOS = <?php echo wp_json_encode($gallery_photo_map); ?>;
+</script>
 <?php get_footer(); ?>

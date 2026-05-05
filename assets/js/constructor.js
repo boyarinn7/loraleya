@@ -13,6 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
         sw.addEventListener('click', function() {
             constructor.querySelectorAll('.sw').forEach(function(s) { s.classList.remove('on'); });
             sw.classList.add('on');
+            updateGallery();
         });
     });
 
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             recalcTotal();
+            updateGallery();
         });
     });
 
@@ -159,6 +161,50 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // --- GALLERY UPDATE ---
+    function updateGallery() {
+        var photos = window.LORALEYA_GALLERY_PHOTOS;
+        if (!photos) return;
+
+        var gallery = document.querySelector('.sc-gallery');
+        if (!gallery) return;
+
+        var activeSwatch = constructor.querySelector('.sw.on');
+        var activePer    = constructor.querySelector('.pbtn.on');
+        if (!activeSwatch || !activePer) return;
+
+        var colorSlug = activeSwatch.dataset.color;
+        var persons   = parseInt(activePer.dataset.persons);
+
+        var colorPhotos = photos[colorSlug];
+        if (!colorPhotos) return;
+
+        var naborKey = persons === 2 ? 'nabor-4-140'
+                     : persons === 4 ? 'nabor-4-175'
+                     : 'nabor-6-300';
+        applySlot('overall', colorPhotos[naborKey]);
+        applySlot('napkin',  colorPhotos['napkin']);
+        applySlot('kuvert',  colorPhotos['kuvert']);
+        applySlot('faktura', colorPhotos['faktura']);
+
+        gallery.dataset.color   = colorSlug;
+        gallery.dataset.persons = persons;
+    }
+
+    function applySlot(slotName, url) {
+        var slot = document.querySelector('.sc-gallery-item[data-slot="' + slotName + '"]');
+        if (!slot) return;
+        if (url) {
+            slot.style.backgroundImage = "url('" + url + "')";
+            var ph = slot.querySelector('.sc-gallery-ph');
+            if (ph) ph.style.display = 'none';
+        } else {
+            slot.style.backgroundImage = '';
+            var ph2 = slot.querySelector('.sc-gallery-ph');
+            if (ph2) ph2.style.display = '';
+        }
+    }
 
     // --- INIT ---
     // Активировать дефолтный свотч по data-default-color на контейнере палитры
