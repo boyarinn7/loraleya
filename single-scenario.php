@@ -10,7 +10,7 @@ $scenario_data = [
         'gradient'    => 'linear-gradient(160deg, #2d1828 0%, #1a0f1e 40%, #0e0e0c 100%)',
         'persons'     => '2 персоны',
         'time'        => '~5 мин на сборку',
-        'default_persons' => 2,
+        'default_persons' => 4,
         'colors'      => [
             ['hex' => '#6a3a7a', 'name' => 'Фиолетовый', 'slug' => 'fioletovyj'],
             ['hex' => '#4a4844', 'name' => 'Графит', 'slug' => 'grafit'],
@@ -61,7 +61,7 @@ $scenario_data = [
         'gradient'    => 'linear-gradient(160deg, #181e24 0%, #0e1318 40%, #0e0e0c 100%)',
         'persons'     => '2–4 персоны',
         'time'        => '~3 мин на сборку',
-        'default_persons' => 2,
+        'default_persons' => 4,
         'colors'      => [
             ['hex' => '#b0b0a8', 'name' => 'Меланж серебро', 'slug' => 'melanzh-serebro'],
             ['hex' => '#787874', 'name' => 'Меланж серый', 'slug' => 'melanzh-seryj'],
