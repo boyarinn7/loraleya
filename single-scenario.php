@@ -208,9 +208,9 @@ $default_color     = $scenario_defaults['color'];
             <div class="grp">
                 <div class="grp-title"><span class="grp-num">2</span> Количество персон</div>
                 <div class="pbtn-row">
-                    <button class="pbtn<?php echo $data['default_persons'] === 2 ? ' on' : ''; ?>" data-persons="2">2 персоны</button>
-                    <button class="pbtn<?php echo $data['default_persons'] === 4 ? ' on' : ''; ?>" data-persons="4">4 персоны</button>
-                    <button class="pbtn<?php echo $data['default_persons'] === 6 ? ' on' : ''; ?>" data-persons="6">6 персон</button>
+                    <button class="pbtn" data-persons="2">2 персоны</button>
+                    <button class="pbtn" data-persons="4">4 персоны</button>
+                    <button class="pbtn" data-persons="6">6 персон</button>
                 </div>
             </div>
 

@@ -172,7 +172,32 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
+    // Дефолтные персоны: устанавливаем визуальное состояние БЕЗ триггера обработчика клика,
+    // чтобы не сработало автозаполнение салфеток/кувёртов количеством персон.
     var defaultPersons = parseInt(constructor.dataset.defaultPersons) || 2;
     var defaultBtn = constructor.querySelector('.pbtn[data-persons="' + defaultPersons + '"]');
-    if (defaultBtn) defaultBtn.click();
+    if (defaultBtn) {
+        constructor.querySelectorAll('.pbtn').forEach(function (b) { b.classList.remove('on'); });
+        defaultBtn.classList.add('on');
+
+        var setBox = document.getElementById('setBox');
+        if (setBox) {
+            if (defaultPersons === 2) {
+                setBox.style.display = 'none';
+            } else {
+                setBox.style.display = 'flex';
+                var d = setData[defaultPersons];
+                if (d) {
+                    var t  = document.getElementById('setTitle');
+                    var s  = document.getElementById('setDesc');
+                    var op = document.getElementById('setOld');
+                    var np = document.getElementById('setNew');
+                    if (t)  t.textContent  = d.title;
+                    if (s)  s.textContent  = d.desc;
+                    if (op) op.textContent = formatPrice(d.oldPrice);
+                    if (np) np.textContent = formatPrice(d.newPrice);
+                }
+            }
+        }
+    }
 });
