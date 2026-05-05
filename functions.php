@@ -63,6 +63,20 @@ function loraleya_scripts() {
         }
     }
 
+    // Передать item-map для всех 17 цветов на страницу сценария
+    if (is_singular('scenario')) {
+        $all_color_slugs = [
+            'bezhevyj','belyj','biryuza','blek-zoloto','bronza','goluboj','grafit',
+            'zelenyj','melanzh-zoloto','melanzh-serebro','melanzh-seryj','melanzh-chernyj',
+            'platina','serebro','sirenevyj','temno-biryuzovyj','fioletovyj',
+        ];
+        $map_by_color = [];
+        foreach ($all_color_slugs as $cs) {
+            $map_by_color[$cs] = loraleya_build_item_map($cs);
+        }
+        wp_localize_script('loraleya-main', 'LORALEYA_ITEM_MAP_BY_COLOR', $map_by_color);
+    }
+
     // Custom order page script
     if (is_page('custom-order')) {
         wp_enqueue_script('loraleya-custom-order', get_template_directory_uri() . '/assets/js/custom-order.js', [], '1.0.0', true);

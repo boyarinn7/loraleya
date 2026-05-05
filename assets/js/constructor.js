@@ -92,54 +92,166 @@ document.addEventListener('DOMContentLoaded', function() {
         return n.toLocaleString('ru-RU') + ' ₽';
     }
 
-    // --- ADD TO CART (visual only) ---
+    // --- HELPER: получить item_map для текущего активного цвета ---
+    function getCurrentItemMap() {
+        if (typeof window.LORALEYA_ITEM_MAP_BY_COLOR === 'undefined') return null;
+        var activeSwatch = constructor.querySelector('.sw.on');
+        if (!activeSwatch) return null;
+        var colorSlug = activeSwatch.dataset.color;
+        return window.LORALEYA_ITEM_MAP_BY_COLOR[colorSlug] || null;
+    }
+
+    // --- HELPER: проверить что wcAddToCart доступен (он живёт в main.js) ---
+    function canAddToCart() {
+        return typeof window.wcAddToCart === 'function';
+    }
+
+    // --- ADD TO CART: одиночные позиции (поштучно) ---
     var cartBtn = document.getElementById('addCartBtn');
     if (cartBtn) {
         cartBtn.addEventListener('click', function() {
-            var total = 0;
+            if (cartBtn.disabled) return;
+
+            var rowsToAdd = [];
             constructor.querySelectorAll('.ir').forEach(function(row) {
-                total += parseInt(row.querySelector('.qv').textContent);
+                var qv  = row.querySelector('.qv');
+                var qty = parseInt(qv ? qv.textContent : '0', 10);
+                var item = row.dataset.item;
+                if (qty > 0 && item) {
+                    rowsToAdd.push({ row: row, item: item, qty: qty });
+                }
             });
-            if (total === 0) {
+
+            if (rowsToAdd.length === 0) {
                 cartBtn.style.background = '#7a4a4a';
-                setTimeout(function() { cartBtn.style.background = ''; }, 500);
+                cartBtn.style.borderColor = '#7a4a4a';
+                cartBtn.style.color = '#fff';
+                setTimeout(function() {
+                    cartBtn.style.background = '';
+                    cartBtn.style.borderColor = '';
+                    cartBtn.style.color = '';
+                }, 500);
                 return;
             }
-            cartBtn.textContent = 'Добавлено ✓';
-            cartBtn.style.background = '#4a7a4a';
-            animateCartCount(total);
-            setTimeout(function() {
-                cartBtn.textContent = 'В корзину →';
-                cartBtn.style.background = '';
-            }, 2000);
+
+            if (!canAddToCart()) {
+                console.warn('wcAddToCart not available — cart not connected');
+                return;
+            }
+
+            var map = getCurrentItemMap();
+            if (!map) {
+                console.warn('No item_map for current color');
+                return;
+            }
+
+            cartBtn.disabled = true;
+            var originalText = cartBtn.textContent;
+            cartBtn.textContent = 'Отправляется…';
+
+            var pending = rowsToAdd.length;
+            var anyError = false;
+
+            rowsToAdd.forEach(function(entry) {
+                var mapped = map[entry.item];
+                if (!mapped) {
+                    anyError = true;
+                    pending--;
+                    if (pending === 0) finishAdd();
+                    return;
+                }
+                window.wcAddToCart(mapped, entry.qty, function(cart_key) {
+                    if (!cart_key) anyError = true;
+                    pending--;
+                    if (pending === 0) finishAdd();
+                });
+            });
+
+            function finishAdd() {
+                if (anyError) {
+                    cartBtn.textContent = 'Ошибка ✕';
+                    cartBtn.style.background = '#7a4a4a';
+                    cartBtn.style.borderColor = '#7a4a4a';
+                    cartBtn.style.color = '#fff';
+                    setTimeout(function() {
+                        cartBtn.disabled = false;
+                        cartBtn.textContent = originalText;
+                        cartBtn.style.background = '';
+                        cartBtn.style.borderColor = '';
+                        cartBtn.style.color = '';
+                    }, 2000);
+                    return;
+                }
+
+                rowsToAdd.forEach(function(entry) {
+                    var qv = entry.row.querySelector('.qv');
+                    if (qv) qv.textContent = '0';
+                    updateRowSub(entry.row);
+                });
+                recalcTotal();
+
+                cartBtn.textContent = 'Добавлено ✓';
+                setTimeout(function() {
+                    cartBtn.disabled = false;
+                    cartBtn.textContent = originalText;
+                }, 2000);
+            }
         });
     }
 
-    // --- ADD SET (visual only) ---
+    // --- ADD SET: добавление готового набора ---
     var setBtn = document.getElementById('addSetBtn');
     if (setBtn) {
         setBtn.addEventListener('click', function() {
-            setBtn.textContent = 'Добавлено ✓';
-            setBtn.style.background = 'var(--gold)';
-            setBtn.style.color = 'var(--bg)';
-            animateCartCount(1);
-            setTimeout(function() {
-                setBtn.textContent = 'Добавить набор';
-                setBtn.style.background = '';
-                setBtn.style.color = '';
-            }, 2000);
-        });
-    }
+            if (setBtn.disabled) return;
 
-    // --- CART COUNT ANIMATION ---
-    function animateCartCount(addItems) {
-        var cc = document.querySelector('.cart-count');
-        if (cc) {
-            cc.textContent = parseInt(cc.textContent) + addItems;
-            cc.style.animation = 'none';
-            cc.offsetHeight; // reflow
-            cc.style.animation = 'cartPop 0.3s';
-        }
+            if (!canAddToCart()) {
+                console.warn('wcAddToCart not available — cart not connected');
+                return;
+            }
+
+            var map = getCurrentItemMap();
+            if (!map) {
+                console.warn('No item_map for current color');
+                return;
+            }
+
+            var activePer = constructor.querySelector('.pbtn.on');
+            var persons = parseInt(activePer ? activePer.dataset.persons : '4', 10);
+
+            var keyByPersons = {
+                2: 'Набор 2п/140',
+                4: 'Набор 4п/140',
+                6: 'Набор 6п/240',
+            };
+            var setKey = keyByPersons[persons];
+            if (!setKey) {
+                console.warn('No set key for persons:', persons);
+                return;
+            }
+
+            var mapped = map[setKey];
+            if (!mapped) {
+                console.warn('No mapping for set:', setKey);
+                return;
+            }
+
+            setBtn.disabled = true;
+            var originalText = setBtn.textContent;
+            setBtn.textContent = 'Отправляется…';
+
+            window.wcAddToCart(mapped, 1, function(cart_key) {
+                if (cart_key) {
+                    setBtn.textContent = 'Добавлено ✓';
+                } else {
+                    setBtn.textContent = 'Ошибка ✕';
+                }
+                setTimeout(function() {
+                    setBtn.disabled = false;
+                    setBtn.textContent = originalText;
+                }, 2000);
+            });
+        });
     }
 
     // --- RECOMMENDED COLOR PILLS ---
