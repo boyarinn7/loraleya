@@ -123,6 +123,12 @@ get_header();
 </section>
 
 <!-- PRODUCTS PREVIEW -->
+<?php
+$pp_runner_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('melanzh-zoloto', 'dorozhka')      : '';
+$pp_tablecloth_url = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('platina', 'skatert')              : '';
+$pp_napkin_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('fioletovyj', 'salfetka-tsvetok')  : '';
+$pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('blek-zoloto', 'kuvert-vert')      : '';
+?>
 <section class="section">
     <div class="container">
         <div class="eyebrow">Изделия</div>
@@ -131,24 +137,36 @@ get_header();
 
         <div class="products-strip">
             <div class="product-preview">
-                <div class="product-preview__label">Дорожки</div>
-                <div class="product-preview__size">4 размера: от 140 до 300 см</div>
-                <div class="product-preview__price">от 890 ₽</div>
+                <div class="product-preview__photo" <?php echo $pp_runner_url ? 'style="background-image:url(' . esc_url($pp_runner_url) . ')"' : ''; ?>></div>
+                <div class="product-preview__text">
+                    <div class="product-preview__label">Дорожки</div>
+                    <div class="product-preview__size">4 размера: от 140 до 300 см</div>
+                    <div class="product-preview__price">от 890 ₽</div>
+                </div>
             </div>
             <div class="product-preview">
-                <div class="product-preview__label">Скатерти</div>
-                <div class="product-preview__size">3 размера: от 175 до 240 см</div>
-                <div class="product-preview__price">от 2 490 ₽</div>
+                <div class="product-preview__photo" <?php echo $pp_tablecloth_url ? 'style="background-image:url(' . esc_url($pp_tablecloth_url) . ')"' : ''; ?>></div>
+                <div class="product-preview__text">
+                    <div class="product-preview__label">Скатерти</div>
+                    <div class="product-preview__size">3 размера: от 175 до 240 см</div>
+                    <div class="product-preview__price">от 2 490 ₽</div>
+                </div>
             </div>
             <div class="product-preview">
-                <div class="product-preview__label">Салфетки</div>
-                <div class="product-preview__size">40 × 40 см</div>
-                <div class="product-preview__price">от 350 ₽</div>
+                <div class="product-preview__photo" <?php echo $pp_napkin_url ? 'style="background-image:url(' . esc_url($pp_napkin_url) . ')"' : ''; ?>></div>
+                <div class="product-preview__text">
+                    <div class="product-preview__label">Салфетки</div>
+                    <div class="product-preview__size">40 × 40 см</div>
+                    <div class="product-preview__price">от 350 ₽</div>
+                </div>
             </div>
             <div class="product-preview">
-                <div class="product-preview__label">Куверты</div>
-                <div class="product-preview__size">9 × 24 см</div>
-                <div class="product-preview__price">от 250 ₽</div>
+                <div class="product-preview__photo" <?php echo $pp_kuvert_url ? 'style="background-image:url(' . esc_url($pp_kuvert_url) . ')"' : ''; ?>></div>
+                <div class="product-preview__text">
+                    <div class="product-preview__label">Куверты</div>
+                    <div class="product-preview__size">9 × 24 см</div>
+                    <div class="product-preview__price">от 250 ₽</div>
+                </div>
             </div>
         </div>
     </div>
