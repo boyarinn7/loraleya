@@ -189,17 +189,26 @@ function loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_
     $product = wc_get_product($product_id);
     if (!$product || !$product->is_type('variable')) return 0;
 
-    $size_attr_key = 'attribute_pa_' . $size_taxonomy;
+    // Если размер не задан (товар вариативен только по цвету — например, Салфетка/Куверт) —
+    // ищем первую вариацию с нужным цветом и игнорируем размер.
+    $has_size = ($size_slug !== null && $size_taxonomy !== null);
+    $size_attr_key = $has_size ? ('attribute_pa_' . $size_taxonomy) : '';
 
     foreach ($product->get_children() as $variation_id) {
         $variation = wc_get_product($variation_id);
         if (!$variation) continue;
 
         $attrs = $variation->get_variation_attributes();
-        $matches_color = ($attrs['attribute_pa_fabric_color'] ?? '') === $color_slug;
-        $matches_size  = urldecode($attrs[$size_attr_key] ?? '') === $size_slug;
 
-        if ($matches_color && $matches_size) {
+        $matches_color = ($attrs['attribute_pa_fabric_color'] ?? '') === $color_slug;
+        if (!$matches_color) continue;
+
+        if (!$has_size) {
+            return $variation_id;
+        }
+
+        $matches_size = urldecode($attrs[$size_attr_key] ?? '') === $size_slug;
+        if ($matches_size) {
             return $variation_id;
         }
     }
@@ -224,7 +233,7 @@ function loraleya_build_item_map($color_slug) {
         'Скатерть 175'  => [44, '175',    'razmer-skaterti'],
         'Скатерть 220'  => [44, '220',    'razmer-skaterti'],
         'Скатерть 240'  => [44, '240',    'razmer-skaterti'],
-        // Простые (simple, без variation)
+        // Салфетка и Куверт (variable, только по цвету — без размера)
         'Салфетка'      => [48, null,     null],
         'Куверт'        => [49, null,     null],
         // Готовые наборы (variable, product_id = 50)
@@ -237,23 +246,20 @@ function loraleya_build_item_map($color_slug) {
 
     $map = [];
     foreach ($items as $data_item => [$product_id, $size_slug, $size_taxonomy]) {
-        if ($size_slug === null) {
-            $map[$data_item] = [
-                'product_id'   => $product_id,
-                'variation_id' => 0,
-                'attrs'        => new stdClass(),
-            ];
-        } else {
-            $variation_id = loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_taxonomy);
-            $map[$data_item] = [
-                'product_id'   => $product_id,
-                'variation_id' => $variation_id,
-                'attrs'        => [
-                    'attribute_pa_fabric_color'      => $color_slug,
-                    'attribute_pa_' . $size_taxonomy => $size_slug,
-                ],
-            ];
+        $variation_id = loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_taxonomy);
+
+        $attrs = [
+            'attribute_pa_fabric_color' => $color_slug,
+        ];
+        if ($size_slug !== null && $size_taxonomy !== null) {
+            $attrs['attribute_pa_' . $size_taxonomy] = $size_slug;
         }
+
+        $map[$data_item] = [
+            'product_id'   => $product_id,
+            'variation_id' => $variation_id,
+            'attrs'        => $attrs,
+        ];
     }
     return $map;
 }
@@ -280,9 +286,17 @@ function loraleya_ajax_add_to_cart() {
         wp_send_json_error('Не указан товар');
     }
 
+    // === ВРЕМЕННАЯ ДИАГНОСТИКА (удалить после проверки) ===
+    wc_clear_notices();
+    // === /ВРЕМЕННАЯ ДИАГНОСТИКА ===
+
     $added = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
 
     if ($added) {
+        // === ВРЕМЕННАЯ ДИАГНОСТИКА ===
+        wc_clear_notices();
+        // === /ВРЕМЕННАЯ ДИАГНОСТИКА ===
+
         wp_send_json_success([
             'cart_count' => WC()->cart->get_cart_contents_count(),
             'cart_total' => WC()->cart->get_cart_total(),
@@ -290,7 +304,37 @@ function loraleya_ajax_add_to_cart() {
         ]);
     }
 
-    wp_send_json_error('Не удалось добавить товар');
+    // === ВРЕМЕННАЯ ДИАГНОСТИКА: собрать причины отказа ===
+    $notices = wc_get_notices('error');
+    $reasons = [];
+    foreach ($notices as $notice) {
+        $reasons[] = is_array($notice) ? ($notice['notice'] ?? '') : $notice;
+    }
+    wc_clear_notices();
+
+    $product = wc_get_product($product_id);
+    $debug = [
+        'product_id'          => $product_id,
+        'variation_id'        => $variation_id,
+        'quantity'            => $quantity,
+        'variation_attrs'     => $variation,
+        'product_exists'      => (bool) $product,
+        'product_type'        => $product ? $product->get_type() : null,
+        'product_status'      => $product ? $product->get_status() : null,
+        'product_purchasable' => $product ? $product->is_purchasable() : null,
+        'product_in_stock'    => $product ? $product->is_in_stock() : null,
+        'product_manage_stock'=> $product ? $product->get_manage_stock() : null,
+        'product_stock_qty'   => $product ? $product->get_stock_quantity() : null,
+        'product_price'       => $product ? $product->get_price() : null,
+        'reasons'             => $reasons,
+    ];
+    error_log('[LoraLeya add_to_cart fail] ' . wp_json_encode($debug, JSON_UNESCAPED_UNICODE));
+
+    wp_send_json_error([
+        'message' => 'Не удалось добавить товар',
+        'debug'   => $debug,
+    ]);
+    // === /ВРЕМЕННАЯ ДИАГНОСТИКА ===
 }
 add_action('wp_ajax_loraleya_add_to_cart', 'loraleya_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_loraleya_add_to_cart', 'loraleya_ajax_add_to_cart');
