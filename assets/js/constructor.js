@@ -143,23 +143,42 @@ document.addEventListener('DOMContentLoaded', function() {
             var originalText = cartBtn.textContent;
             cartBtn.textContent = 'Отправляется…';
 
-            var pending = rowsToAdd.length;
             var anyError = false;
+            var index = 0;
 
-            rowsToAdd.forEach(function(entry) {
-                var mapped = map[entry.item];
-                if (!mapped) {
-                    anyError = true;
-                    pending--;
-                    if (pending === 0) finishAdd();
+            function updateProgress() {
+                if (rowsToAdd.length > 1) {
+                    cartBtn.textContent = 'Отправляется… ' + index + '/' + rowsToAdd.length;
+                }
+            }
+
+            function sendNext() {
+                if (index >= rowsToAdd.length) {
+                    finishAdd();
                     return;
                 }
+
+                var entry  = rowsToAdd[index];
+                var mapped = map[entry.item];
+                updateProgress();
+                index++;
+
+                if (!mapped) {
+                    anyError = true;
+                    console.warn('Нет mapping для позиции:', entry.item);
+                    sendNext();
+                    return;
+                }
+
                 window.wcAddToCart(mapped, entry.qty, function(cart_key) {
-                    if (!cart_key) anyError = true;
-                    pending--;
-                    if (pending === 0) finishAdd();
+                    if (!cart_key) {
+                        anyError = true;
+                        console.warn('Ошибка добавления в корзину:', entry.item);
+                    }
+                    sendNext();
                 });
-            });
+            }
+            sendNext();
 
             function finishAdd() {
                 if (anyError) {
