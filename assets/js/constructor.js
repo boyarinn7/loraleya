@@ -6,7 +6,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const setData = {
         2: { title: 'Готовый набор на 2 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 2 салфетки + 2 куверта', oldPrice: 2090, newPrice: 1780 },
         4: { title: 'Готовый набор на 4 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 4 салфетки + 4 куверта', oldPrice: 3290, newPrice: 2800 },
-        6: { title: 'Готовый набор на 6 персон — выгоднее на 15%', desc: 'Дорожка 40×140 + 6 салфеток + 6 кувертов', oldPrice: 4490, newPrice: 3820 }
+        6: { title: 'Готовый набор на 6 персон — выгоднее на 15%', desc: 'Дорожка 40×240 + 6 салфеток + 6 кувертов', oldPrice: 4490, newPrice: 3820 }
     };
 
     // --- SWATCH SELECTION ---
@@ -24,12 +24,6 @@ document.addEventListener('DOMContentLoaded', function() {
             var n = parseInt(btn.dataset.persons);
             constructor.querySelectorAll('.pbtn').forEach(function(b) { b.classList.remove('on'); });
             btn.classList.add('on');
-
-            // Update napkin and couverte qty
-            var napkin = constructor.querySelector('[data-role="napkin"] .qv');
-            var couverte = constructor.querySelector('[data-role="couverte"] .qv');
-            if (napkin) { napkin.textContent = n; updateRowSub(napkin.closest('.ir')); }
-            if (couverte) { couverte.textContent = n; updateRowSub(couverte.closest('.ir')); }
 
             // Update set box for selected persons count
             var setBox = document.getElementById('setBox');

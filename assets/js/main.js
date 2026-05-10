@@ -528,13 +528,22 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function hasConstructor() {
-        return !!document.getElementById('constructor');
+        if (document.getElementById('constructor')) return true;
+        if (document.getElementById('lcsBtn')) return true;
+        return false;
     }
 
     function handleAddMore() {
         closeModal();
         setTimeout(function() {
-            document.dispatchEvent(new CustomEvent('loraleya:constructor-reset'));
+            if (document.getElementById('constructor')) {
+                document.dispatchEvent(new CustomEvent('loraleya:constructor-reset'));
+                return;
+            }
+            var lcsBtn = document.getElementById('lcsBtn');
+            if (lcsBtn) {
+                lcsBtn.click();
+            }
         }, 300);
     }
 

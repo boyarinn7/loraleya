@@ -27,9 +27,8 @@
         <a href="<?php echo home_url('/about/'); ?>" class="<?php echo $is_about ? 'current-menu-item' : ''; ?>">О бренде</a>
     </nav>
 
-    <a href="<?php echo wc_get_cart_url(); ?>" class="header-cart">
-        Корзина
-        <span class="cart-count"><?php echo WC()->cart->get_cart_contents_count(); ?></span>
+    <a href="<?php echo home_url('/my-account/'); ?>" class="header-account" aria-label="Личный кабинет">
+        Личный кабинет
     </a>
 </header>
 
