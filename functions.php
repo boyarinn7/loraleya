@@ -366,6 +366,17 @@ function loraleya_ajax_get_cart() {
         ];
     }
 
+    // Стабильная сортировка: product_id → variation_id → cart_key
+    usort($items, function($a, $b) {
+        if ($a['product_id'] !== $b['product_id']) {
+            return $a['product_id'] - $b['product_id'];
+        }
+        if ($a['variation_id'] !== $b['variation_id']) {
+            return $a['variation_id'] - $b['variation_id'];
+        }
+        return strcmp($a['cart_key'], $b['cart_key']);
+    });
+
     wp_send_json_success([
         'items'      => $items,
         'cart_count' => WC()->cart->get_cart_contents_count(),

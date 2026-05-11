@@ -2714,6 +2714,25 @@ h4 { font-size: 1.1rem; }
     border: 1px solid rgba(197, 165, 90, 0.06);
 }
 
+.ll-cart-item__img--empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(197, 165, 90, 0.18);
+    border-radius: 4px;
+    box-sizing: border-box;
+    color: rgba(197, 165, 90, 0.4);
+}
+
+.ll-cart-item__img--empty svg {
+    width: 50%;
+    height: 50%;
+    max-width: 32px;
+    max-height: 32px;
+    display: block;
+}
+
 .ll-cart-item__info {
     min-width: 0;
 }

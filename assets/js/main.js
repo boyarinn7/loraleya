@@ -476,7 +476,17 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             html += '<div class="ll-cart-item" data-cart-key="' + escapeHtml(item.cart_key) + '">';
-            html += '  <img class="ll-cart-item__img" src="' + escapeHtml(imgSrc) + '" alt="">';
+            if (imgSrc) {
+                html += '  <img class="ll-cart-item__img" src="' + escapeHtml(imgSrc) + '" alt="' + escapeHtml(item.name) + '">';
+            } else {
+                html += '  <div class="ll-cart-item__img ll-cart-item__img--empty" aria-hidden="true">';
+                html += '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">';
+                html += '      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>';
+                html += '      <circle cx="8.5" cy="8.5" r="1.5"></circle>';
+                html += '      <polyline points="21 15 16 10 5 21"></polyline>';
+                html += '    </svg>';
+                html += '  </div>';
+            }
             html += '  <div class="ll-cart-item__info">';
             html += '    <div class="ll-cart-item__name">' + escapeHtml(item.name) + '</div>';
             if (variationText) {
