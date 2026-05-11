@@ -375,6 +375,22 @@ function loraleya_ajax_get_cart() {
 add_action('wp_ajax_loraleya_get_cart', 'loraleya_ajax_get_cart');
 add_action('wp_ajax_nopriv_loraleya_get_cart', 'loraleya_ajax_get_cart');
 
+/**
+ * Полностью очистить корзину (вызывается из модалки по клику на иконку мусорки).
+ */
+function loraleya_ajax_clear_cart() {
+    check_ajax_referer('loraleya_nonce', 'nonce');
+
+    WC()->cart->empty_cart();
+
+    wp_send_json_success([
+        'cart_count' => 0,
+        'cart_total' => WC()->cart->get_cart_total(),
+    ]);
+}
+add_action('wp_ajax_loraleya_clear_cart', 'loraleya_ajax_clear_cart');
+add_action('wp_ajax_nopriv_loraleya_clear_cart', 'loraleya_ajax_clear_cart');
+
 // ===== CART COUNT FRAGMENT =====
 function loraleya_cart_count_fragment($fragments) {
     $fragments['.cart-count'] = '<span class="cart-count">' . WC()->cart->get_cart_contents_count() . '</span>';

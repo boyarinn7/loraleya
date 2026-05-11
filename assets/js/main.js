@@ -357,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // === CART WIDGET (icon + modal) ===
 (function() {
-    var fab, fabBadge, modal, modalBody, modalFooter, modalTotal, addMoreBtn;
+    var fab, fabBadge, modal, modalBody, modalFooter, modalTotal, addMoreBtn, clearBtn;
 
     function $(sel) { return document.querySelector(sel); }
 
@@ -369,8 +369,13 @@ document.addEventListener('DOMContentLoaded', function() {
         modalFooter = $('#llCartModalFooter');
         modalTotal  = $('#llCartModalTotal');
         addMoreBtn  = $('#llCartAddMore');
+        clearBtn    = $('#llCartClear');
 
         if (!fab || !modal) return;
+
+        if (clearBtn) {
+            clearBtn.addEventListener('click', handleClearCart);
+        }
 
         // "Добавить в другом цвете" доступна только на страницах с конструктором
         if (addMoreBtn && hasConstructor()) {
@@ -455,9 +460,12 @@ document.addEventListener('DOMContentLoaded', function() {
         if (items.length === 0) {
             modalBody.innerHTML = '<div class="ll-cart-modal__empty">Корзина пуста</div>';
             modalFooter.setAttribute('hidden', '');
+            if (clearBtn) clearBtn.setAttribute('hidden', '');
             updateBadge(0);
             return;
         }
+
+        if (clearBtn) clearBtn.removeAttribute('hidden');
 
         var html = '';
         items.forEach(function(item) {
@@ -545,6 +553,35 @@ document.addEventListener('DOMContentLoaded', function() {
                 lcsBtn.click();
             }
         }, 300);
+    }
+
+    function handleClearCart() {
+        if (!window.confirm('Очистить корзину? Все позиции будут удалены.')) {
+            return;
+        }
+
+        if (clearBtn) clearBtn.disabled = true;
+
+        var body = new URLSearchParams();
+        body.append('action', 'loraleya_clear_cart');
+        body.append('nonce', loraleya.nonce);
+
+        fetch(loraleya.ajax_url, { method: 'POST', body: body })
+            .then(function(r) { return r.json(); })
+            .then(function(res) {
+                if (clearBtn) clearBtn.disabled = false;
+                if (res.success) {
+                    loadCart();
+                    updateBadge(0);
+                    document.dispatchEvent(new CustomEvent('loraleya:cart-updated', {
+                        detail: { cart_count: 0 }
+                    }));
+                }
+            })
+            .catch(function(err) {
+                if (clearBtn) clearBtn.disabled = false;
+                console.error('clear_cart error:', err);
+            });
     }
 
     function escapeHtml(str) {

@@ -2641,6 +2641,41 @@ h4 { font-size: 1.1rem; }
     opacity: 1;
 }
 
+.ll-cart-modal__clear {
+    background: none;
+    border: none;
+    padding: 4px;
+    margin-right: 8px;
+    color: var(--cream);
+    opacity: 0.6;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease, opacity 0.2s ease;
+    line-height: 0;
+}
+
+.ll-cart-modal__clear:hover,
+.ll-cart-modal__clear:focus-visible {
+    color: #C5A55A;
+    opacity: 1;
+    outline: none;
+}
+
+.ll-cart-modal__clear:disabled {
+    opacity: 0.4;
+    cursor: wait;
+}
+
+.ll-cart-modal__clear[hidden] {
+    display: none;
+}
+
+.ll-cart-modal__clear svg {
+    display: block;
+}
+
 .ll-cart-modal__body {
     flex: 1;
     overflow-y: auto;

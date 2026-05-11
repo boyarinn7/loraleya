@@ -28,6 +28,20 @@
     <div class="ll-cart-modal__panel" role="dialog" aria-modal="true" aria-labelledby="llCartModalTitle">
         <div class="ll-cart-modal__header">
             <h3 class="ll-cart-modal__title" id="llCartModalTitle">Корзина</h3>
+            <button type="button"
+                    id="llCartClear"
+                    class="ll-cart-modal__clear"
+                    aria-label="Очистить корзину"
+                    title="Очистить корзину"
+                    hidden>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
+                    <path d="M10 11v6"></path>
+                    <path d="M14 11v6"></path>
+                    <path d="M9 6V4a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2"></path>
+                </svg>
+            </button>
             <button type="button" class="ll-cart-modal__close" data-close="1" aria-label="Закрыть">×</button>
         </div>
         <div class="ll-cart-modal__body" id="llCartModalBody">
