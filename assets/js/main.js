@@ -437,8 +437,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function loadCart() {
-        modalBody.innerHTML = '<div class="ll-cart-modal__empty">Загрузка…</div>';
-        modalFooter.setAttribute('hidden', '');
+        // Затираем содержимое "Загрузкой" только если позиций ещё нет —
+        // чтобы избежать мерцания и схлопывания модалки при обновлении qty.
+        var hasRenderedItems = modalBody.querySelector('.ll-cart-item');
+        if (!hasRenderedItems) {
+            modalBody.innerHTML = '<div class="ll-cart-modal__empty">Загрузка…</div>';
+            modalFooter.setAttribute('hidden', '');
+        }
 
         var body = new URLSearchParams();
         body.append('action', 'loraleya_get_cart');
@@ -450,7 +455,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (res.success) renderCart(res.data);
             })
             .catch(function() {
-                modalBody.innerHTML = '<div class="ll-cart-modal__empty">Ошибка загрузки</div>';
+                if (!modalBody.querySelector('.ll-cart-item')) {
+                    modalBody.innerHTML = '<div class="ll-cart-modal__empty">Ошибка загрузки</div>';
+                }
             });
     }
 
@@ -522,6 +529,8 @@ document.addEventListener('DOMContentLoaded', function() {
         var current = parseInt(qtySpan.textContent, 10);
         var newQty = btn.dataset.act === 'inc' ? current + 1 : Math.max(0, current - 1);
 
+        // Оптимистичное обновление: мгновенно показываем новую цифру
+        qtySpan.textContent = newQty;
         item.querySelectorAll('button').forEach(function(b) { b.disabled = true; });
 
         var body = new URLSearchParams();
@@ -537,10 +546,12 @@ document.addEventListener('DOMContentLoaded', function() {
                     loadCart();
                     document.dispatchEvent(new CustomEvent('loraleya:cart-updated', { detail: res.data }));
                 } else {
+                    qtySpan.textContent = current;
                     item.querySelectorAll('button').forEach(function(b) { b.disabled = false; });
                 }
             })
             .catch(function() {
+                qtySpan.textContent = current;
                 item.querySelectorAll('button').forEach(function(b) { b.disabled = false; });
             });
     }
