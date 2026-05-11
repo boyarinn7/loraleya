@@ -286,17 +286,9 @@ function loraleya_ajax_add_to_cart() {
         wp_send_json_error('Не указан товар');
     }
 
-    // === ВРЕМЕННАЯ ДИАГНОСТИКА (удалить после проверки) ===
-    wc_clear_notices();
-    // === /ВРЕМЕННАЯ ДИАГНОСТИКА ===
-
     $added = WC()->cart->add_to_cart($product_id, $quantity, $variation_id, $variation);
 
     if ($added) {
-        // === ВРЕМЕННАЯ ДИАГНОСТИКА ===
-        wc_clear_notices();
-        // === /ВРЕМЕННАЯ ДИАГНОСТИКА ===
-
         wp_send_json_success([
             'cart_count' => WC()->cart->get_cart_contents_count(),
             'cart_total' => WC()->cart->get_cart_total(),
@@ -304,37 +296,7 @@ function loraleya_ajax_add_to_cart() {
         ]);
     }
 
-    // === ВРЕМЕННАЯ ДИАГНОСТИКА: собрать причины отказа ===
-    $notices = wc_get_notices('error');
-    $reasons = [];
-    foreach ($notices as $notice) {
-        $reasons[] = is_array($notice) ? ($notice['notice'] ?? '') : $notice;
-    }
-    wc_clear_notices();
-
-    $product = wc_get_product($product_id);
-    $debug = [
-        'product_id'          => $product_id,
-        'variation_id'        => $variation_id,
-        'quantity'            => $quantity,
-        'variation_attrs'     => $variation,
-        'product_exists'      => (bool) $product,
-        'product_type'        => $product ? $product->get_type() : null,
-        'product_status'      => $product ? $product->get_status() : null,
-        'product_purchasable' => $product ? $product->is_purchasable() : null,
-        'product_in_stock'    => $product ? $product->is_in_stock() : null,
-        'product_manage_stock'=> $product ? $product->get_manage_stock() : null,
-        'product_stock_qty'   => $product ? $product->get_stock_quantity() : null,
-        'product_price'       => $product ? $product->get_price() : null,
-        'reasons'             => $reasons,
-    ];
-    error_log('[LoraLeya add_to_cart fail] ' . wp_json_encode($debug, JSON_UNESCAPED_UNICODE));
-
-    wp_send_json_error([
-        'message' => 'Не удалось добавить товар',
-        'debug'   => $debug,
-    ]);
-    // === /ВРЕМЕННАЯ ДИАГНОСТИКА ===
+    wp_send_json_error('Не удалось добавить товар');
 }
 add_action('wp_ajax_loraleya_add_to_cart', 'loraleya_ajax_add_to_cart');
 add_action('wp_ajax_nopriv_loraleya_add_to_cart', 'loraleya_ajax_add_to_cart');
