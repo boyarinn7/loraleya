@@ -240,7 +240,7 @@ function loraleya_build_item_map($color_slug) {
         'Набор 2п/140'  => [50, '2п-140', 'razmer-nabora'],
         'Набор 4п/140'  => [50, '4п-140', 'razmer-nabora'],
         'Набор 4п/175'  => [50, '4п-175', 'razmer-nabora'],
-        'Набор 6п/240'  => [50, '6п-140', 'razmer-nabora'],
+        'Набор 6п/240'  => [50, '6п-240', 'razmer-nabora'],
         'Набор 6п/175'  => [50, '6п-175', 'razmer-nabora'],
     ];
 
