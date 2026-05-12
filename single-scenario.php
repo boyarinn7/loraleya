@@ -10,7 +10,7 @@ $scenario_data = [
         'gradient'    => 'linear-gradient(160deg, #2d1828 0%, #1a0f1e 40%, #0e0e0c 100%)',
         'persons'     => '2 персоны',
         'time'        => '~5 мин на сборку',
-        'default_persons' => 4,
+        'default_persons' => 2,
         'colors'      => [
             ['hex' => '#6a3a7a', 'name' => 'Фиолетовый', 'slug' => 'fioletovyj'],
             ['hex' => '#4a4844', 'name' => 'Графит', 'slug' => 'grafit'],
