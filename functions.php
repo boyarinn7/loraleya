@@ -75,6 +75,15 @@ function loraleya_scripts() {
             $map_by_color[$cs] = loraleya_build_item_map($cs);
         }
         wp_localize_script('loraleya-main', 'LORALEYA_ITEM_MAP_BY_COLOR', $map_by_color);
+        wp_localize_script('loraleya-main', 'LORALEYA_ITEM_PRICES', loraleya_get_item_prices('biryuza'));
+    }
+
+    // Передать цены на страницу цвета
+    if (is_tax('pa_fabric_color')) {
+        $color_term = get_queried_object();
+        if ($color_term && !is_wp_error($color_term)) {
+            wp_localize_script('loraleya-main', 'LORALEYA_ITEM_PRICES', loraleya_get_item_prices($color_term->slug));
+        }
     }
 
     // Custom order page script
@@ -241,7 +250,7 @@ function loraleya_build_item_map($color_slug) {
         'Набор 4п/140'  => [50, '4п-140', 'razmer-nabora'],
         'Набор 4п/175'  => [50, '4п-175', 'razmer-nabora'],
         'Набор 6п/240'  => [50, '6п-240', 'razmer-nabora'],
-        'Набор 6п/175'  => [50, '6п-175', 'razmer-nabora'],
+        'Набор 6п/300'  => [50, '6п-300', 'razmer-nabora'],
     ];
 
     $map = [];
@@ -262,6 +271,43 @@ function loraleya_build_item_map($color_slug) {
         ];
     }
     return $map;
+}
+
+/**
+ * Читает реальные цены из WooCommerce для всех item-ключей.
+ * Цены одинаковы для всех цветов, поэтому передаём любой валидный $color_slug.
+ *
+ * @param string $color_slug slug цвета (для получения variation_id через build_item_map)
+ * @return array data-item => ['price' => float, 'old_price' => float|null]
+ */
+function loraleya_get_item_prices($color_slug) {
+    $map = loraleya_build_item_map($color_slug);
+    $prices = [];
+
+    foreach ($map as $item_key => $entry) {
+        $variation_id = $entry['variation_id'];
+        $price = null;
+        $old_price = null;
+
+        if ($variation_id) {
+            $variation = wc_get_product($variation_id);
+            if ($variation) {
+                $price     = (float) $variation->get_price();
+                $sale      = $variation->get_sale_price();
+                $regular   = $variation->get_regular_price();
+                $old_price = ($sale !== '' && $sale !== null && (float)$regular > (float)$sale)
+                    ? (float) $regular
+                    : null;
+            }
+        }
+
+        $prices[$item_key] = [
+            'price'     => $price,
+            'old_price' => $old_price,
+        ];
+    }
+
+    return $prices;
 }
 
 // ===== AJAX ADD TO CART =====

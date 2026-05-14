@@ -2,12 +2,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const constructor = document.getElementById('constructor');
     if (!constructor) return;
 
-    // --- SET DATA ---
-    const setData = {
-        2: { title: 'Готовый набор на 2 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 2 салфетки + 2 куверта', oldPrice: 2090, newPrice: 1780 },
-        4: { title: 'Готовый набор на 4 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 4 салфетки + 4 куверта', oldPrice: 3290, newPrice: 2800 },
-        6: { title: 'Готовый набор на 6 персон — выгоднее на 15%', desc: 'Дорожка 40×240 + 6 салфеток + 6 кувертов', oldPrice: 4490, newPrice: 3820 }
-    };
+    // --- SET DATA (динамические цены из WC через LORALEYA_ITEM_PRICES) ---
+    function buildSetData() {
+        var ip = window.LORALEYA_ITEM_PRICES || {};
+        function p(key)   { return parseFloat((ip[key] || {}).price)     || 0; }
+        function op(key)  { return parseFloat((ip[key] || {}).old_price) || 0; }
+        return {
+            2: { title: 'Готовый набор на 2 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 2 салфетки + 2 куверта', oldPrice: op('Набор 2п/140'), newPrice: p('Набор 2п/140') },
+            4: { title: 'Готовый набор на 4 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 4 салфетки + 4 куверта', oldPrice: op('Набор 4п/140'), newPrice: p('Набор 4п/140') },
+            6: { title: 'Готовый набор на 6 персон — выгоднее на 15%', desc: 'Дорожка 40×240 + 6 салфеток + 6 кувертов', oldPrice: op('Набор 6п/240'), newPrice: p('Набор 6п/240') },
+        };
+    }
+    const setData = buildSetData();
 
     // --- SWATCH SELECTION ---
     constructor.querySelectorAll('.sw').forEach(function(sw) {

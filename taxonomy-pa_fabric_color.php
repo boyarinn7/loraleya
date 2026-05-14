@@ -414,7 +414,13 @@ get_header();
     <div class="sec-d">Комплект сразу готов к сервировке. Выберите размер под свой стол.</div>
     <div class="sets-grid">
         <?php
-        $item_map = loraleya_build_item_map($slug);
+        $item_map    = loraleya_build_item_map($slug);
+        $item_prices = loraleya_get_item_prices($slug);
+
+        // Хелпер: форматирует цену в "1 290 ₽" или "" если null
+        $fmt_price = function($p) {
+            return $p !== null ? number_format((int)$p, 0, '.', ' ') . ' ₽' : '';
+        };
         ?>
 
         <div class="set">
@@ -426,9 +432,14 @@ get_header();
             <div class="set-name">Набор на 4 персоны · дорожка 140</div>
             <div class="set-contents">Дорожка 40×140 + 4 салфетки 40×40 + 4 куверта 9×24</div>
             <div class="set-bottom">
+                <?php
+                $ip = $item_prices['Набор 4п/140'] ?? [];
+                $new_p = $ip['price'] ?? null;
+                $old_p = $ip['old_price'] ?? null;
+                ?>
                 <div class="set-prices">
-                    <span class="set-old">3 290 ₽</span>
-                    <span class="set-new">2 790 ₽</span>
+                    <?php if ($old_p) : ?><span class="set-old"><?php echo $fmt_price($old_p); ?></span><?php endif; ?>
+                    <?php if ($new_p) : ?><span class="set-new"><?php echo $fmt_price($new_p); ?></span><?php endif; ?>
                 </div>
                 <?php $bi = $item_map['Набор 4п/140'] ?? null; ?>
                 <button
@@ -449,9 +460,14 @@ get_header();
             <div class="set-name">Набор на 4 персоны · дорожка 175</div>
             <div class="set-contents">Дорожка 40×175 + 4 салфетки 40×40 + 4 куверта 9×24</div>
             <div class="set-bottom">
+                <?php
+                $ip = $item_prices['Набор 4п/175'] ?? [];
+                $new_p = $ip['price'] ?? null;
+                $old_p = $ip['old_price'] ?? null;
+                ?>
                 <div class="set-prices">
-                    <span class="set-old">3 490 ₽</span>
-                    <span class="set-new">2 970 ₽</span>
+                    <?php if ($old_p) : ?><span class="set-old"><?php echo $fmt_price($old_p); ?></span><?php endif; ?>
+                    <?php if ($new_p) : ?><span class="set-new"><?php echo $fmt_price($new_p); ?></span><?php endif; ?>
                 </div>
                 <?php $bi = $item_map['Набор 4п/175'] ?? null; ?>
                 <button
@@ -472,9 +488,14 @@ get_header();
             <div class="set-name">Набор на 6 персон · дорожка 240</div>
             <div class="set-contents">Дорожка 40×240 + 6 салфеток 40×40 + 6 кувертов 9×24</div>
             <div class="set-bottom">
+                <?php
+                $ip = $item_prices['Набор 6п/240'] ?? [];
+                $new_p = $ip['price'] ?? null;
+                $old_p = $ip['old_price'] ?? null;
+                ?>
                 <div class="set-prices">
-                    <span class="set-old">4 490 ₽</span>
-                    <span class="set-new">3 820 ₽</span>
+                    <?php if ($old_p) : ?><span class="set-old"><?php echo $fmt_price($old_p); ?></span><?php endif; ?>
+                    <?php if ($new_p) : ?><span class="set-new"><?php echo $fmt_price($new_p); ?></span><?php endif; ?>
                 </div>
                 <?php $bi = $item_map['Набор 6п/240'] ?? null; ?>
                 <button
@@ -495,14 +516,19 @@ get_header();
             <div class="set-name">Набор на 6 персон · дорожка 300</div>
             <div class="set-contents">Дорожка 40×300 + 6 салфеток 40×40 + 6 кувертов 9×24</div>
             <div class="set-bottom">
+                <?php
+                $ip = $item_prices['Набор 6п/300'] ?? [];
+                $new_p = $ip['price'] ?? null;
+                $old_p = $ip['old_price'] ?? null;
+                ?>
                 <div class="set-prices">
-                    <span class="set-old">4 690 ₽</span>
-                    <span class="set-new">3 990 ₽</span>
+                    <?php if ($old_p) : ?><span class="set-old"><?php echo $fmt_price($old_p); ?></span><?php endif; ?>
+                    <?php if ($new_p) : ?><span class="set-new"><?php echo $fmt_price($new_p); ?></span><?php endif; ?>
                 </div>
-                <?php $bi = $item_map['Набор 6п/175'] ?? null; ?>
+                <?php $bi = $item_map['Набор 6п/300'] ?? null; ?>
                 <button
                     class="btn-set"
-                    data-item="Набор 6п/175"
+                    data-item="Набор 6п/300"
                     data-product-id="<?php echo (int)($bi['product_id'] ?? 0); ?>"
                     data-variation-id="<?php echo (int)($bi['variation_id'] ?? 0); ?>"
                 >В корзину</button>
@@ -521,26 +547,26 @@ get_header();
         <?php
         $products = [
             [
-                'cat'   => 'Дорожка',
-                'name'  => 'Дорожка на стол',
-                'photo' => 'dorozhka',
+                'cat'     => 'Дорожка',
+                'name'    => 'Дорожка на стол',
+                'photo'   => 'dorozhka',
                 'default' => 1,
                 'variants' => [
-                    ['label' => '140', 'size' => '40 × 140 см · Входит в наборы',    'price' => '890 ₽',   'item' => 'Дорожка 140'],
-                    ['label' => '175', 'size' => '40 × 175 см · Входит в наборы',    'price' => '990 ₽',   'item' => 'Дорожка 175'],
-                    ['label' => '240', 'size' => '40 × 240 см · Для длинных столов', 'price' => '1 290 ₽', 'item' => 'Дорожка 240'],
-                    ['label' => '300', 'size' => '40 × 300 см · Максимальный размер','price' => '1 590 ₽', 'item' => 'Дорожка 300'],
+                    ['label' => '140', 'size' => '40 × 140 см · Входит в наборы',     'item' => 'Дорожка 140'],
+                    ['label' => '175', 'size' => '40 × 175 см · Входит в наборы',     'item' => 'Дорожка 175'],
+                    ['label' => '240', 'size' => '40 × 240 см · Для длинных столов',  'item' => 'Дорожка 240'],
+                    ['label' => '300', 'size' => '40 × 300 см · Максимальный размер', 'item' => 'Дорожка 300'],
                 ],
             ],
             [
-                'cat'   => 'Скатерть',
-                'name'  => 'Скатерть',
-                'photo' => 'skatert',
+                'cat'     => 'Скатерть',
+                'name'    => 'Скатерть',
+                'photo'   => 'skatert',
                 'default' => 0,
                 'variants' => [
-                    ['label' => '175', 'size' => '140 × 175 см · На 4 персоны', 'price' => '2 490 ₽', 'item' => 'Скатерть 175'],
-                    ['label' => '220', 'size' => '140 × 220 см · На 6 персон',  'price' => '2 990 ₽', 'item' => 'Скатерть 220'],
-                    ['label' => '240', 'size' => '140 × 240 см · На 8 персон',  'price' => '3 490 ₽', 'item' => 'Скатерть 240'],
+                    ['label' => '175', 'size' => '140 × 175 см · На 4 персоны', 'item' => 'Скатерть 175'],
+                    ['label' => '220', 'size' => '140 × 220 см · На 6 персон',  'item' => 'Скатерть 220'],
+                    ['label' => '240', 'size' => '140 × 240 см · На 8 персон',  'item' => 'Скатерть 240'],
                 ],
             ],
             [
@@ -548,24 +574,28 @@ get_header();
                 'name'  => 'Салфетка сервировочная',
                 'photo' => 'salfetka-tsvetok',
                 'size'  => '40 × 40 см · Цена за 1 шт',
-                'price' => '350 ₽ <span>/ шт</span>',
                 'item'  => 'Салфетка',
+                'suffix' => ' <span>/ шт</span>',
             ],
             [
                 'cat'   => 'Куверт',
                 'name'  => 'Куверт для приборов',
                 'photo' => 'kuvert-vert',
                 'size'  => '9 × 24 см · Цена за 1 шт',
-                'price' => '250 ₽ <span>/ шт</span>',
                 'item'  => 'Куверт',
+                'suffix' => ' <span>/ шт</span>',
             ],
         ];
 
         foreach ($products as $p) :
-            $photo_url   = loraleya_color_photo($upload_url, $photo_prefix, $p['photo']);
+            $photo_url    = loraleya_color_photo($upload_url, $photo_prefix, $p['photo']);
             $has_variants = !empty($p['variants']);
-            $default     = $has_variants ? ($p['default'] ?? 0) : 0;
-            $current     = $has_variants ? $p['variants'][$default] : $p;
+            $default      = $has_variants ? ($p['default'] ?? 0) : 0;
+            $current_item = $has_variants ? $p['variants'][$default]['item'] : $p['item'];
+            $current_size = $has_variants ? $p['variants'][$default]['size'] : $p['size'];
+            $cur_ip       = $item_prices[$current_item] ?? [];
+            $cur_price    = $cur_ip['price'] ?? null;
+            $cur_old      = $cur_ip['old_price'] ?? null;
         ?>
         <div class="prod<?php echo $has_variants ? ' prod--variants' : ''; ?>">
             <?php if ($photo_url) : ?>
@@ -580,16 +610,16 @@ get_header();
             <?php if ($has_variants) : ?>
                 <div class="prod-sizes">
                     <?php foreach ($p['variants'] as $i => $v) :
-                        preg_match('/([\d\s]+)\s*₽/u', $v['price'], $vm);
-                        $v_num = isset($vm[1]) ? (int) str_replace(' ', '', $vm[1]) : 0;
-                        $v_old = $v_num > 0 ? round($v_num / 0.85 / 10) * 10 : 0;
+                        $v_ip  = $item_prices[$v['item']] ?? [];
+                        $v_new = $v_ip['price'] ?? null;
+                        $v_old = $v_ip['old_price'] ?? null;
+                        $bi_v  = $item_map[$v['item']] ?? null;
                     ?>
-                        <?php $bi_v = $item_map[$v['item']] ?? null; ?>
                         <button
                             class="prod-size-btn<?php echo $i === $default ? ' is-active' : ''; ?>"
                             data-size="<?php echo esc_attr($v['size']); ?>"
-                            data-price="<?php echo esc_attr($v['price']); ?>"
-                            data-price-old="<?php echo $v_old > 0 ? number_format($v_old, 0, '.', ' ') . ' ₽' : ''; ?>"
+                            data-price="<?php echo $v_new !== null ? esc_attr($fmt_price($v_new)) : ''; ?>"
+                            data-price-old="<?php echo $v_old !== null ? esc_attr($fmt_price($v_old)) : ''; ?>"
                             data-item="<?php echo esc_attr($v['item']); ?>"
                             data-product-id="<?php echo (int)($bi_v['product_id'] ?? 0); ?>"
                             data-variation-id="<?php echo (int)($bi_v['variation_id'] ?? 0); ?>"
@@ -599,28 +629,21 @@ get_header();
                 </div>
             <?php endif; ?>
 
-            <div class="prod-size"><?php echo esc_html($current['size']); ?></div>
+            <div class="prod-size"><?php echo esc_html($current_size); ?></div>
 
             <div class="prod-bottom">
                 <div class="prod-price">
-                    <?php
-                    preg_match('/([\d\s]+)\s*₽/u', $current['price'], $m);
-                    $price_num = isset($m[1]) ? (int) str_replace(' ', '', $m[1]) : 0;
-                    $old_price = $price_num > 0 ? round($price_num / 0.85 / 10) * 10 : 0;
-                    $suffix = '';
-                    if (preg_match('/₽\s*(<span[^>]*>.*?<\/span>)/iu', $current['price'], $sm)) {
-                        $suffix = ' ' . $sm[1];
-                    }
-                    ?>
-                    <?php if ($old_price > 0) : ?>
-                        <span class="prod-price-old"><?php echo number_format($old_price, 0, '.', ' '); ?> ₽</span>
+                    <?php if ($cur_old !== null) : ?>
+                        <span class="prod-price-old"><?php echo $fmt_price($cur_old); ?></span>
                     <?php endif; ?>
-                    <span class="prod-price-now"><?php echo number_format($price_num, 0, '.', ' '); ?> ₽<?php echo $suffix; ?></span>
+                    <?php if ($cur_price !== null) : ?>
+                        <span class="prod-price-now"><?php echo $fmt_price($cur_price) . ($p['suffix'] ?? ''); ?></span>
+                    <?php endif; ?>
                 </div>
-                <?php $bi = $item_map[$current['item']] ?? null; ?>
+                <?php $bi = $item_map[$current_item] ?? null; ?>
                 <button
                     class="btn-prod"
-                    data-item="<?php echo esc_attr($current['item']); ?>"
+                    data-item="<?php echo esc_attr($current_item); ?>"
                     data-product-id="<?php echo (int)($bi['product_id'] ?? 0); ?>"
                     data-variation-id="<?php echo (int)($bi['variation_id'] ?? 0); ?>"
                 >В корзину</button>

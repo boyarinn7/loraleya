@@ -110,6 +110,17 @@ foreach ($all_color_slugs as $cs) {
         'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300'),
     ];
 }
+$item_prices = loraleya_get_item_prices($default_color);
+
+// Хелпер: возвращает price (int) из $item_prices или fallback
+$ip_price = function($key) use ($item_prices) {
+    return (int)($item_prices[$key]['price'] ?? 0);
+};
+// Хелпер: форматирует "1 290 ₽ / шт" из цены
+$ip_fmt = function($key, $suffix = ' / шт') use ($item_prices) {
+    $p = (int)($item_prices[$key]['price'] ?? 0);
+    return $p > 0 ? number_format($p, 0, '.', ' ') . ' ₽' . $suffix : '';
+};
 ?>
 
 <!-- HERO -->
@@ -292,27 +303,27 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
                 <!-- Дорожки -->
                 <div class="cat">
                     <div class="cat-label">Дорожки на стол</div>
-                    <div class="ir" data-price="890" data-item="Дорожка 140">
+                    <div class="ir" data-price="<?php echo $ip_price('Дорожка 140'); ?>" data-item="Дорожка 140">
                         <div><div class="ir-name">Дорожка 40 × 140 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
-                        <div class="ir-price">890 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Дорожка 140'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
-                    <div class="ir" data-price="990" data-item="Дорожка 175">
+                    <div class="ir" data-price="<?php echo $ip_price('Дорожка 175'); ?>" data-item="Дорожка 175">
                         <div><div class="ir-name">Дорожка 40 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
-                        <div class="ir-price">990 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Дорожка 175'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
-                    <div class="ir" data-price="1290" data-item="Дорожка 240">
+                    <div class="ir" data-price="<?php echo $ip_price('Дорожка 240'); ?>" data-item="Дорожка 240">
                         <div><div class="ir-name">Дорожка 40 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · Для длинных столов</div></div>
-                        <div class="ir-price">1 290 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Дорожка 240'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
-                    <div class="ir" data-price="1590" data-item="Дорожка 300">
+                    <div class="ir" data-price="<?php echo $ip_price('Дорожка 300'); ?>" data-item="Дорожка 300">
                         <div><div class="ir-name">Дорожка 40 × 300 см</div><div class="ir-size">Жаккард · 100% полиэстер · Максимальный размер</div></div>
-                        <div class="ir-price">1 590 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Дорожка 300'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
@@ -321,21 +332,21 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
                 <!-- Скатерти -->
                 <div class="cat">
                     <div class="cat-label">Скатерти</div>
-                    <div class="ir" data-price="2490" data-item="Скатерть 175">
+                    <div class="ir" data-price="<?php echo $ip_price('Скатерть 175'); ?>" data-item="Скатерть 175">
                         <div><div class="ir-name">Скатерть 140 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 4 персоны</div></div>
-                        <div class="ir-price">2 490 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Скатерть 175'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
-                    <div class="ir" data-price="2990" data-item="Скатерть 220">
+                    <div class="ir" data-price="<?php echo $ip_price('Скатерть 220'); ?>" data-item="Скатерть 220">
                         <div><div class="ir-name">Скатерть 140 × 220 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 6 персон</div></div>
-                        <div class="ir-price">2 990 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Скатерть 220'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
-                    <div class="ir" data-price="3490" data-item="Скатерть 240">
+                    <div class="ir" data-price="<?php echo $ip_price('Скатерть 240'); ?>" data-item="Скатерть 240">
                         <div><div class="ir-name">Скатерть 140 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 8 персон</div></div>
-                        <div class="ir-price">3 490 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Скатерть 240'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
@@ -344,9 +355,9 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
                 <!-- Салфетки -->
                 <div class="cat">
                     <div class="cat-label">Салфетки</div>
-                    <div class="ir" data-price="350" data-role="napkin" data-item="Салфетка">
+                    <div class="ir" data-price="<?php echo $ip_price('Салфетка'); ?>" data-role="napkin" data-item="Салфетка">
                         <div><div class="ir-name">Салфетка 40 × 40 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
-                        <div class="ir-price">350 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Салфетка'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
@@ -355,9 +366,9 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
                 <!-- Куверты -->
                 <div class="cat">
                     <div class="cat-label">Куверты для приборов</div>
-                    <div class="ir" data-price="250" data-role="couverte" data-item="Куверт">
+                    <div class="ir" data-price="<?php echo $ip_price('Куверт'); ?>" data-role="couverte" data-item="Куверт">
                         <div><div class="ir-name">Куверт 9 × 24 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
-                        <div class="ir-price">250 ₽ / шт</div>
+                        <div class="ir-price"><?php echo $ip_fmt('Куверт'); ?></div>
                         <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
                         <div class="ir-sub">0 ₽</div>
                     </div>
