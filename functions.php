@@ -807,3 +807,26 @@ function loraleya_get_color_photo_url($color_slug, $type) {
     $cache[$cache_key] = '';
     return '';
 }
+
+// === СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ В ЧЕКАУТЕ ===
+
+function loraleya_add_privacy_consent_field($checkout) {
+    woocommerce_form_field('loraleya_privacy_consent', [
+        'type'     => 'checkbox',
+        'class'    => ['loraleya-privacy-consent form-row-wide'],
+        'label'    => 'Я согласен(на) с <a href="' . esc_url(home_url('/privacy-policy/')) . '" target="_blank" rel="noopener">Политикой обработки персональных данных</a> и <a href="' . esc_url(home_url('/oferta/')) . '" target="_blank" rel="noopener">Условиями оферты</a>',
+        'required' => true,
+        'default'  => 0,
+    ], $checkout->get_value('loraleya_privacy_consent'));
+}
+add_action('woocommerce_review_order_before_submit', 'loraleya_add_privacy_consent_field');
+
+function loraleya_validate_privacy_consent() {
+    if (empty($_POST['loraleya_privacy_consent'])) {
+        wc_add_notice(
+            'Для оформления заказа необходимо согласиться с Политикой обработки персональных данных и Условиями оферты.',
+            'error'
+        );
+    }
+}
+add_action('woocommerce_checkout_process', 'loraleya_validate_privacy_consent');
