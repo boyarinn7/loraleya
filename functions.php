@@ -808,25 +808,69 @@ function loraleya_get_color_photo_url($color_slug, $type) {
     return '';
 }
 
-// === СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ В ЧЕКАУТЕ ===
+// === СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ В БЛОЧНОМ ЧЕКАУТЕ ===
 
-function loraleya_add_privacy_consent_field($checkout) {
-    woocommerce_form_field('loraleya_privacy_consent', [
-        'type'     => 'checkbox',
-        'class'    => ['loraleya-privacy-consent form-row-wide'],
-        'label'    => 'Я согласен(на) с <a href="' . esc_url(home_url('/privacy-policy/')) . '" target="_blank" rel="noopener">Политикой обработки персональных данных</a> и <a href="' . esc_url(home_url('/oferta/')) . '" target="_blank" rel="noopener">Условиями оферты</a>',
-        'required' => true,
-        'default'  => 0,
-    ], $checkout->get_value('loraleya_privacy_consent'));
-}
-add_action('woocommerce_review_order_before_submit', 'loraleya_add_privacy_consent_field');
-
-function loraleya_validate_privacy_consent() {
-    if (empty($_POST['loraleya_privacy_consent'])) {
-        wc_add_notice(
-            'Для оформления заказа необходимо согласиться с Политикой обработки персональных данных и Условиями оферты.',
-            'error'
-        );
+function loraleya_register_privacy_consent_checkout_field() {
+    if (!function_exists('woocommerce_register_additional_checkout_field')) {
+        return;
     }
+
+    woocommerce_register_additional_checkout_field([
+        'id'       => 'loraleya/privacy-consent',
+        'label'    => 'Я согласен(на) с Политикой обработки персональных данных и Условиями оферты',
+        'location' => 'order',
+        'type'     => 'checkbox',
+        'required' => true,
+        'attributes' => [
+            'data-required-message' => 'Для оформления заказа необходимо согласиться с Политикой обработки персональных данных и Условиями оферты.',
+        ],
+        'sanitize_callback' => function ($value) {
+            return (bool) $value;
+        },
+        'validate_callback' => function ($value) {
+            if (!$value) {
+                return new WP_Error(
+                    'privacy_consent_required',
+                    'Для оформления заказа необходимо согласиться с Политикой обработки персональных данных и Условиями оферты.'
+                );
+            }
+            return true;
+        },
+    ]);
 }
-add_action('woocommerce_checkout_process', 'loraleya_validate_privacy_consent');
+add_action('woocommerce_init', 'loraleya_register_privacy_consent_checkout_field');
+
+function loraleya_privacy_consent_links_script() {
+    if (!is_checkout()) return;
+    ?>
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var attempts = 0;
+        var interval = setInterval(function() {
+            attempts++;
+            if (attempts > 50) { clearInterval(interval); return; }
+
+            var labels = document.querySelectorAll('label');
+            var targetLabel = null;
+            for (var i = 0; i < labels.length; i++) {
+                if (labels[i].textContent.indexOf('Политикой обработки персональных данных') !== -1) {
+                    targetLabel = labels[i];
+                    break;
+                }
+            }
+            if (!targetLabel) return;
+            if (targetLabel.parentNode.querySelector('.loraleya-consent-links')) { clearInterval(interval); return; }
+
+            var linksDiv = document.createElement('div');
+            linksDiv.className = 'loraleya-consent-links';
+            linksDiv.style.cssText = 'margin-top:4px;margin-left:24px;font-size:.85em;';
+            linksDiv.innerHTML = '<a href="<?php echo esc_url(home_url('/privacy-policy/')); ?>" target="_blank" rel="noopener" style="color:#C5A55A;text-decoration:underline;margin-right:1em;">Политика конфиденциальности</a>' +
+                '<a href="<?php echo esc_url(home_url('/oferta/')); ?>" target="_blank" rel="noopener" style="color:#C5A55A;text-decoration:underline;">Условия оферты</a>';
+            targetLabel.parentNode.appendChild(linksDiv);
+            clearInterval(interval);
+        }, 200);
+    });
+    </script>
+    <?php
+}
+add_action('wp_footer', 'loraleya_privacy_consent_links_script');
