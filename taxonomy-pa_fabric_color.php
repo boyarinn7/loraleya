@@ -675,7 +675,7 @@ get_header();
             $sc = $scenario_meta[$sc_slug] ?? null;
             if (!$sc) continue;
         ?>
-            <a href="<?php echo home_url('/scenario/' . $sc_slug . '/'); ?>" class="scen">
+            <a href="<?php echo home_url('/scenarios/' . $sc_slug . '/'); ?>" class="scen">
                 <div class="scen-num"><?php echo esc_html($sc['num']); ?></div>
                 <div class="scen-name"><?php echo esc_html($sc['name']); ?></div>
                 <div class="scen-hint"><?php echo esc_html($sc['hint']); ?></div>

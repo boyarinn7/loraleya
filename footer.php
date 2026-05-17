@@ -13,15 +13,13 @@
             <h4>Покупателю</h4>
             <a href="<?php echo home_url('/delivery/'); ?>">Оплата и доставка</a>
             <a href="<?php echo home_url('/returns/'); ?>">Возврат и обмен</a>
-            <a href="<?php echo home_url('/care/'); ?>">Уход за текстилем</a>
-            <a href="<?php echo home_url('/reviews/'); ?>">Отзывы</a>
+            <a href="<?php echo home_url('/oferta/'); ?>">Публичная оферта</a>
+            <a href="<?php echo home_url('/privacy-policy/'); ?>">Политика конфиденциальности</a>
         </div>
         <div>
             <h4>Контакты</h4>
-            <a href="tel:+7XXXXXXXXXX">+7 (xxx) xxx-xx-xx</a>
-            <a href="mailto:info@loraleya.ru">info@loraleya.ru</a>
-            <a href="https://t.me/loraleya" target="_blank">Telegram</a>
-            <a href="#">VK</a>
+            <a href="tel:+79264950210">+7 926 495 02 10</a>
+            <a href="mailto:loraleya-tex@yandex.ru">loraleya-tex@yandex.ru</a>
         </div>
         <div class="footer-bottom">
             <span>&copy; <?php echo date('Y'); ?> LoraLeya &middot; Сделано в России с любовью</span>
