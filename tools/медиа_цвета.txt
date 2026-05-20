@@ -1,0 +1,132 @@
+# LoraLeya — Полный инвентарь медиабиблиотеки
+
+Дата сверки: 04.05.2026
+Источник: 7 скринов библиотеки файлов WP Admin
+
+---
+
+## Стандартный набор файлов на цвет (14 типов)
+
+| № | Суффикс файла | Тип фото | Использование |
+|---|---|---|---|
+| 1 | `-skatert` | Скатерть на столе | Карточка изделия "Скатерти" |
+| 2 | `-salfetka-tsvetok` | Салфетка сложенная "цветком" | Деталь сервировки |
+| 3 | `-salfetka-razvernutaya` | Салфетка развёрнутая | Деталь сервировки |
+| 4 | `-nabor-6-300` | Набор на 6 персон, дорожка 300см | Готовый набор |
+| 5 | `-nabor-6-240` | Набор на 6 персон, дорожка 240см | Готовый набор |
+| 6 | `-nabor-4-175` | Набор на 4 персоны, дорожка 175см | Готовый набор |
+| 7 | `-nabor-4-140` | Набор на 4 персоны, дорожка 140см | Готовый набор |
+| 8 | `-macro-strochka` | Макро строчки/шва | Деталь ткани |
+| 9 | `-macro-pereliv` | Макро перелива ткани | Деталь ткани (не используется в свотчах сейчас) |
+| 10 | `-macro-faktura` | Макро фактуры | **Источник для свотчей в палитре** |
+| 11 | `-kuvert-vert` | Кувёрт вертикально | Деталь сервировки |
+| 12 | `-kuvert` | Кувёрт горизонтально | Деталь сервировки |
+| 13 | `-hero-servirovka` | Общий план сервировки | **Hero-изображение, обложка цвета** |
+| 14 | `-hero-detail` | Hero — деталь крупно | Hero-вторичное |
+| 15 | `-dorozhka` | Дорожка отдельно | Карточка изделия "Дорожки" |
+
+(15 типов с учётом dorozhka, который у некоторых цветов есть.)
+
+---
+
+## Доступность по 17 цветам
+
+### ✅ ПОЛНЫЕ комплекты (все 14+ файлов)
+
+1. **temno-biruza** (Тёмно-бирюзовый) — полный набор + dorozhka
+2. **beliy** (Белый) — полный набор + skatert + dorozhka
+3. **melanzh-cherniy** (Меланж чёрный) — полный набор + dorozhka
+4. **melanzh-seriy** (Меланж серый) — полный набор + skatert + dorozhka
+5. **melanzh-serebro** (Меланж серебро) — полный набор + skatert + dorozhka
+6. **melanzh-zoloto** (Меланж золото) — полный набор + dorozhka
+7. **goluboy** (Голубой) — полный набор + skatert + dorozhka
+8. **blek-zoloto** (Блек золото) — полный набор + skatert + dorozhka
+9. **fioletoviy** (Фиолетовый) — полный набор + dorozhka
+10. **sireneviy** (Сиреневый) — полный набор + dorozhka (без skatert)
+11. **serebro** (Серебро) — полный набор + dorozhka (без skatert, без hero-servirovka)
+12. **platina** (Платина) — полный набор + dorozhka (без skatert)
+13. **zeleniy** (Зелёный) — полный набор + skatert + dorozhka
+14. **grafit** (Графит) — полный набор + skatert + dorozhka
+15. **bronza** (Бронза) — полный набор + skatert
+16. **bezheviy** (Бежевый) — полный набор + dorozhka (без skatert)
+
+### ⚠️ НЕПОЛНЫЙ комплект
+
+17. **biruza** (Бирюза) — только 9 файлов, есть пробелы:
+- ✅ biruza-skatert
+- ✅ biruza-salfetka-razvernutaya
+- ✅ biruza-salfetka-tsvetok
+- ❌ biruza-salfetka-vertical *(нет, но и не у всех есть)*
+- ❌ biruza-nabor-4-140 (есть biruza-nabor-4-140-scaled — другая версия)
+- ❌ biruza-nabor-4-175 (есть biruza-nabor-4-175-scaled)
+- ❌ biruza-nabor-6-240 (есть biruza-nabor-6-240-scaled)
+- ❌ biruza-nabor-6-300 (есть biruza-nabor-6-300-scaled)
+- ✅ biruza-macro-strochka
+- ✅ biruza-macro-pereliv
+- ✅ biruza-macro-faktura
+- ✅ biruza-kuvert
+- ✅ biruza-kuvert-vert
+- ✅ biruza-dorozhka
+- ✅ biruza-hero-detail
+- ✅ biruza-hero-servirovka (с суффиксом scaled)
+
+**Особенность бирюзы:** файлы наборов и hero-servirovka имеют суффикс `-scaled` (это WP-автоматическая обработка для крупных файлов). Это технически работает, но имена нестандартные.
+
+---
+
+## Полный список slug → префикс
+
+| Slug таксономии | Префикс файлов | Название |
+|---|---|---|
+| `bezhevyj` | `bezheviy` | Бежевый |
+| `belyj` | `beliy` | Белый |
+| `biryuza` | `biruza` | Бирюза |
+| `blek-zoloto` | `blek-zoloto` | Блек золото |
+| `bronza` | `bronza` | Бронза |
+| `goluboj` | `goluboy` | Голубой |
+| `grafit` | `grafit` | Графит |
+| `zelyonyj` | `zeleniy` | Зелёный |
+| `melanzh-zoloto` | `melanzh-zoloto` | Меланж золото |
+| `melanzh-serebro` | `melanzh-serebro` | Меланж серебро |
+| `melanzh-seryj` | `melanzh-seriy` | Меланж серый |
+| `melanzh-chyornyj` | `melanzh-cherniy` | Меланж чёрный |
+| `platina` | `platina` | Платина |
+| `serebro` | `serebro` | Серебро |
+| `sirenevyj` | `sireneviy` | Сиреневый |
+| `tyomno-biryuzovyj` | `temno-biruza` | Тёмно-бирюзовый |
+| `fioletovyj` | `fioletoviy` | Фиолетовый |
+
+(В функции `loraleya_color_swatch_url()` в `functions.php` маппинг slug → префикс уже прописан.)
+
+---
+
+## Итог
+
+- **16 из 17 цветов** имеют полные стандартные наборы фото
+- **1 цвет** (Бирюза) имеет нестандартные имена с суффиксом `-scaled` для наборов
+- **Основные типы используются:**
+  - `-macro-faktura` → свотчи в палитре (главная, страница палитры, форма заказа)
+  - `-hero-servirovka` → потенциально для hero-изображения страницы цвета
+  - `-skatert`, `-dorozhka`, `-kuvert*`, `-salfetka-*` → карточки изделий
+  - `-nabor-*` → готовые наборы (4 размера комбинаций)
+
+
+список цветов
+
+1. **temno-biruza** (Тёмно-бирюзовый) 
+2. **beliy** (Белый) 
+3. **melanzh-cherniy** (Меланж чёрный) 
+4. **melanzh-seriy** (Меланж серый) 
+5. **melanzh-serebro** (Меланж серебро) 
+6. **melanzh-zoloto** (Меланж золото) 
+7. **goluboy** (Голубой) 
+8. **blek-zoloto** (Блек золото) 
+9. **fioletoviy** (Фиолетовый) 
+10. **sireneviy** (Сиреневый) 
+11. **serebro** (Серебро) 
+12. **platina** (Платина) 
+13. **zeleniy** (Зелёный) 
+14. **grafit** (Графит) 
+15. **bronza** (Бронза) 
+16. **bezheviy** (Бежевый) 
+17. **biryuza** (Бирюзовый)

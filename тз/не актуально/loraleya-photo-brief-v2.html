@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LoraLeya — ТЗ на фотосъёмку v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Raleway:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0e0e0c;color:#c8c0b4;font-family:'Raleway',sans-serif;padding:2.5rem;max-width:900px;margin:0 auto;line-height:1.8}
+h1{font-family:'Cormorant Garamond',serif;font-size:1.6rem;font-weight:300;color:#e8e0d0;margin-bottom:.2rem;letter-spacing:.1em}
+.sub{font-size:.62rem;color:#8a847a;margin-bottom:2.5rem;letter-spacing:.05em}
+h2{font-size:.85rem;font-weight:500;color:#c5a55a;margin:2.5rem 0 .8rem;letter-spacing:.06em;padding-bottom:.4rem;border-bottom:1px solid #c5a55a20;text-transform:uppercase}
+h3{font-size:.72rem;font-weight:500;color:#e8e0d0;margin:1.4rem 0 .5rem}
+p{font-size:.7rem;font-weight:300;line-height:1.9;color:#a09a90;margin-bottom:.5rem}
+.li{font-size:.7rem;font-weight:300;line-height:1.9;color:#a09a90;padding-left:1.2rem;position:relative;margin-bottom:.3rem}
+.li::before{content:'→';position:absolute;left:0;color:#c5a55a60}
+.li.warn::before{content:'⚠';color:#e8a040}
+.li.ok::before{content:'✓';color:#5dcaa5}
+
+.highlight{background:#c5a55a08;border-left:2px solid #c5a55a;padding:.9rem 1.2rem;margin:1.2rem 0;font-size:.68rem;color:#c8c0b4;font-weight:300;line-height:1.9}
+.highlight strong{color:#e8e0d0;font-weight:500}
+.highlight.green{border-color:#5dcaa5;background:#5dcaa508}
+.highlight.red{border-color:#e07050;background:#e0705008}
+
+.table{width:100%;border-collapse:collapse;margin:1rem 0;font-size:.62rem}
+.table th{text-align:left;padding:.55rem .7rem;border-bottom:1px solid #c5a55a30;color:#c5a55a;font-weight:500;letter-spacing:.06em;font-size:.56rem;text-transform:uppercase}
+.table td{padding:.45rem .7rem;border-bottom:1px solid #ffffff08;color:#a09a90;font-weight:300;vertical-align:top}
+.table td:first-child{color:#e8e0d0;font-weight:400;white-space:nowrap}
+.table td code{background:#1a1917;padding:.15rem .4rem;color:#c5a55a;font-size:.58rem;border-radius:2px;font-family:'Courier New',monospace}
+
+.num{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:#c5a55a15;color:#c5a55a;font-size:.55rem;font-weight:600;margin-right:.5rem}
+
+.photo-card{border:1px solid #c5a55a15;padding:1rem 1.2rem;margin:.8rem 0;background:#1a191708;border-radius:4px}
+.photo-card .title{font-size:.68rem;font-weight:500;color:#e8e0d0;margin-bottom:.5rem;display:flex;align-items:center;gap:.5rem}
+.photo-card .badge{font-size:.5rem;padding:.15rem .5rem;border-radius:2px;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+.badge-must{background:#c5a55a20;color:#c5a55a}
+.badge-nice{background:#5dcaa520;color:#5dcaa5}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin:.8rem 0}
+@media(max-width:600px){.grid-2{grid-template-columns:1fr}}
+
+.example{background:#1a1917;border:1px solid #ffffff08;padding:.8rem 1rem;border-radius:4px;margin:.5rem 0}
+.example .label{font-size:.5rem;color:#c5a55a;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.3rem;font-weight:500}
+.example .val{font-size:.65rem;color:#e8e0d0;font-weight:400;font-family:'Courier New',monospace}
+
+hr{border:none;border-top:1px solid #c5a55a10;margin:2.5rem 0}
+
+.color-list{display:flex;flex-wrap:wrap;gap:.4rem;margin:.8rem 0}
+.color-tag{display:inline-flex;align-items:center;gap:.35rem;padding:.25rem .6rem;background:#1a1917;border:1px solid #ffffff08;font-size:.58rem;color:#c8c0b4;border-radius:3px}
+.color-dot{width:14px;height:14px;border-radius:50%;flex-shrink:0}
+
+.summary-box{border:2px solid #c5a55a30;padding:1.5rem;margin:1.5rem 0;background:#c5a55a05;border-radius:6px}
+.summary-box h3{color:#c5a55a;margin-top:0}
+</style>
+</head>
+<body>
+
+<h1>LoraLeya — ТЗ на фотосъёмку</h1>
+<p class="sub">Версия 2.0 · Апрель 2026 · Обновлено после обработки первой партии (Бирюза)</p>
+
+<div class="highlight green">
+<strong>Главное изменение:</strong> Теперь указаны точные размеры и пропорции для каждого типа фото. Чем точнее съёмка — тем быстрее фото попадут на сайт без переделок.
+</div>
+
+<!-- ============================================================ -->
+<h2><span class="num">0</span> Общие правила для всех фото</h2>
+
+<div class="highlight">
+<strong>Формат:</strong> JPEG, максимальное качество телефона (не менее 3000px по длинной стороне)<br>
+<strong>Ориентация:</strong> строго по описанию каждого типа (горизонтальное или вертикальное)<br>
+<strong>Свет:</strong> дневной, у окна. НЕ вспышка. НЕ жёлтый вечерний свет<br>
+<strong>Фон для предметных фото:</strong> БЕЛЫЙ ВАТМАН или белая ткань. НЕ обои, НЕ скатерть с рисунком
+</div>
+
+<div class="highlight red">
+<strong>Частые ошибки (из опыта Бирюзы):</strong><br>
+<div class="li warn">Фон обоев вместо белого ватмана — долго вырезать, грязный контур</div>
+<div class="li warn">Съёмка под углом вместо строго сверху — предмет получается трапецией</div>
+<div class="li warn">Миниатюры 500px вместо полного разрешения — бесполезны</div>
+<div class="li warn">Ложка вместо ножа в куверте — на сайте заметно</div>
+</div>
+
+<h3>Именование файлов</h3>
+<p>Каждый файл назвать по шаблону — <strong>только латиница, через дефис, без пробелов</strong>:</p>
+
+<div class="example">
+<div class="label">Шаблон</div>
+<div class="val">cvet-tip-opisanie.jpg</div>
+</div>
+
+<div class="highlight red">
+<strong>Почему латиница?</strong> WordPress не любит русские буквы в именах файлов — ломаются ссылки и поиск. Все названия цветов на латинице — в таблице внизу документа.
+</div>
+
+<div class="grid-2">
+<div class="example">
+<div class="label">Примеры — правильно</div>
+<div class="val">biruza-servirovka-obshiy.jpg<br>biruza-kuvert-belyfon.jpg<br>biruza-macro-pletenie.jpg<br>biruza-salfetka-tsvetok.jpg</div>
+</div>
+<div class="example">
+<div class="label">Примеры — неправильно</div>
+<div class="val">20260413_195502.jpg<br>1.jpg<br>фото (3).jpg<br>IMG_20260413.jpg</div>
+</div>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2><span class="num">1</span> Сервировка — общий план стола</h2>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">Обязательно</span> 1 фото на каждый цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Вертикальная</strong> (телефон держим вертикально)</td></tr>
+<tr><td>Пропорция</td><td>3:4 (стандарт телефона)</td></tr>
+<tr><td>Мин. размер</td><td>3000×4000 px</td></tr>
+<tr><td>Что в кадре</td><td>Стол на 4 персоны сверху: дорожка по центру, 4 тарелки с салфетками-цветками, 4 куверта, бокалы</td></tr>
+<tr><td>Ракурс</td><td>Сверху под углом ~30–45° (как на «1 титул набор 4»)</td></tr>
+<tr><td>Фон</td><td>Белый стол или белая скатерть</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-servirovka-obshiy.jpg</code></td></tr>
+</table>
+<div class="li ok">Пример эталона: файл «1 титул набор 4.jpg» из Бирюзы — идеально</div>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2><span class="num">2</span> Сервировка — детальный план</h2>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">Обязательно</span> 1 фото на каждый цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Вертикальная</strong></td></tr>
+<tr><td>Пропорция</td><td>3:4</td></tr>
+<tr><td>Мин. размер</td><td>3000×4000 px</td></tr>
+<tr><td>Что в кадре</td><td>Одна персона крупно: тарелка + салфетка-цветок с кольцом + куверт с приборами + бокал</td></tr>
+<tr><td>Ракурс</td><td>Сверху под углом ~45° (как на «1 титул мини»)</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-servirovka-detail.jpg</code></td></tr>
+</table>
+<div class="li ok">Пример эталона: файл «1 титул мини.jpg» из Бирюзы</div>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2><span class="num">3</span> Предметные фото на белом фоне</h2>
+
+<div class="highlight">
+<strong>Общее для всех предметных:</strong> белый ватман, дневной свет, <strong>камера строго сверху</strong> (flatlay). Предмет занимает примерно 75–80% кадра. Вокруг — только белый фон.
+</div>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">3а. Куверт с приборами</span> 1 фото на цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Горизонтальная</strong> (телефон боком)</td></tr>
+<tr><td>Пропорция</td><td>4:3</td></tr>
+<tr><td>Мин. размер</td><td>4000×3000 px</td></tr>
+<tr><td>Что в кадре</td><td>4–6 кувертов веером на белом фоне, в каждом <strong>вилка + нож</strong> (НЕ ложка!)</td></tr>
+<tr><td>Ракурс</td><td><strong>Строго сверху</strong></td></tr>
+<tr><td>Фон</td><td>Белый ватман</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-kuvert-belyfon.jpg</code></td></tr>
+</table>
+</div>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">3б. Салфетка «цветком»</span> 1 фото на цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Вертикальная</strong></td></tr>
+<tr><td>Пропорция</td><td>3:4</td></tr>
+<tr><td>Мин. размер</td><td>3000×4000 px</td></tr>
+<tr><td>Что в кадре</td><td>Салфетка, сложенная «цветком» с кольцом, лежит на белом фоне (НЕ на тарелке)</td></tr>
+<tr><td>Ракурс</td><td><strong>Строго сверху</strong> или под углом не более 15°</td></tr>
+<tr><td>Кольцо</td><td>Золотое (листик) — одинаковое для всех цветов</td></tr>
+<tr><td>Фон</td><td>Белый ватман</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-salfetka-tsvetok-belyfon.jpg</code></td></tr>
+</table>
+</div>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">3в. Салфетка развёрнутая</span> 1 фото на цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Горизонтальная</strong></td></tr>
+<tr><td>Пропорция</td><td>4:3</td></tr>
+<tr><td>Мин. размер</td><td>4000×3000 px</td></tr>
+<tr><td>Что в кадре</td><td>Салфетка полностью расправлена, все 4 угла видны, ткань разглажена</td></tr>
+<tr><td>Ракурс</td><td><strong>Строго сверху</strong> — это критично! Иначе квадрат превращается в трапецию</td></tr>
+<tr><td>Фон</td><td>Белый ватман</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-salfetka-razvernutaya-belyfon.jpg</code></td></tr>
+</table>
+<div class="li warn">Урок Бирюзы: фото под углом → салфетка-трапеция → долгая обработка</div>
+</div>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">3г. Дорожка сложенная</span> 1 фото на цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Вертикальная</strong></td></tr>
+<tr><td>Пропорция</td><td>3:4</td></tr>
+<tr><td>Мин. размер</td><td>3000×4000 px</td></tr>
+<tr><td>Что в кадре</td><td>Дорожка сложена пополам, видна фактура жаккарда</td></tr>
+<tr><td>Ракурс</td><td><strong>Строго сверху</strong></td></tr>
+<tr><td>Фон</td><td>Белый ватман</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-dorozhka-belyfon.jpg</code></td></tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2><span class="num">4</span> Макро — фактура ткани</h2>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">Обязательно</span> 2–3 фото на каждый цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Горизонтальная</strong></td></tr>
+<tr><td>Пропорция</td><td>4:3</td></tr>
+<tr><td>Мин. размер</td><td>4000×3000 px</td></tr>
+<tr><td>Расстояние</td><td>Телефон на 10–15 см от ткани</td></tr>
+<tr><td>Что в кадре</td><td>Весь кадр заполнен тканью. Видно переплетение нитей и «мраморный» рисунок</td></tr>
+<tr><td>Свет</td><td>Дневной (у окна), НЕ вспышка</td></tr>
+<tr><td>Фон</td><td>Не важен — кадр заполнен тканью целиком</td></tr>
+</table>
+
+<h3>3 разных макро-кадра:</h3>
+<table class="table">
+<tr><th>#</th><th>Что снимать</th><th>Имя файла</th></tr>
+<tr><td>1</td><td>Плетение ткани крупным планом (10 см)</td><td><code>cvet-macro-pletenie.jpg</code></td></tr>
+<tr><td>2</td><td>Угол изделия — строчка, подгиб, край</td><td><code>cvet-macro-strochka.jpg</code></td></tr>
+<tr><td>3</td><td>Ткань при боковом свете — перелив, игра света</td><td><code>cvet-macro-pereliv.jpg</code></td></tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2><span class="num">5</span> Дорожка на столе (в контексте)</h2>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-must">Обязательно</span> 1 фото на каждый цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td><strong>Вертикальная</strong></td></tr>
+<tr><td>Пропорция</td><td>3:4</td></tr>
+<tr><td>Мин. размер</td><td>3000×4000 px</td></tr>
+<tr><td>Что в кадре</td><td>Дорожка расправлена на столе, по бокам видна сервировка (тарелки, бокалы)</td></tr>
+<tr><td>Ракурс</td><td>Сверху под углом ~30° — дорожка уходит вдаль по столу</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-dorozhka-na-stole.jpg</code></td></tr>
+</table>
+<div class="li ok">Пример эталона: файл «дорожки.jpg» из Бирюзы</div>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2><span class="num">6</span> Дополнительные ракурсы (галерея)</h2>
+
+<div class="photo-card">
+<div class="title"><span class="badge badge-nice">Желательно</span> 1–3 фото на цвет</div>
+<table class="table">
+<tr><th>Параметр</th><th>Значение</th></tr>
+<tr><td>Ориентация</td><td>Любая</td></tr>
+<tr><td>Мин. размер</td><td>3000 px по длинной стороне</td></tr>
+<tr><td>Что в кадре</td><td>Сервировка с разных ракурсов, в разных интерьерах, стол сбоку</td></tr>
+<tr><td>Имя файла</td><td><code>cvet-gallery-1.jpg</code>, <code>cvet-gallery-2.jpg</code></td></tr>
+</table>
+<p>Если есть оригиналы фото с Wildberries <strong>без бейджей и текста</strong> — они тоже подойдут.</p>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2>Сводная таблица: что снять на каждый цвет</h2>
+
+<table class="table">
+<tr><th>#</th><th>Тип фото</th><th>Ориентация</th><th>Мин. px</th><th>Фон</th><th>Кол-во</th></tr>
+<tr><td>1</td><td>Сервировка общий план</td><td>Вертикальная</td><td>3000×4000</td><td>Белый стол</td><td>1</td></tr>
+<tr><td>2</td><td>Сервировка деталь</td><td>Вертикальная</td><td>3000×4000</td><td>Белый стол</td><td>1</td></tr>
+<tr><td>3а</td><td>Куверт (веером)</td><td>Горизонтальная</td><td>4000×3000</td><td>Белый ватман</td><td>1</td></tr>
+<tr><td>3б</td><td>Салфетка «цветком»</td><td>Вертикальная</td><td>3000×4000</td><td>Белый ватман</td><td>1</td></tr>
+<tr><td>3в</td><td>Салфетка развёрнутая</td><td>Горизонтальная</td><td>4000×3000</td><td>Белый ватман</td><td>1</td></tr>
+<tr><td>3г</td><td>Дорожка сложенная</td><td>Вертикальная</td><td>3000×4000</td><td>Белый ватман</td><td>1</td></tr>
+<tr><td>4</td><td>Макро (3 вида)</td><td>Горизонтальная</td><td>4000×3000</td><td>Не важен</td><td>3</td></tr>
+<tr><td>5</td><td>Дорожка на столе</td><td>Вертикальная</td><td>3000×4000</td><td>Белый стол</td><td>1</td></tr>
+<tr><td>6</td><td>Галерея (доп.)</td><td>Любая</td><td>3000+</td><td>Любой</td><td>1–3</td></tr>
+</table>
+
+<div class="summary-box">
+<h3>Итого на каждый цвет:</h3>
+<p><strong>Минимум: 10 фото</strong> (пункты 1–5)</p>
+<p><strong>Желательно: 11–13 фото</strong> (+ пункт 6)</p>
+<p><strong>На все 17 цветов: 170–221 фото</strong></p>
+<p style="margin-top:.8rem;color:#e8e0d0">Один человек с телефоном и белым ватманом — 2–3 рабочих дня.</p>
+</div>
+
+<!-- ============================================================ -->
+<hr>
+<h2>Список цветов для съёмки (17 шт)</h2>
+
+<h3>Таблица названий для файлов</h3>
+<p>Вместо <code>cvet</code> в имени файла подставлять название из правой колонки:</p>
+
+<table class="table">
+<tr><th>Цвет</th><th>В имени файла пишем</th><th>Пример файла</th></tr>
+<tr><td>Бежевый</td><td><code>bezheviy</code></td><td><code>bezheviy-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Белый</td><td><code>beliy</code></td><td><code>beliy-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Бирюза</td><td><code>biruza</code></td><td><code>biruza-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Блек золото</td><td><code>blek-zoloto</code></td><td><code>blek-zoloto-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Бронза</td><td><code>bronza</code></td><td><code>bronza-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Голубой</td><td><code>goluboy</code></td><td><code>goluboy-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Графит</td><td><code>grafit</code></td><td><code>grafit-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Зелёный</td><td><code>zeleniy</code></td><td><code>zeleniy-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Меланж золото</td><td><code>melanzh-zoloto</code></td><td><code>melanzh-zoloto-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Меланж серебро</td><td><code>melanzh-serebro</code></td><td><code>melanzh-serebro-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Меланж серый</td><td><code>melanzh-seriy</code></td><td><code>melanzh-seriy-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Меланж чёрный</td><td><code>melanzh-cherniy</code></td><td><code>melanzh-cherniy-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Платина</td><td><code>platina</code></td><td><code>platina-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Серебро</td><td><code>serebro</code></td><td><code>serebro-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Сиреневый</td><td><code>sireneviy</code></td><td><code>sireneviy-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Тёмно-бирюзовый</td><td><code>temno-biruza</code></td><td><code>temno-biruza-kuvert-belyfon.jpg</code></td></tr>
+<tr><td>Фиолетовый</td><td><code>fioletoviy</code></td><td><code>fioletoviy-kuvert-belyfon.jpg</code></td></tr>
+</table>
+
+<div class="color-list">
+<div class="color-tag"><div class="color-dot" style="background:#d4c5a0"></div>Бежевый</div>
+<div class="color-tag"><div class="color-dot" style="background:#f0ece4;border:1px solid #555"></div>Белый</div>
+<div class="color-tag"><div class="color-dot" style="background:#5eb8a8"></div>Бирюза</div>
+<div class="color-tag"><div class="color-dot" style="background:#2a2520;border:1px solid #555"></div>Блек золото</div>
+<div class="color-tag"><div class="color-dot" style="background:#8b6e3a"></div>Бронза</div>
+<div class="color-tag"><div class="color-dot" style="background:#8bb8d0"></div>Голубой</div>
+<div class="color-tag"><div class="color-dot" style="background:#4a4844"></div>Графит</div>
+<div class="color-tag"><div class="color-dot" style="background:#6b8a5e"></div>Зелёный</div>
+<div class="color-tag"><div class="color-dot" style="background:#c8a85a"></div>Меланж золото</div>
+<div class="color-tag"><div class="color-dot" style="background:#b0b0a8"></div>Меланж серебро</div>
+<div class="color-tag"><div class="color-dot" style="background:#787874"></div>Меланж серый</div>
+<div class="color-tag"><div class="color-dot" style="background:#2e2e2c;border:1px solid #555"></div>Меланж чёрный</div>
+<div class="color-tag"><div class="color-dot" style="background:#c8c0b8"></div>Платина</div>
+<div class="color-tag"><div class="color-dot" style="background:#c0c0c0"></div>Серебро</div>
+<div class="color-tag"><div class="color-dot" style="background:#b088b0"></div>Сиреневый</div>
+<div class="color-tag"><div class="color-dot" style="background:#3a7878"></div>Тёмно-бирюзовый</div>
+<div class="color-tag"><div class="color-dot" style="background:#6a3a7a"></div>Фиолетовый</div>
+</div>
+
+<div class="highlight" style="margin-top:2rem">
+<strong>Бирюза — уже сдана и обработана.</strong> Осталось 16 цветов.<br>
+Можно снимать потоком: один тип изделия → все цвета подряд → следующий тип. Так быстрее.
+</div>
+
+</body>
+</html>

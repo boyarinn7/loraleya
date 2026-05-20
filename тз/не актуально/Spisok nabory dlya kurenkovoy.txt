@@ -1,0 +1,153 @@
+# Фото для блока «Готовые наборы» — список имён файлов
+
+В блоке «Готовые наборы» на странице каждого цвета — 4 карточки, по одному
+размеру набора в каждой. Для каждой карточки нужно своё фото.
+
+## Что в кадре
+
+Сервированный стол сверху или под углом ~30°, **вертикальный кадр 3:4**.
+Полный набор из дорожки, салфеток и кувертов в этом цвете на столе.
+
+## Размер кадра
+
+3:4 вертикаль (например 1500×2000 px или больше — главное чтобы пропорция
+была 3 к 4).
+
+## Имена файлов
+
+Префикс цвета берётся из шпаргалки (тот же что для остальных файлов —
+`bezheviy-`, `beliy-`, `biruza-` и т.д. — всего 17 цветов).
+
+После префикса добавляется суффикс размера набора:
+
+| Карточка на сайте | Состав набора | Имя файла |
+|---|---|---|
+| **Хит** — Набор на 4 персоны · дорожка 140 | дорожка 40×140 + 4 салфетки + 4 куверта | `{цвет}-nabor-4-140.webp` |
+| **Хит плюс** — Набор на 4 персоны · дорожка 175 | дорожка 40×175 + 4 салфетки + 4 куверта | `{цвет}-nabor-4-175.webp` |
+| **Семейный** — Набор на 6 персон · дорожка 240 | дорожка 40×240 + 6 салфеток + 6 кувертов | `{цвет}-nabor-6-240.webp` |
+| **Для большого стола** — Набор на 6 персон · дорожка 300 | дорожка 40×300 + 6 салфеток + 6 кувертов | `{цвет}-nabor-6-300.webp` |
+
+## Полный список файлов на 17 цветов
+
+Каждый цвет = 4 файла. Всего 68 файлов на блок «Готовые наборы».
+
+### Бежевый
+- `bezheviy-nabor-4-140.webp`
+- `bezheviy-nabor-4-175.webp`
+- `bezheviy-nabor-6-240.webp`
+- `bezheviy-nabor-6-300.webp`
+
+### Белый
+- `beliy-nabor-4-140.webp`
+- `beliy-nabor-4-175.webp`
+- `beliy-nabor-6-240.webp`
+- `beliy-nabor-6-300.webp`
+
+### Бирюза
+- `biruza-nabor-4-140.webp`
+- `biruza-nabor-4-175.webp`
+- `biruza-nabor-6-240.webp`
+- `biruza-nabor-6-300.webp`
+
+### Блек золото
+- `blek-zoloto-nabor-4-140.webp`
+- `blek-zoloto-nabor-4-175.webp`
+- `blek-zoloto-nabor-6-240.webp`
+- `blek-zoloto-nabor-6-300.webp`
+
+### Бронза
+- `bronza-nabor-4-140.webp`
+- `bronza-nabor-4-175.webp`
+- `bronza-nabor-6-240.webp`
+- `bronza-nabor-6-300.webp`
+
+### Голубой
+- `goluboy-nabor-4-140.webp`
+- `goluboy-nabor-4-175.webp`
+- `goluboy-nabor-6-240.webp`
+- `goluboy-nabor-6-300.webp`
+
+### Графит
+- `grafit-nabor-4-140.webp`
+- `grafit-nabor-4-175.webp`
+- `grafit-nabor-6-240.webp`
+- `grafit-nabor-6-300.webp`
+
+### Зелёный
+- `zeleniy-nabor-4-140.webp`
+- `zeleniy-nabor-4-175.webp`
+- `zeleniy-nabor-6-240.webp`
+- `zeleniy-nabor-6-300.webp`
+
+### Меланж золото
+- `melanzh-zoloto-nabor-4-140.webp`
+- `melanzh-zoloto-nabor-4-175.webp`
+- `melanzh-zoloto-nabor-6-240.webp`
+- `melanzh-zoloto-nabor-6-300.webp`
+
+### Меланж серебро
+- `melanzh-serebro-nabor-4-140.webp`
+- `melanzh-serebro-nabor-4-175.webp`
+- `melanzh-serebro-nabor-6-240.webp`
+- `melanzh-serebro-nabor-6-300.webp`
+
+### Меланж серый
+- `melanzh-seriy-nabor-4-140.webp`
+- `melanzh-seriy-nabor-4-175.webp`
+- `melanzh-seriy-nabor-6-240.webp`
+- `melanzh-seriy-nabor-6-300.webp`
+
+### Меланж чёрный
+- `melanzh-cherniy-nabor-4-140.webp`
+- `melanzh-cherniy-nabor-4-175.webp`
+- `melanzh-cherniy-nabor-6-240.webp`
+- `melanzh-cherniy-nabor-6-300.webp`
+
+### Платина
+- `platina-nabor-4-140.webp`
+- `platina-nabor-4-175.webp`
+- `platina-nabor-6-240.webp`
+- `platina-nabor-6-300.webp`
+
+### Серебро
+- `serebro-nabor-4-140.webp`
+- `serebro-nabor-4-175.webp`
+- `serebro-nabor-6-240.webp`
+- `serebro-nabor-6-300.webp`
+
+### Сиреневый
+- `sireneviy-nabor-4-140.webp`
+- `sireneviy-nabor-4-175.webp`
+- `sireneviy-nabor-6-240.webp`
+- `sireneviy-nabor-6-300.webp`
+
+### Тёмно-бирюзовый
+- `temno-biruza-nabor-4-140.webp`
+- `temno-biruza-nabor-4-175.webp`
+- `temno-biruza-nabor-6-240.webp`
+- `temno-biruza-nabor-6-300.webp`
+
+### Фиолетовый
+- `fioletoviy-nabor-4-140.webp`
+- `fioletoviy-nabor-4-175.webp`
+- `fioletoviy-nabor-6-240.webp`
+- `fioletoviy-nabor-6-300.webp`
+
+## Как загружать
+
+1. Войти в админку: `https://loraleya.ru/wp-admin/`
+2. Слева в меню — **«Медиафайлы» → «Добавить медиафайл»**
+3. Перетащить файл в окно загрузки
+4. **Сразу после загрузки** — кликнуть на файл, проверить чтобы в поле
+   «Заголовок» стояло правильное имя без расширения (например
+   `bezheviy-nabor-4-140`, без `.webp` и без суффиксов `-1`, `-scaled`)
+5. Если в имени появился суффикс — убрать вручную, нажать «Обновить»
+
+После загрузки файла он автоматически появится в нужной карточке на
+странице соответствующего цвета, без перезагрузки шаблона.
+
+## Что произойдёт если файл ещё не загружен
+
+В карточке будет пустая вертикальная рамка с тёмным фоном (заглушка). Сайт
+не сломается. Заказчица может загружать файлы постепенно — каждый
+новый файл сразу появляется на сайте.

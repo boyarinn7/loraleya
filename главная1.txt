@@ -1,829 +1,444 @@
-# ТЗ: Этап 2 — Конструктор комплекта (single-scenario.php + CSS + JS)
+# ТЗ E1 — Grid сценариев на главной: 4 → 5 + CTA-ячейка
 
-## Контекст
-Файл `single-scenario.php` уже создан (этап 1). Нужно заменить плейсхолдер конструктора на рабочий блок. CSS добавить в style.css. JS — в отдельный файл `assets/js/constructor.js`, подключить в functions.php.
+**Версия:** 1.0
+**Дата:** 20 мая 2026
+**Автор:** Sprint-Клод (Спринт 1 LoraLeya)
+**Исполнитель:** Claude Code agent в VS Code
+**Заказчик:** Борис, проджект-координатор
+**Принципал решений:** Борис (вариант C из стратегического обсуждения)
+**Оценка объёма:** малая-средняя (1 PHP + 1 CSS, ~80 строк суммарно)
 
 ---
 
-## 1. Правка PHP — файл single-scenario.php
+## ⚠️ Протокол ВНИМАНИЕ — прочесть перед стартом
 
-### Добавить данные в массив $scenario_data
-В каждый сценарий добавить ключ `default_persons`:
-
-```php
-'romanticheskij-uzhin' => [
-    ...существующие данные...,
-    'default_persons' => 2,
-],
-'semejnyj-obed' => [
-    ...существующие данные...,
-    'default_persons' => 4,
-],
-'prazdnichnyj-stol' => [
-    ...существующие данные...,
-    'default_persons' => 6,
-],
-'kazhdyj-den' => [
-    ...существующие данные...,
-    'default_persons' => 2,
-],
+### 1. Git commit перед началом
+Прежде чем начать любые правки, выполни:
+```bash
+git add -A
+git commit -m "chore: pre-sprint-1-e1 snapshot before scenario grid rework"
+git tag pre-sprint-1-e1
 ```
 
-### Заменить плейсхолдер конструктора
-Найти блок `<!-- CONSTRUCTOR PLACEHOLDER (Этап 2) -->` и заменить ЦЕЛИКОМ на:
+### 2. ⚠️ ВАЖНО — Это ТЗ применяется СТРОГО ВМЕСТЕ с ТЗ E2
 
+ТЗ E1 (этот документ) меняет grid с 4 на 5 ячеек + добавляет CTA-ячейку.
+ТЗ E2 (отдельный документ, передаётся следом) создаёт 5-ю запись сценария «День рождения».
+
+**Если применить только E1 без E2:** на бою появится 4 реальных сценария + 1 CTA = 5 ячеек в grid 3×2 → одна пустая ячейка в правом нижнем углу. Некрасиво и неаккуратно для пользователя.
+
+**Правильный порядок:**
+1. Деплой E1 + E2 одной пачкой на staging (или локально через Local/XAMPP)
+2. Визуальная приёмка обоих
+3. Деплой обоих на прод одной пачкой
+
+Если по какой-то причине ты вынужден применить только E1 — **СТОП**, согласуй с Борисом.
+
+### 3. Никаких отклонений от спецификации
+Контент CTA-ячейки (тексты, ссылка) — точно как в Разделе 4 этого ТЗ. Если по ходу видишь, что что-то не сходится с реальным состоянием кода (например, файл изменился относительно того, что я описал) — стоп, спроси Бориса. Никаких самостоятельных решений по «улучшениям» дизайна, копирайта или порядка карточек.
+
+### 4. Что НЕ трогать
+- Шаблон карточки сценария — структура `.scenario-bg / .scenario-content / .scenario-num / .scenario-name / .scenario-hint` остаётся как есть.
+- Логику `WP_Query` для CPT `scenario` — только параметр `posts_per_page`.
+- Палитру, цвета, типографику, hover-эффекты обычных карточек.
+- Корзину, чекаут, любые другие секции главной.
+- CSS любых других блоков.
+
+---
+
+## 1. Цель
+
+На главной странице `loraleya.ru` блок сценариев («Какой стол вы накрываете сегодня?») должен показывать **6 ячеек** вместо текущих **4**:
+
+- **5 карточек сценариев** (Романтический ужин, Семейный обед, Праздничный стол, **День рождения** — появится после E2, Каждый день)
+- **1 декоративная CTA-ячейка** «Свой стол, свой повод» со ссылкой на `/individualnyy-zakaz/`
+
+Раскладка — **3 колонки × 2 ряда** на десктопе. Адаптив сохраняется: на планшете — 2 колонки × 3 ряда, на мобильном — 1 колонка × 6 рядов.
+
+---
+
+## 2. Файлы для правки
+
+| Файл | Путь | Что меняем |
+|---|---|---|
+| `front-page.php` | `wp-content/themes/loraleya/front-page.php` | `posts_per_page` 4→5, статичная CTA-ячейка после цикла, fallback на 5 плейсхолдеров |
+| `style.css` | `wp-content/themes/loraleya/style.css` | `.scenarios-grid` 4 колонки→3, убрать шахматный margin, добавить стили `.scenario-card--cta`, обновить медиа-запросы |
+
+---
+
+## 3. Правка 1 — `front-page.php`
+
+### 3.1. Изменить `posts_per_page` с 4 на 5
+
+**Найти** (примерно строка 36):
 ```php
-<!-- CONSTRUCTOR -->
-<section class="section" id="constructor" data-default-persons="<?php echo $data['default_persons']; ?>">
-    <div class="container">
-        <div class="con">
+$scenarios = new WP_Query([
+    'post_type'      => 'scenario',
+    'posts_per_page' => 4,
+    'orderby'        => 'menu_order',
+    'order'          => 'ASC',
+]);
+```
 
-            <div class="con-head">
-                <div>
-                    <div class="eyebrow">Конструктор</div>
-                    <h2>Соберите свой комплект</h2>
-                </div>
-            </div>
+**Заменить на:**
+```php
+$scenarios = new WP_Query([
+    'post_type'      => 'scenario',
+    'posts_per_page' => 5,
+    'orderby'        => 'menu_order',
+    'order'          => 'ASC',
+]);
+```
 
-            <!-- 1. Color -->
-            <div class="grp">
-                <div class="grp-title"><span class="grp-num">1</span> Выберите цвет</div>
-                <div class="swatches" id="swatches">
-                    <?php
-                    // Рекомендуемые цвета первыми
-                    $rec_hexes = array_column($data['colors'], 'hex');
-                    $all_colors = [
-                        ['hex'=>'#6a3a7a','name'=>'Фиолетовый'],['hex'=>'#4a4844','name'=>'Графит'],
-                        ['hex'=>'#8b6e3a','name'=>'Бронза'],['hex'=>'#b088b0','name'=>'Сиреневый'],
-                        ['hex'=>'#d4c5a0','name'=>'Бежевый'],['hex'=>'#f0ece4','name'=>'Белый'],
-                        ['hex'=>'#5eb8a8','name'=>'Бирюза'],['hex'=>'#2a2520','name'=>'Блек золото'],
-                        ['hex'=>'#8bb8d0','name'=>'Голубой'],['hex'=>'#6b8a5e','name'=>'Зелёный'],
-                        ['hex'=>'#c8a85a','name'=>'Меланж золото'],['hex'=>'#b0b0a8','name'=>'Меланж серебро'],
-                        ['hex'=>'#787874','name'=>'Меланж серый'],['hex'=>'#2e2e2c','name'=>'Меланж чёрный'],
-                        ['hex'=>'#c8c0b8','name'=>'Платина'],['hex'=>'#c0c0c0','name'=>'Серебро'],
-                        ['hex'=>'#3a7878','name'=>'Тёмно-бирюзовый'],
-                    ];
-                    // Сначала рекомендуемые, потом остальные
-                    $rec = array_filter($all_colors, fn($c) => in_array($c['hex'], $rec_hexes));
-                    $rest = array_filter($all_colors, fn($c) => !in_array($c['hex'], $rec_hexes));
-                    $sorted = array_merge(array_values($rec), array_values($rest));
-                    $first = true;
-                    $dark_borders = ['#f0ece4','#2a2520','#2e2e2c'];
-                    foreach ($sorted as $c) :
-                        $border = in_array($c['hex'], $dark_borders) ? 'border:1px solid rgba(197,165,90,.2);' : '';
-                        $on = $first ? ' on' : '';
-                        $first_name = $first ? $c['name'] : '';
-                    ?>
-                        <div class="sw<?php echo $on; ?>" style="background:<?php echo $c['hex']; ?>;<?php echo $border; ?>" data-name="<?php echo $c['name']; ?>"></div>
-                    <?php
-                        if ($first) $default_color_name = $c['name'];
-                        $first = false;
-                    endforeach;
-                    ?>
-                </div>
-                <div id="colorLabel" class="sw-label"><?php echo $default_color_name; ?></div>
-            </div>
+### 3.2. Расширить fallback `$placeholders` до 5 элементов
 
-            <!-- 2. Persons -->
-            <div class="grp">
-                <div class="grp-title"><span class="grp-num">2</span> Количество персон</div>
-                <div class="pbtn-row">
-                    <button class="pbtn<?php echo $data['default_persons'] === 2 ? ' on' : ''; ?>" data-persons="2">2 персоны</button>
-                    <button class="pbtn<?php echo $data['default_persons'] === 4 ? ' on' : ''; ?>" data-persons="4">4 персоны</button>
-                    <button class="pbtn<?php echo $data['default_persons'] === 6 ? ' on' : ''; ?>" data-persons="6">6 персон</button>
-                </div>
-            </div>
+**Найти** (примерно строка 64-72):
+```php
+            else :
+                // Placeholder scenarios if none created yet
+                $placeholders = [
+                    ['Романтический ужин', '2 персоны · свечи · приглушённый свет', 'sc-romantic'],
+                    ['Семейный обед', '4–6 персон · дневной свет · тепло', 'sc-family'],
+                    ['Праздничный стол', '6+ персон · декор · шампанское', 'sc-festive'],
+                    ['Каждый день', '2–4 персоны · минимализм · уют', 'sc-everyday'],
+                ];
+```
 
-            <!-- SET SHORTCUT -->
-            <div class="set-box" id="setBox" style="<?php echo $data['default_persons'] === 2 ? 'display:none' : ''; ?>">
-                <div>
-                    <h4 id="setTitle">Готовый набор на <?php echo $data['default_persons']; ?> персон<?php echo $data['default_persons'] === 4 ? 'ы' : ''; ?> — выгоднее на 15%</h4>
-                    <p id="setDesc">Дорожка 40×140 + <?php echo $data['default_persons']; ?> салфеток + <?php echo $data['default_persons']; ?> кувертов</p>
-                </div>
-                <div class="set-prices">
-                    <span class="sp-old" id="setOld"></span>
-                    <span class="sp-new" id="setNew"></span>
-                </div>
-                <button class="btn-s" id="addSetBtn">Добавить набор</button>
-            </div>
+**Заменить на:**
+```php
+            else :
+                // Placeholder scenarios if none created yet
+                $placeholders = [
+                    ['Романтический ужин', '2 персоны · свечи · приглушённый свет', 'sc-romantic'],
+                    ['Семейный обед', '4–6 персон · дневной свет · тепло', 'sc-family'],
+                    ['Праздничный стол', '6+ персон · декор · шампанское', 'sc-festive'],
+                    ['День рождения', '4–8 персон · цветной декор · праздник', 'sc-birthday'],
+                    ['Каждый день', '2–4 персоны · минимализм · уют', 'sc-everyday'],
+                ];
+```
 
-            <!-- 3. ITEMS -->
-            <div class="grp">
-                <div class="grp-title"><span class="grp-num">3</span> Или соберите сами</div>
+Порядок важен: ДР встаёт между Праздничным и Каждый день — это та же логическая позиция (№ 04), что задаётся в ТЗ E2 через `menu_order` записи CPT.
 
-                <!-- Дорожки -->
-                <div class="cat">
-                    <div class="cat-label">Дорожки на стол</div>
-                    <div class="ir" data-price="890">
-                        <div><div class="ir-name">Дорожка 40 × 140 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
-                        <div class="ir-price">890 ₽</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
-                    </div>
-                    <div class="ir" data-price="990">
-                        <div><div class="ir-name">Дорожка 40 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · Входит в наборы</div></div>
-                        <div class="ir-price">990 ₽</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
-                    </div>
-                    <div class="ir" data-price="1290">
-                        <div><div class="ir-name">Дорожка 40 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · Для длинных столов</div></div>
-                        <div class="ir-price">1 290 ₽</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
-                    </div>
-                    <div class="ir" data-price="1590">
-                        <div><div class="ir-name">Дорожка 40 × 300 см</div><div class="ir-size">Жаккард · 100% полиэстер · Максимальный размер</div></div>
-                        <div class="ir-price">1 590 ₽</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
+### 3.3. Добавить статичную CTA-ячейку после цикла
+
+**Найти конец цикла сценариев** (примерно строки 80-83, после `endforeach; endif; ?>`):
+```php
+                <?php echo $p[1]; ?>
                     </div>
                 </div>
+            <?php endforeach; endif; ?>
+        </div>
+    </div>
+</section>
+```
 
-                <!-- Скатерти -->
-                <div class="cat">
-                    <div class="cat-label">Скатерти</div>
-                    <div class="ir" data-price="2490">
-                        <div><div class="ir-name">Скатерть 140 × 175 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 4 персоны</div></div>
-                        <div class="ir-price">2 490 ₽</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
-                    </div>
-                    <div class="ir" data-price="2990">
-                        <div><div class="ir-name">Скатерть 140 × 220 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 6 персон</div></div>
-                        <div class="ir-price">2 990 ₽</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
-                    </div>
-                    <div class="ir" data-price="3490">
-                        <div><div class="ir-name">Скатерть 140 × 240 см</div><div class="ir-size">Жаккард · 100% полиэстер · На 8 персон</div></div>
-                        <div class="ir-price">3 490 ₽</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
+**Заменить на:**
+```php
+                <?php echo $p[1]; ?>
                     </div>
                 </div>
+            <?php endforeach; endif; ?>
 
-                <!-- Салфетки -->
-                <div class="cat">
-                    <div class="cat-label">Салфетки</div>
-                    <div class="ir" data-price="350" data-role="napkin">
-                        <div><div class="ir-name">Салфетка 40 × 40 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
-                        <div class="ir-price">350 ₽ / шт</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
-                    </div>
+            <!-- 6-я ячейка: CTA на индивидуальный заказ -->
+            <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>" class="scenario-card scenario-card--cta">
+                <div class="scenario-card--cta__bg"></div>
+                <div class="scenario-card--cta__content">
+                    <div class="scenario-card--cta__mark">✦</div>
+                    <div class="scenario-card--cta__name">Свой стол, свой повод</div>
+                    <div class="scenario-card--cta__hint">Не подошёл ни один сценарий? Соберём индивидуально под форму, размер и историю стола.</div>
+                    <span class="scenario-card--cta__arrow" aria-hidden="true">→</span>
                 </div>
-
-                <!-- Куверты -->
-                <div class="cat">
-                    <div class="cat-label">Куверты для приборов</div>
-                    <div class="ir" data-price="250" data-role="couverte">
-                        <div><div class="ir-name">Куверт 9 × 24 см</div><div class="ir-size">Жаккард · 100% полиэстер</div></div>
-                        <div class="ir-price">250 ₽ / шт</div>
-                        <div class="ir-qty"><button class="qb qb-minus">−</button><span class="qv">0</span><button class="qb qb-plus">+</button></div>
-                        <div class="ir-sub">0 ₽</div>
-                    </div>
-                </div>
-
-            </div>
-
-            <div class="note-box">
-                <strong>Совет:</strong> Для стандартного стола подойдёт дорожка 140 или 175 см. Для длинных столов (от 200 см) выбирайте дорожку 240 или 300 см — в этом случае набор не подойдёт, собирайте поштучно.
-            </div>
-
-            <!-- TOTAL (sticky) -->
-            <div class="total-sticky" id="totalSticky">
-                <div class="total-inner">
-                    <div class="total-left">
-                        <span class="total-lbl">Итого</span>
-                        <span class="total-sum" id="totalSum">0 ₽</span>
-                        <span class="total-items" id="totalItems">—</span>
-                    </div>
-                    <button class="btn-cart" id="addCartBtn">В корзину →</button>
-                </div>
-            </div>
+            </a>
 
         </div>
     </div>
 </section>
 ```
 
-**Важно:** `data-price` в атрибутах `.ir` должны быть числами БЕЗ пробелов (890, 1290, 2490 и т.д.), чтобы JS мог парсить через `parseInt`.
-
-Салфетки и куверты помечены `data-role="napkin"` и `data-role="couverte"` — используются в JS для автоматического обновления количества при переключении персон.
+**Заметки:**
+- Ссылка через `home_url('/individualnyy-zakaz/')` — slug страницы индивидуального заказа на момент написания этого ТЗ. Если slug страницы у вас другой — измени только URL внутри `home_url(...)`, всё остальное оставь как есть. Перед правкой проверь slug через wp-admin → Страницы.
+- Все классы CTA-ячейки используют BEM-модификатор `scenario-card--cta` и собственные дочерние элементы `__bg`, `__content`, `__mark`, `__name`, `__hint`, `__arrow` — чтобы не конфликтовать со стилями обычных карточек.
+- Символ `✦` — это U+2726 (BLACK FOUR POINTED STAR). Если он не отображается в кодировке файла — используй HTML-entity `&#10022;`.
 
 ---
 
-## 2. CSS — добавить в style.css
+## 4. Правка 2 — `style.css`
 
-### Добавить после блока SCENARIO RESPONSIVE (после медиа-запросов этапа 1)
+### 4.1. Изменить grid с 4 колонок на 3 + убрать шахматку
+
+**Найти** (примерно строки 543-548):
+```css
+.scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-top: 2.5rem;
+}
+```
+
+**Заменить на:**
+```css
+.scenarios-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    margin-top: 2.5rem;
+}
+```
+
+**Найти** (примерно строки 562-564):
+```css
+.scenario-card:nth-child(even) {
+    margin-top: 2rem;
+}
+```
+
+**Удалить целиком** (3 строки). Шахматный эффект на сетке 3×2 даёт ассиметрию (опустятся 2-я, 4-я, 6-я — диагональ), что выглядит хаотично. Сетка остаётся ровной.
+
+### 4.2. Удалить устаревший nth-child для плейсхолдер-градиентов
+
+В коде есть фрагмент (примерно строки 579-589):
+```css
+.scenario-card:nth-child(2) .scenario-bg--placeholder { background: linear-gradient(160deg, #1e2418, #141a0e, #0c0f08); }
+.scenario-card:nth-child(3) .scenario-bg--placeholder { background: linear-gradient(160deg, #2a2010, #1a150a, #0f0c06); }
+.scenario-card:nth-child(4) .scenario-bg--placeholder { background: linear-gradient(160deg, #181e24, #0e1318, #080c0f); }
+```
+
+Это градиенты для 2-й, 3-й, 4-й placeholder-карточек. После добавления ДР как 4-й позиции, нужно:
+1. Сдвинуть существующие правила: позиция 4 → 5 (Каждый день остаётся последним).
+2. Добавить градиент для ДР на позиции 4.
+
+**Заменить весь блок (строки 579-589) на:**
+```css
+/* 2 — Семейный обед: зелёный */
+.scenario-card:nth-child(2) .scenario-bg--placeholder {
+    background: linear-gradient(160deg, #1e2418, #141a0e, #0c0f08);
+}
+/* 3 — Праздничный стол: бронзово-золотой */
+.scenario-card:nth-child(3) .scenario-bg--placeholder {
+    background: linear-gradient(160deg, #2a2010, #1a150a, #0f0c06);
+}
+/* 4 — День рождения: глубокий бордово-золотой */
+.scenario-card:nth-child(4) .scenario-bg--placeholder {
+    background: linear-gradient(160deg, #2a1a20, #1a0e15, #0e0608);
+}
+/* 5 — Каждый день: тёмно-серо-синий */
+.scenario-card:nth-child(5) .scenario-bg--placeholder {
+    background: linear-gradient(160deg, #181e24, #0e1318, #080c0f);
+}
+```
+
+Первый цвет (Романтический ужин, nth-child(1)) задаётся базовым правилом `.scenario-bg--placeholder` строкой 575-577, не трогаем.
+
+### 4.3. Обновить адаптивные брейкпойнты
+
+**Найти** (примерно строки 680-687):
+```css
+@media (max-width: 1024px) {
+    .scenarios-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .scenario-card:nth-child(even) {
+        margin-top: 0;
+    }
+}
+```
+
+**Заменить на:**
+```css
+@media (max-width: 1024px) {
+    .scenarios-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+```
+
+Правило `:nth-child(even) { margin-top: 0 }` больше не нужно — шахматка удалена на всех брейкпойнтах.
+
+Блок `@media (max-width: 640px)` (строки 689-696) **оставить без изменений** — там переход на 1fr и aspect-ratio 4:3, всё корректно.
+
+### 4.4. Добавить стили CTA-ячейки
+
+После всех существующих правил для `.scenario-card` (рекомендуемое место — сразу после `.scenario-card:hover::after` блока, примерно строки 661-664, но до медиа-запросов на 680-й строке) **вставить новый блок:**
 
 ```css
-/* ============================================================
-   SCENARIO CONSTRUCTOR (Этап 2)
-   ============================================================ */
+/* =============================================
+   SCENARIO CARD — CTA VARIANT (6-я ячейка)
+   ============================================= */
 
-.con {
-    background: var(--bg2);
-    border: 1px solid rgba(197, 165, 90, 0.06);
-    padding: 2.5rem 3rem;
+.scenario-card--cta {
+    /* Наследует .scenario-card: position, aspect-ratio, overflow, border-radius, transition */
+    border: 1px solid rgba(197, 165, 90, 0.22);
+    background: linear-gradient(160deg, #1a1612 0%, #14110d 50%, #0e0c0a 100%);
 }
 
-.con-head {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 2rem;
-    flex-wrap: wrap;
-    gap: 1rem;
+.scenario-card--cta__bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(197, 165, 90, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(197, 165, 90, 0.05) 0%, transparent 60%);
+    transition: opacity 0.4s ease;
 }
 
-/* Groups */
-.grp {
-    margin-bottom: 2.2rem;
-}
-
-.grp-title {
-    font-family: var(--serif);
-    font-size: 1.05rem;
-    color: var(--cream);
-    font-weight: 400;
-    margin-bottom: 0.8rem;
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-}
-
-.grp-num {
-    font-family: var(--sans);
-    font-size: 0.5rem;
-    letter-spacing: 0.2em;
-    color: var(--gold);
-    font-weight: 600;
-    background: rgba(197, 165, 90, 0.1);
-    padding: 0.2rem 0.5rem;
-    border-radius: 2px;
-}
-
-/* Swatches in constructor */
-.swatches {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.sw {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: all 0.3s;
-    position: relative;
-}
-
-.sw:hover,
-.sw.on {
-    border-color: var(--gold);
-    transform: scale(1.12);
-}
-
-.sw.on::after {
-    content: '✓';
+.scenario-card--cta__content {
     position: absolute;
     inset: 0;
     display: flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    color: #fff;
-    font-size: 0.65rem;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+    align-items: flex-start;
+    padding: 2rem 1.6rem;
+    z-index: 2;
 }
 
-.sw-label {
-    margin-top: 0.5rem;
-    font-family: var(--sans);
-    font-size: 0.65rem;
+.scenario-card--cta__mark {
+    font-size: 1.4rem;
     color: var(--gold);
-    font-weight: 400;
+    line-height: 1;
+    margin-bottom: 1.2rem;
+    opacity: 0.75;
 }
 
-/* Person buttons */
-.pbtn-row {
-    display: flex;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-}
-
-.pbtn {
-    padding: 0.5rem 1.3rem;
-    border: 1px solid rgba(197, 165, 90, 0.15);
-    font-size: 0.68rem;
-    letter-spacing: 0.08em;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.3s;
-    font-family: var(--sans);
-    background: transparent;
-}
-
-.pbtn:hover {
-    border-color: var(--gold);
+.scenario-card--cta__name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    line-height: 1.15;
     color: var(--cream);
+    margin-bottom: 0.7rem;
+    font-style: italic;
 }
 
-.pbtn.on {
-    border-color: var(--gold);
-    background: var(--gold);
-    color: var(--bg);
-    font-weight: 600;
-}
-
-/* SET SHORTCUT */
-.set-box {
-    background: rgba(197, 165, 90, 0.04);
-    border: 1px dashed rgba(197, 165, 90, 0.15);
-    padding: 1rem 1.3rem;
-    margin-bottom: 2rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 0.8rem;
-}
-
-.set-box h4 {
-    font-family: var(--sans);
-    font-size: 0.74rem;
-    color: var(--cream);
-    font-weight: 500;
-}
-
-.set-box p {
-    font-family: var(--sans);
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    font-weight: 300;
-    margin-top: 0.15rem;
-}
-
-.set-prices {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-}
-
-.sp-old {
-    font-family: var(--sans);
-    font-size: 0.72rem;
-    color: var(--text-muted);
-    text-decoration: line-through;
-}
-
-.sp-new {
-    font-family: var(--sans);
-    font-size: 0.95rem;
-    color: var(--gold);
-    font-weight: 500;
-}
-
-.btn-s {
-    padding: 0.5rem 1.3rem;
-    border: 1px solid var(--gold);
-    color: var(--gold);
-    background: transparent;
-    font-size: 0.6rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-family: var(--sans);
-    font-weight: 500;
-}
-
-.btn-s:hover {
-    background: var(--gold);
-    color: var(--bg);
-}
-
-/* Product categories */
-.cat {
-    margin-bottom: 1.5rem;
-}
-
-.cat-label {
-    font-family: var(--sans);
-    font-size: 0.58rem;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin-bottom: 0.6rem;
-    font-weight: 500;
-    padding-bottom: 0.4rem;
-    border-bottom: 1px solid rgba(197, 165, 90, 0.08);
-}
-
-/* Item rows */
-.ir {
-    display: grid;
-    grid-template-columns: 1fr auto auto auto;
-    align-items: center;
-    gap: 1rem;
-    padding: 0.7rem 0;
-    border-bottom: 1px solid rgba(197, 165, 90, 0.04);
-}
-
-.ir:last-child {
-    border-bottom: none;
-}
-
-.ir-name {
-    font-family: var(--sans);
+.scenario-card--cta__hint {
+    font-family: 'Raleway', sans-serif;
     font-size: 0.78rem;
-    color: var(--cream);
-    font-weight: 400;
-}
-
-.ir-size {
-    font-family: var(--sans);
-    font-size: 0.6rem;
-    color: var(--text-muted);
     font-weight: 300;
-    margin-top: 0.1rem;
+    line-height: 1.55;
+    color: var(--text-muted);
+    letter-spacing: 0.01em;
+    max-width: 22ch;
 }
 
-.ir-price {
-    font-family: var(--sans);
-    font-size: 0.8rem;
-    color: var(--cream);
-    font-weight: 400;
-    text-align: right;
-    white-space: nowrap;
-}
-
-.ir-qty {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
-
-.qb {
-    width: 1.625rem;
-    height: 1.625rem;
-    border: 1px solid rgba(197, 165, 90, 0.2);
-    background: transparent;
-    color: var(--cream);
-    font-size: 0.85rem;
-    cursor: pointer;
+.scenario-card--cta__arrow {
+    position: absolute;
+    bottom: 1.4rem;
+    right: 1.4rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid rgba(197, 165, 90, 0.35);
+    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.2s;
-    font-family: var(--sans);
-}
-
-.qb:hover {
-    border-color: var(--gold);
+    font-size: 1rem;
     color: var(--gold);
+    transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
 }
 
-.qv {
-    font-family: var(--sans);
-    font-size: 0.78rem;
-    color: var(--cream);
-    min-width: 1.25rem;
-    text-align: center;
-    font-weight: 500;
+/* Hover-эффекты CTA-ячейки */
+.scenario-card--cta:hover {
+    border-color: rgba(197, 165, 90, 0.45);
 }
 
-.ir-sub {
-    font-family: var(--sans);
-    font-size: 0.72rem;
-    color: var(--gold-dim);
-    font-weight: 400;
-    text-align: right;
-    min-width: 3.75rem;
-    white-space: nowrap;
+.scenario-card--cta:hover .scenario-card--cta__arrow {
+    border-color: rgba(197, 165, 90, 0.7);
+    background-color: rgba(197, 165, 90, 0.08);
+    transform: translateX(2px);
 }
 
-/* Note box */
-.note-box {
-    background: rgba(197, 165, 90, 0.03);
-    border-left: 2px solid var(--gold);
-    padding: 0.8rem 1.2rem;
-    margin: 1.5rem 0;
-    font-family: var(--sans);
-    font-size: 0.68rem;
-    color: var(--text-muted);
-    font-weight: 300;
-    line-height: 1.7;
+/* Перебиваем псевдо-стрелку родительского .scenario-card (она не нужна для CTA) */
+.scenario-card--cta::after {
+    display: none;
 }
 
-.note-box strong {
-    color: var(--cream);
-    font-weight: 500;
-}
-
-/* Sticky total bar */
-.total-sticky {
-    position: sticky;
-    bottom: 0;
-    z-index: 50;
-    border-top: 1px solid rgba(197, 165, 90, 0.15);
-    padding: 1rem 3rem;
-    margin: 0 -3rem -2.5rem;
-    backdrop-filter: blur(12px);
-    background: rgba(26, 25, 23, 0.95);
-}
-
-.total-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
-}
-
-.total-left {
-    display: flex;
-    align-items: baseline;
-    gap: 0.7rem;
-}
-
-.total-lbl {
-    font-family: var(--sans);
-    font-size: 0.65rem;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-}
-
-.total-sum {
-    font-family: var(--serif);
-    font-size: 1.7rem;
-    color: var(--cream);
-    font-weight: 400;
-}
-
-.total-items {
-    font-family: var(--sans);
-    font-size: 0.6rem;
-    color: var(--text-muted);
-    font-weight: 300;
-    margin-left: 0.5rem;
-}
-
-.btn-cart {
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-    padding: 0.9rem 2.2rem;
-    background: var(--gold);
-    color: var(--bg);
-    font-size: 0.65rem;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    font-weight: 600;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s;
-    font-family: var(--sans);
-}
-
-.btn-cart:hover {
-    background: var(--gold-light);
-}
-
-/* Cart pop animation */
-@keyframes cartPop {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.4); }
-    100% { transform: scale(1); }
-}
-
-/* ============================================================
-   CONSTRUCTOR RESPONSIVE
-   ============================================================ */
-
-@media (max-width: 1024px) {
-    .con {
-        padding: 2rem 1.5rem;
-    }
-    .total-sticky {
-        padding: 1rem 1.5rem;
-        margin: 0 -1.5rem -2rem;
-    }
-    .ir {
-        grid-template-columns: 1fr;
-        gap: 0.4rem;
-    }
-    .ir-price,
-    .ir-sub {
-        text-align: left;
-    }
-}
-
+/* На мобильном — выравниваем по центру для лучшей читаемости */
 @media (max-width: 640px) {
-    .total-inner {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    .btn-cart {
-        justify-content: center;
-    }
-    .set-box {
-        flex-direction: column;
+    .scenario-card--cta__content {
+        align-items: center;
         text-align: center;
     }
+    .scenario-card--cta__hint {
+        max-width: 28ch;
+    }
 }
 ```
 
+**Пояснение по дизайну** (для понимания, не для самостоятельных правок):
+- Без фото-фона — заменён мягким золотистым radial-glow по диагонали (чтобы не выглядеть «пустой» относительно карточек с фото)
+- Декоративный `✦` сверху вместо номера `01/02/03...` — визуально отличает CTA от обычного сценария
+- Курсивное название в стиле hero-блока главной (`Cormorant Garamond italic`) — намекает на «индивидуальность»
+- Стрелка-CTA видна постоянно (в обычных карточках появляется на hover) — явный признак «это работает иначе»
+- Hover-эффект стрелки — лёгкий золотой подсвет фона стрелки + сдвиг вправо
+
 ---
 
-## 3. JavaScript — создать файл assets/js/constructor.js
+## 5. Критерии готовности
 
-```javascript
-document.addEventListener('DOMContentLoaded', function() {
-    const constructor = document.getElementById('constructor');
-    if (!constructor) return;
+Проверь в браузере **на staging или локально** (не на проде):
 
-    // --- SET DATA ---
-    const setData = {
-        4: { title: 'Готовый набор на 4 персоны — выгоднее на 15%', desc: 'Дорожка 40×140 + 4 салфетки + 4 куверта', oldPrice: 3290, newPrice: 2800 },
-        6: { title: 'Готовый набор на 6 персон — выгоднее на 15%', desc: 'Дорожка 40×140 + 6 салфеток + 6 кувертов', oldPrice: 4490, newPrice: 3820 }
-    };
+### 5.1. Desktop (≥1025px)
+- [ ] Видны 6 ячеек: 5 сценариев в порядке Романтический → Семейный обед → Праздничный стол → День рождения → Каждый день, 6-я — CTA
+- [ ] Сетка 3 колонки × 2 ряда, все ячейки одного размера (aspect-ratio 3:4)
+- [ ] Нет шахматного смещения — все 6 ячеек на одной линии в каждой строке
+- [ ] CTA-ячейка визуально отличается: нет фото, есть золотистый glow, есть `✦`, курсивное название, видна стрелка
+- [ ] Hover на CTA: лёгкая золотая обводка усиливается, стрелка слегка двигается вправо, бэкграунд стрелки слегка золотится
+- [ ] Hover на обычной карточке: работает как раньше (translateY, scale фона, появление стрелки в правом верхнем углу)
 
-    // --- SWATCH SELECTION ---
-    constructor.querySelectorAll('.sw').forEach(function(sw) {
-        sw.addEventListener('click', function() {
-            constructor.querySelectorAll('.sw').forEach(function(s) { s.classList.remove('on'); });
-            sw.classList.add('on');
-            var label = document.getElementById('colorLabel');
-            if (label) label.textContent = sw.dataset.name;
-        });
-    });
+### 5.2. Tablet (641-1024px)
+- [ ] Сетка 2 колонки × 3 ряда — 6 ячеек ровно, без перекосов
+- [ ] CTA-ячейка остаётся 6-й (правый нижний угол)
+- [ ] Никаких горизонтальных скроллов
 
-    // --- PERSONS SELECTION ---
-    constructor.querySelectorAll('.pbtn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-            var n = parseInt(btn.dataset.persons);
-            constructor.querySelectorAll('.pbtn').forEach(function(b) { b.classList.remove('on'); });
-            btn.classList.add('on');
+### 5.3. Mobile (≤640px)
+- [ ] Сетка 1 колонка × 6 рядов
+- [ ] aspect-ratio карточек переключился на 4:3 (как у обычных)
+- [ ] CTA-ячейка: текст выровнен по центру (благодаря медиа-правилу)
 
-            // Update napkin and couverte qty
-            var napkin = constructor.querySelector('[data-role="napkin"] .qv');
-            var couverte = constructor.querySelector('[data-role="couverte"] .qv');
-            if (napkin) { napkin.textContent = n; updateRowSub(napkin.closest('.ir')); }
-            if (couverte) { couverte.textContent = n; updateRowSub(couverte.closest('.ir')); }
+### 5.4. Функциональное
+- [ ] Клик по CTA-ячейке ведёт на `/individualnyy-zakaz/`
+- [ ] Клики по 5 сценариям ведут на соответствующие `/scenarios/{slug}/`
+- [ ] Если применяется только E1 без E2 (то есть в БД ещё 4 сценария) — будет видно 4 + 1 CTA = 5 ячеек, грид 3×2 с одной пустой ячейкой → **это временное состояние, требующее немедленного применения E2**
 
-            // Show/hide set box
-            var setBox = document.getElementById('setBox');
-            if (n === 2) {
-                setBox.style.display = 'none';
-            } else {
-                setBox.style.display = 'flex';
-                var d = setData[n];
-                document.getElementById('setTitle').textContent = d.title;
-                document.getElementById('setDesc').textContent = d.desc;
-                document.getElementById('setOld').textContent = formatPrice(d.oldPrice);
-                document.getElementById('setNew').textContent = formatPrice(d.newPrice);
-            }
+---
 
-            recalcTotal();
-        });
-    });
+## 6. План отката
 
-    // --- QTY BUTTONS ---
-    constructor.querySelectorAll('.qb-plus').forEach(function(btn) {
-        btn.addEventListener('click', function() { changeQty(btn, 1); });
-    });
-    constructor.querySelectorAll('.qb-minus').forEach(function(btn) {
-        btn.addEventListener('click', function() { changeQty(btn, -1); });
-    });
+Если что-то сломалось визуально или функционально, и быстро не починить:
 
-    function changeQty(btn, delta) {
-        var row = btn.closest('.ir');
-        var qv = row.querySelector('.qv');
-        var n = parseInt(qv.textContent) + delta;
-        if (n < 0) n = 0;
-        if (n > 12) n = 12;
-        qv.textContent = n;
-        updateRowSub(row);
-        recalcTotal();
-    }
-
-    function updateRowSub(row) {
-        var price = parseInt(row.dataset.price);
-        var qty = parseInt(row.querySelector('.qv').textContent);
-        row.querySelector('.ir-sub').textContent = qty > 0 ? formatPrice(price * qty) : '0 ₽';
-    }
-
-    // --- TOTAL ---
-    function recalcTotal() {
-        var total = 0, items = 0;
-        constructor.querySelectorAll('.ir').forEach(function(row) {
-            var q = parseInt(row.querySelector('.qv').textContent);
-            if (q > 0) {
-                var p = parseInt(row.dataset.price);
-                total += p * q;
-                items += q;
-            }
-        });
-        document.getElementById('totalSum').textContent = total > 0 ? formatPrice(total) : '0 ₽';
-        document.getElementById('totalItems').textContent = items > 0 ? items + ' поз.' : '—';
-    }
-
-    // --- FORMAT PRICE ---
-    function formatPrice(n) {
-        return n.toLocaleString('ru-RU') + ' ₽';
-    }
-
-    // --- ADD TO CART (visual only) ---
-    var cartBtn = document.getElementById('addCartBtn');
-    if (cartBtn) {
-        cartBtn.addEventListener('click', function() {
-            var total = 0;
-            constructor.querySelectorAll('.ir').forEach(function(row) {
-                total += parseInt(row.querySelector('.qv').textContent);
-            });
-            if (total === 0) {
-                cartBtn.style.background = '#7a4a4a';
-                setTimeout(function() { cartBtn.style.background = ''; }, 500);
-                return;
-            }
-            cartBtn.textContent = 'Добавлено ✓';
-            cartBtn.style.background = '#4a7a4a';
-            animateCartCount(total);
-            setTimeout(function() {
-                cartBtn.textContent = 'В корзину →';
-                cartBtn.style.background = '';
-            }, 2000);
-        });
-    }
-
-    // --- ADD SET (visual only) ---
-    var setBtn = document.getElementById('addSetBtn');
-    if (setBtn) {
-        setBtn.addEventListener('click', function() {
-            setBtn.textContent = 'Добавлено ✓';
-            setBtn.style.background = 'var(--gold)';
-            setBtn.style.color = 'var(--bg)';
-            animateCartCount(1);
-            setTimeout(function() {
-                setBtn.textContent = 'Добавить набор';
-                setBtn.style.background = '';
-                setBtn.style.color = '';
-            }, 2000);
-        });
-    }
-
-    // --- CART COUNT ANIMATION ---
-    function animateCartCount(addItems) {
-        var cc = document.querySelector('.cart-count');
-        if (cc) {
-            cc.textContent = parseInt(cc.textContent) + addItems;
-            cc.style.animation = 'none';
-            cc.offsetHeight; // reflow
-            cc.style.animation = 'cartPop 0.3s';
-        }
-    }
-
-    // --- INIT ---
-    var defaultPersons = parseInt(constructor.dataset.defaultPersons) || 2;
-    var defaultBtn = constructor.querySelector('.pbtn[data-persons="' + defaultPersons + '"]');
-    if (defaultBtn) defaultBtn.click();
-});
+```bash
+git reset --hard pre-sprint-1-e1
 ```
 
+Это откатит все правки E1 к состоянию до старта. Никаких потерь данных в БД эта правка не вносит, поэтому откат безопасен.
+
 ---
 
-## 4. Подключение JS — файл functions.php
+## 7. После приёмки
 
-Найти место где подключаются скрипты (функция `wp_enqueue_scripts`) и добавить:
-
-```php
-wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], '1.0', true);
+После того, как Борис принял визуально:
+```bash
+git add -A
+git commit -m "feat(home): scenarios grid 4→5 with individual-order CTA (sprint-1 e1)"
+git push origin main
 ```
 
-Если в functions.php нет хука `wp_enqueue_scripts` — найти существующий `wp_enqueue_script` для `main.js` и добавить рядом.
+И затем сразу применять ТЗ E2 — без перерыва между ними.
 
 ---
 
-## Чеклист
-- [ ] Конструктор между «Рекомендуемые оттенки» и «Советы»
-- [ ] 17 свотчей кликабельны, подпись обновляется
-- [ ] 3 кнопки персон переключаются
-- [ ] При 2 персонах — блок набора скрыт
-- [ ] При 4/6 — блок набора виден, цены корректны
-- [ ] Кнопки +/− работают, подитоги и итого пересчитываются
-- [ ] Sticky-бар прилипает к низу экрана
-- [ ] «В корзину» → «Добавлено ✓» зелёный на 2с (не alert)
-- [ ] «Добавить набор» → аналогично
-- [ ] Адаптив: 1024px и 640px
-- [ ] Нет inline onclick
-- [ ] data-price без пробелов (числа)
+## 8. Контактные точки если что-то неясно
 
-## Что НЕ трогать
-- hero, галерея, рекомендуемые оттенки, советы, другие сценарии — без изменений
-- front-page.php — без изменений
-- Стили этапа 1 — не трогать
+Если в реальном коде на момент применения этого ТЗ обнаружишь расхождения с тем, что я описал (например, селектор уже изменён, строки сдвинулись, переменные `--gold` / `--cream` / `--text-muted` называются иначе и т.д.) — **СТОП**, не угадывай. Спроси Бориса. Он либо обновит ТЗ через меня, либо подтвердит, что можно адаптировать в рамках того же смысла.
+
+Переменные CSS, на которые ссылаюсь в стилях CTA-ячейки:
+- `var(--gold)` — золотой акцентный цвет (использован уже в `.scenario-num`, `.scenario-card::after` border)
+- `var(--cream)` — основной светлый цвет текста (использован в `.scenario-name`)
+- `var(--text-muted)` — приглушённый текст (использован в `.scenario-hint`)
+
+Эти переменные определены в начале `style.css` (раздел `:root { ... }`). Если их там нет — не вставляй стили CTA-ячейки, спроси Бориса.
+
+---
+
+**Конец ТЗ E1.**
+
+После применения и приёмки Борис стартует ТЗ E2 (создание записи CPT `scenario` для дня рождения).

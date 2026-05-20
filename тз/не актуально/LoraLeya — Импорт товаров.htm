@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru"><head>
+<meta http-equiv="content-type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>LoraLeya — Импорт товаров</title>
+    <style>
+        body { font-family: monospace; font-size: 14px; padding: 2rem; background: #f5f5f5; }
+        h1 { color: #333; }
+        h2 { color: #555; margin-top: 2rem; border-bottom: 1px solid #ccc; }
+        .ok   { color: #2a7a2a; }
+        .warn { color: #a06000; }
+        .err  { color: #a00000; }
+        .info { color: #0055aa; }
+        ul { margin: 0.3rem 0 1rem 1.5rem; }
+        a { color: #0055aa; }
+        table { border-collapse: collapse; margin: 1rem 0; }
+        td, th { border: 1px solid #ccc; padding: 4px 10px; }
+        th { background: #eee; }
+    </style>
+</head>
+<body>
+<h1>LoraLeya — Импорт товаров WooCommerce</h1>
+<p><strong>Цвет:</strong> Бирюза (slug: <code>biryuza</code>, term_id: 19)</p>
+
+<h2>Фаза 1: Категории товаров</h2><ul><li class="info">+ «Дорожки» создана (ID: 45)</li><li class="info">+ «Скатерти» создана (ID: 46)</li><li class="info">+ «Салфетки» создана (ID: 47)</li><li class="info">+ «Куверты» создана (ID: 48)</li><li class="info">+ «Готовые наборы» создана (ID: 49)</li></ul><h2>Фаза 2: Товары</h2><hr><h3>Дорожка на стол <small>(variable)</small></h3><ul><li class="info">+ Товар создан (ID: 39)</li><li class="ok">✓ Категория: «Дорожки»</li><li class="ok">✓ Цвет привязан: «Бирюза» (term_id: 19)</li><li class="warn">⚠ Главное фото не найдено: «biryuza-dorozhka»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-hero-servirovka»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-macro-pereliv»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-gallery-1»</li><li class="info">Найдены термины «pa_razmer-dorozhki»: 140, 175, 240, 300</li><li class="ok">✓ Атрибуты товара зарегистрированы</li><li class="info">+ Вариация Бирюза/140 создана (ID: 40)</li><li class="info">+ Вариация Бирюза/175 создана (ID: 41)</li><li class="info">+ Вариация Бирюза/240 создана (ID: 42)</li><li class="info">+ Вариация Бирюза/300 создана (ID: 43)</li><li class="ok">✓ Вариации: +4 созданы</li></ul><hr><h3>Скатерть <small>(variable)</small></h3><ul><li class="info">+ Товар создан (ID: 44)</li><li class="ok">✓ Категория: «Скатерти»</li><li class="ok">✓ Цвет привязан: «Бирюза» (term_id: 19)</li><li class="warn">⚠ Главное фото не найдено: «biryuza-dorozhka»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-hero-servirovka»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-macro-faktura»</li><li class="info">Найдены термины «pa_razmer-skaterti»: 175, 220, 240</li><li class="ok">✓ Атрибуты товара зарегистрированы</li><li class="info">+ Вариация Бирюза/175 создана (ID: 45)</li><li class="info">+ Вариация Бирюза/220 создана (ID: 46)</li><li class="info">+ Вариация Бирюза/240 создана (ID: 47)</li><li class="ok">✓ Вариации: +3 созданы</li></ul><hr><h3>Салфетка сервировочная <small>(simple)</small></h3><ul><li class="info">+ Товар создан (ID: 48)</li><li class="ok">✓ Категория: «Салфетки»</li><li class="ok">✓ Цвет привязан: «Бирюза» (term_id: 19)</li><li class="warn">⚠ Главное фото не найдено: «biryuza-salfetka-tsvetok»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-salfetka-razvernutaya»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-salfetka-koltso2»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-macro-strochka»</li><li class="ok">✓ Цена: 350 ₽ (обычная: 410 ₽)</li><li class="ok">✓ SKU: LL-biryuza-salfetka-servirovochnaya</li></ul><hr><h3>Куверт для приборов <small>(simple)</small></h3><ul><li class="info">+ Товар создан (ID: 49)</li><li class="ok">✓ Категория: «Куверты»</li><li class="ok">✓ Цвет привязан: «Бирюза» (term_id: 19)</li><li class="warn">⚠ Главное фото не найдено: «biryuza-kuvert»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-kuvert-reserve»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-hero-detail»</li><li class="ok">✓ Цена: 250 ₽ (обычная: 290 ₽)</li><li class="ok">✓ SKU: LL-biryuza-kuvert-dlya-priborov</li></ul><hr><h3>Готовый набор — всё в одном цвете <small>(variable)</small></h3><ul><li class="info">+ Товар создан (ID: 50)</li><li class="ok">✓ Категория: «Готовые наборы»</li><li class="ok">✓ Цвет привязан: «Бирюза» (term_id: 19)</li><li class="warn">⚠ Главное фото не найдено: «biryuza-nabor-4»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-hero-servirovka»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-gallery-1»</li><li class="warn">⚠ Фото галереи не найдено: «biryuza-gallery-2»</li><li class="info">Найдены термины «pa_razmer-nabora»: 4п/140, 4п/175, 6п/140, 6п/175</li><li class="ok">✓ Атрибуты товара зарегистрированы</li><li class="info">+ Вариация Бирюза/4п/140 создана (ID: 51)</li><li class="info">+ Вариация Бирюза/4п/175 создана (ID: 52)</li><li class="info">+ Вариация Бирюза/6п/140 создана (ID: 53)</li><li class="info">+ Вариация Бирюза/6п/175 создана (ID: 54)</li><li class="ok">✓ Вариации: +4 созданы</li></ul>
+<h2>Итог</h2>
+<table>
+    <tbody><tr><th>Цвет</th><th>Товар</th><th>ID</th><th>Тип</th><th>Вариации</th><th>Ссылка</th></tr>
+        <tr>
+        <td>Бирюза</td>
+        <td>Дорожка на стол</td>
+        <td>39</td>
+        <td>variable</td>
+        <td>4</td>
+        <td><a href="https://loraleya.ru/wp-admin/post.php?post=39&amp;action=edit" target="_blank">Открыть в админке</a></td>
+    </tr>
+        <tr>
+        <td>Бирюза</td>
+        <td>Скатерть</td>
+        <td>44</td>
+        <td>variable</td>
+        <td>3</td>
+        <td><a href="https://loraleya.ru/wp-admin/post.php?post=44&amp;action=edit" target="_blank">Открыть в админке</a></td>
+    </tr>
+        <tr>
+        <td>Бирюза</td>
+        <td>Салфетка сервировочная</td>
+        <td>48</td>
+        <td>simple</td>
+        <td>—</td>
+        <td><a href="https://loraleya.ru/wp-admin/post.php?post=48&amp;action=edit" target="_blank">Открыть в админке</a></td>
+    </tr>
+        <tr>
+        <td>Бирюза</td>
+        <td>Куверт для приборов</td>
+        <td>49</td>
+        <td>simple</td>
+        <td>—</td>
+        <td><a href="https://loraleya.ru/wp-admin/post.php?post=49&amp;action=edit" target="_blank">Открыть в админке</a></td>
+    </tr>
+        <tr>
+        <td>Бирюза</td>
+        <td>Готовый набор — всё в одном цвете</td>
+        <td>50</td>
+        <td>variable</td>
+        <td>4</td>
+        <td><a href="https://loraleya.ru/wp-admin/post.php?post=50&amp;action=edit" target="_blank">Открыть в админке</a></td>
+    </tr>
+    </tbody></table>
+
+<p>
+    <strong>Товаров создано:</strong> 5 &nbsp;
+    <strong>Товаров обновлено:</strong> 0 &nbsp;
+    <strong>Вариаций создано:</strong> 11</p>
+
+<h2 style="color:#a06000">Предупреждения (18)</h2>
+<ul>
+        <li class="warn">⚠ Товар «Дорожка на стол»: главное фото «biryuza-dorozhka» не найдено в медиатеке</li>
+        <li class="warn">⚠ Товар «Дорожка на стол»: фото галереи «biryuza-hero-servirovka» не найдено</li>
+        <li class="warn">⚠ Товар «Дорожка на стол»: фото галереи «biryuza-macro-pereliv» не найдено</li>
+        <li class="warn">⚠ Товар «Дорожка на стол»: фото галереи «biryuza-gallery-1» не найдено</li>
+        <li class="warn">⚠ Товар «Скатерть»: главное фото «biryuza-dorozhka» не найдено в медиатеке</li>
+        <li class="warn">⚠ Товар «Скатерть»: фото галереи «biryuza-hero-servirovka» не найдено</li>
+        <li class="warn">⚠ Товар «Скатерть»: фото галереи «biryuza-macro-faktura» не найдено</li>
+        <li class="warn">⚠ Товар «Салфетка сервировочная»: главное фото «biryuza-salfetka-tsvetok» не найдено в медиатеке</li>
+        <li class="warn">⚠ Товар «Салфетка сервировочная»: фото галереи «biryuza-salfetka-razvernutaya» не найдено</li>
+        <li class="warn">⚠ Товар «Салфетка сервировочная»: фото галереи «biryuza-salfetka-koltso2» не найдено</li>
+        <li class="warn">⚠ Товар «Салфетка сервировочная»: фото галереи «biryuza-macro-strochka» не найдено</li>
+        <li class="warn">⚠ Товар «Куверт для приборов»: главное фото «biryuza-kuvert» не найдено в медиатеке</li>
+        <li class="warn">⚠ Товар «Куверт для приборов»: фото галереи «biryuza-kuvert-reserve» не найдено</li>
+        <li class="warn">⚠ Товар «Куверт для приборов»: фото галереи «biryuza-hero-detail» не найдено</li>
+        <li class="warn">⚠ Товар «Готовый набор — всё в одном цвете»: главное фото «biryuza-nabor-4» не найдено в медиатеке</li>
+        <li class="warn">⚠ Товар «Готовый набор — всё в одном цвете»: фото галереи «biryuza-hero-servirovka» не найдено</li>
+        <li class="warn">⚠ Товар «Готовый набор — всё в одном цвете»: фото галереи «biryuza-gallery-1» не найдено</li>
+        <li class="warn">⚠ Товар «Готовый набор — всё в одном цвете»: фото галереи «biryuza-gallery-2» не найдено</li>
+    </ul>
+
+<h2>Ссылки для проверки</h2>
+<ul>
+    <li><a href="https://loraleya.ru/wp-admin/edit.php?post_type=product" target="_blank">Все товары в админке</a></li>
+    <li><a href="https://loraleya.ru/wp-admin/edit-tags.php?taxonomy=product_cat&amp;post_type=product" target="_blank">Категории товаров</a></li>
+    <li><a href="https://loraleya.ru/wp-admin/edit-tags.php?taxonomy=fabric_color&amp;post_type=product" target="_blank">Цвета ткани</a></li>
+    <li><a href="https://loraleya.ru/shop/" target="_blank">Магазин на фронте</a></li>
+</ul>
+
+<p style="color:#999;margin-top:3rem;font-size:12px">
+    После успешного импорта всех цветов этот файл можно удалить:<br>
+    <code>wp-content/themes/loraleya/tools/import-products.php</code>
+</p>
+
+
+
+</body><h0b313042-68d5-46a3-b7a3-6906a7978083></h0b313042-68d5-46a3-b7a3-6906a7978083></html>

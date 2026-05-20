@@ -4,7 +4,26 @@
       "Bash(gh auth:*)",
       "Bash(git -C \"c:/code-sync/loraleya\" init)",
       "Bash(git -C \"c:/code-sync/loraleya\" add .)",
-      "Bash(git -C \"c:/code-sync/loraleya\" status)"
+      "Bash(git -C \"c:/code-sync/loraleya\" status)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(git -C \"c:/code-sync/loraleya\" add assets/js/main.js functions.php style.css .gitignore)",
+      "Bash(git -C c:/code-sync/loraleya commit -m ' *)",
+      "Bash(git -C \"c:/code-sync/loraleya\" checkout main)",
+      "Bash(git -C \"c:/code-sync/loraleya\" pull)",
+      "Bash(git -C \"c:/code-sync/loraleya\" checkout -b migrate-fabric-color-to-pa)",
+      "Bash(git -C \"c:/code-sync/loraleya\" add functions.php)",
+      "Bash(git -C \"c:/code-sync/loraleya\" push -u origin migrate-fabric-color-to-pa)",
+      "Bash(git -C \"c:/code-sync/loraleya\" log --oneline -4)",
+      "Bash(git -C \"c:/code-sync/loraleya\" add functions.php front-page.php taxonomy-pa_fabric_color.php tools/import-products.php)",
+      "Bash(git -C \"c:/code-sync/loraleya\" status --short)",
+      "Bash(git -C \"c:/code-sync/loraleya\" push)",
+      "Bash(git -C \"c:/code-sync/loraleya\" log --oneline -5)",
+      "Bash(git -C \"c:/code-sync/loraleya\" log --oneline -3)",
+      "Bash(grep -n 'sanitize_text_field.*key\\\\|sanitize_text_field.*val\\\\|$_POST\\\\['\\\\''variation'\\\\''\\\\]' c:/code-sync/loraleya/functions.php)",
+      "Bash(git -C \"c:/code-sync/loraleya\" add taxonomy-pa_fabric_color.php)",
+      "Bash(git -C \"c:/code-sync/loraleya\" push origin main)"
     ]
   }
 }
