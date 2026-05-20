@@ -874,3 +874,18 @@ function loraleya_privacy_consent_links_script() {
     <?php
 }
 add_action('wp_footer', 'loraleya_privacy_consent_links_script');
+
+// === SEO: TITLE И META DESCRIPTION ГЛАВНОЙ ===
+
+add_filter('pre_get_document_title', function($title) {
+    if (is_front_page()) {
+        return 'Красивая сервировка стола — наборы в 17 цветах | LoraLeya';
+    }
+    return $title;
+});
+
+add_action('wp_head', function() {
+    if (is_front_page()) {
+        echo '<meta name="description" content="Жаккардовая скатерть, дорожка, салфетки в 17 цветах. Готовые наборы и индивидуальный пошив. Бесплатная доставка от 100 000 ₽.">' . "\n";
+    }
+});

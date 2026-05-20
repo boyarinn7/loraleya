@@ -10,9 +10,9 @@ get_header();
     <div class="hero-bg"></div>
     <div class="hero-texture"></div>
     <div class="hero-content">
-        <div class="eyebrow">Столовый текстиль &middot; Сделано в России с любовью</div>
+        <div class="eyebrow">Жаккардовая сервировка стола &middot; Сделано в России</div>
         <h1>Начните с <em class="italic-accent">настроения</em>,<br>мы соберём ваш стол</h1>
-        <p class="hero-sub">17 оттенков жаккардового текстиля для сервировки.<br>Выберите сценарий — мы подберём идеальный комплект.</p>
+        <p class="hero-sub">17 оттенков жаккарда, готовые наборы для красивой сервировки стола.<br>Выберите сценарий — мы соберём идеальный комплект.</p>
         <a class="btn btn--outline" href="#scenarios">
             Выбрать сценарий
             <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
@@ -29,7 +29,7 @@ get_header();
     <div class="container">
         <div class="eyebrow">Выберите сценарий</div>
         <h2>Какой стол вы накрываете сегодня?</h2>
-        <p class="section-desc">Не ищите товары — выберите настроение. Мы покажем готовую сервировку и предложим собрать комплект в один клик.</p>
+        <p class="section-desc">Сервировка — это не выбор товаров, а выбор настроения. От романтического ужина до семейного обеда: пять готовых сценариев под любой повод.</p>
 
         <div class="scenarios-grid">
             <?php
@@ -100,7 +100,7 @@ get_header();
     <div class="container">
         <div class="eyebrow">Палитра LoraLeya</div>
         <h2>17 оттенков для вашего стола</h2>
-        <p class="section-desc">Каждый цвет — это отдельный мир сервировки. Нажмите на оттенок, чтобы увидеть все изделия и готовые комплекты.</p>
+        <p class="section-desc">Каждый оттенок жаккарда — это самостоятельный мир сервировки. Однотонные ткани с характерным мраморным переливом: от классической бежевой базы до глубокого графита.</p>
 
         <div class="colors-wheel">
             <?php
@@ -146,7 +146,7 @@ $pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_
     <div class="container">
         <div class="eyebrow">Изделия</div>
         <h2>Что входит в сервировку</h2>
-        <p class="section-desc">Дорожки, салфетки, куверты для приборов — всё из одной ткани, в едином стиле.</p>
+        <p class="section-desc">Дорожки на стол, скатерти, тканевые салфетки и куверты (конверты для столовых приборов) — всё из одной жаккардовой ткани, в едином цвете.</p>
 
         <div class="products-strip">
             <div class="product-preview">
@@ -204,7 +204,7 @@ $pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_
             <div class="brand-right">
                 <div class="eyebrow">О бренде</div>
                 <blockquote class="brand-quote">«Красиво накрытый стол — это не роскошь, а ежедневный ритуал, который делает жизнь теплее»</blockquote>
-                <p class="brand-text">LoraLeya — российский бренд столового текстиля. Каждое изделие создаётся из жаккардовой ткани с характерным «мраморным» переливом, который играет по-разному при любом освещении. Мы не просто шьём скатерти — мы помогаем вам создать стол, за который хочется собираться.</p>
+                <p class="brand-text">LoraLeya — российский бренд жаккардовых тканей для сервировки стола. Наша мастерская в Подмосковье шьёт скатерти, дорожки и салфетки из 100% полиэстерового жаккарда с характерным «мраморным» переливом — этот рисунок играет по-разному при любом освещении. Семнадцать оттенков, готовые наборы на 2–12 персон, индивидуальный пошив под любую форму стола. Мы не просто шьём текстиль — мы помогаем создать ритуал, к которому хочется возвращаться каждый день.</p>
                 <a href="<?php echo home_url('/about/'); ?>" class="btn btn--outline" style="margin-top:1.5rem">
                     Подробнее о бренде
                 </a>
@@ -217,7 +217,7 @@ $pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_
 <section class="section" style="text-align:center">
     <div class="container">
         <h2>Готовы собрать свой стол?</h2>
-        <p class="section-desc" style="margin:0 auto 2rem">Выберите сценарий или цвет — и соберите идеальный комплект за 2 минуты</p>
+        <p class="section-desc" style="margin:0 auto 2rem">Выберите сценарий, цвет или индивидуальный размер — и соберите идеальный комплект под свой стол за 2 минуты.</p>
         <a href="#scenarios" class="btn btn--outline">
             Начать
             <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 4l4 4-4 4"/></svg>
