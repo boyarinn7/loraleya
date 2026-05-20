@@ -542,7 +542,7 @@ h4 { font-size: 1.1rem; }
 
 .scenarios-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-top: 2.5rem;
 }
@@ -559,10 +559,6 @@ h4 { font-size: 1.1rem; }
     transition: transform 0.4s ease, border-color 0.4s ease;
 }
 
-.scenario-card:nth-child(even) {
-    margin-top: 2rem;
-}
-
 /* Gradient backgrounds */
 .scenario-bg {
     position: absolute;
@@ -576,15 +572,20 @@ h4 { font-size: 1.1rem; }
     background: linear-gradient(160deg, #2d1828, #1a0f1e, #12080f);
 }
 
+/* 2 — Семейный обед: зелёный */
 .scenario-card:nth-child(2) .scenario-bg--placeholder {
     background: linear-gradient(160deg, #1e2418, #141a0e, #0c0f08);
 }
-
+/* 3 — Праздничный стол: бронзово-золотой */
 .scenario-card:nth-child(3) .scenario-bg--placeholder {
     background: linear-gradient(160deg, #2a2010, #1a150a, #0f0c06);
 }
-
+/* 4 — День рождения: глубокий бордово-золотой */
 .scenario-card:nth-child(4) .scenario-bg--placeholder {
+    background: linear-gradient(160deg, #2a1a20, #1a0e15, #0e0608);
+}
+/* 5 — Каждый день: тёмно-серо-синий */
+.scenario-card:nth-child(5) .scenario-bg--placeholder {
     background: linear-gradient(160deg, #181e24, #0e1318, #080c0f);
 }
 
@@ -663,6 +664,102 @@ h4 { font-size: 1.1rem; }
     transform: translateY(0);
 }
 
+/* =============================================
+   SCENARIO CARD — CTA VARIANT (6-я ячейка)
+   ============================================= */
+
+.scenario-card--cta {
+    border: 1px solid rgba(197, 165, 90, 0.22);
+    background: linear-gradient(160deg, #1a1612 0%, #14110d 50%, #0e0c0a 100%);
+}
+
+.scenario-card--cta__bg {
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(ellipse at 30% 20%, rgba(197, 165, 90, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 80%, rgba(197, 165, 90, 0.05) 0%, transparent 60%);
+    transition: opacity 0.4s ease;
+}
+
+.scenario-card--cta__content {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 2rem 1.6rem;
+    z-index: 2;
+}
+
+.scenario-card--cta__mark {
+    font-size: 1.4rem;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 1.2rem;
+    opacity: 0.75;
+}
+
+.scenario-card--cta__name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.5rem;
+    line-height: 1.15;
+    color: var(--cream);
+    margin-bottom: 0.7rem;
+    font-style: italic;
+}
+
+.scenario-card--cta__hint {
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 300;
+    line-height: 1.55;
+    color: var(--text-muted);
+    letter-spacing: 0.01em;
+    max-width: 22ch;
+}
+
+.scenario-card--cta__arrow {
+    position: absolute;
+    bottom: 1.4rem;
+    right: 1.4rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    border: 1px solid rgba(197, 165, 90, 0.35);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    color: var(--gold);
+    transition: border-color 0.3s ease, background-color 0.3s ease, transform 0.3s ease;
+}
+
+.scenario-card--cta:hover {
+    border-color: rgba(197, 165, 90, 0.45);
+}
+
+.scenario-card--cta:hover .scenario-card--cta__arrow {
+    border-color: rgba(197, 165, 90, 0.7);
+    background-color: rgba(197, 165, 90, 0.08);
+    transform: translateX(2px);
+}
+
+.scenario-card--cta::after {
+    display: none;
+}
+
+@media (max-width: 640px) {
+    .scenario-card--cta__content {
+        align-items: center;
+        text-align: center;
+    }
+    .scenario-card--cta__hint {
+        max-width: 28ch;
+    }
+}
+
 /* Section description */
 .section-desc {
     font-family: 'Raleway', sans-serif;
@@ -680,9 +777,6 @@ h4 { font-size: 1.1rem; }
 @media (max-width: 1024px) {
     .scenarios-grid {
         grid-template-columns: repeat(2, 1fr);
-    }
-    .scenario-card:nth-child(even) {
-        margin-top: 0;
     }
 }
 

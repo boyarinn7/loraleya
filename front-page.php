@@ -35,7 +35,7 @@ get_header();
             <?php
             $scenarios = new WP_Query([
                 'post_type'      => 'scenario',
-                'posts_per_page' => 4,
+                'posts_per_page' => 5,
                 'orderby'        => 'menu_order',
                 'order'          => 'ASC',
             ]);
@@ -65,6 +65,7 @@ get_header();
                     ['Романтический ужин', '2 персоны · свечи · приглушённый свет', 'sc-romantic'],
                     ['Семейный обед', '4–6 персон · дневной свет · тепло', 'sc-family'],
                     ['Праздничный стол', '6+ персон · декор · шампанское', 'sc-festive'],
+                    ['День рождения', '4–8 персон · цветной декор · праздник', 'sc-birthday'],
                     ['Каждый день', '2–4 персоны · минимализм · уют', 'sc-everyday'],
                 ];
                 foreach ($placeholders as $i => $p) :
@@ -78,6 +79,18 @@ get_header();
                     </div>
                 </div>
             <?php endforeach; endif; ?>
+
+            <!-- 6-я ячейка: CTA на индивидуальный заказ -->
+            <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>" class="scenario-card scenario-card--cta">
+                <div class="scenario-card--cta__bg"></div>
+                <div class="scenario-card--cta__content">
+                    <div class="scenario-card--cta__mark">✦</div>
+                    <div class="scenario-card--cta__name">Свой стол, свой повод</div>
+                    <div class="scenario-card--cta__hint">Не подошёл ни один сценарий? Соберём индивидуально под форму, размер и историю стола.</div>
+                    <span class="scenario-card--cta__arrow" aria-hidden="true">→</span>
+                </div>
+            </a>
+
         </div>
     </div>
 </section>
