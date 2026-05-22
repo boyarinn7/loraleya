@@ -163,6 +163,20 @@ $ip_fmt = function($key, $suffix = ' / шт') use ($item_prices) {
     </div>
 </section>
 
+<!-- ОСНОВНОЙ ТЕКСТ СЦЕНАРИЯ -->
+<?php
+$sc_content = get_the_content();
+if (!empty(trim(strip_tags($sc_content)))) :
+?>
+<section class="scenario-content-section">
+    <div class="container">
+        <div class="scenario-content-section__inner">
+            <?php echo apply_filters('the_content', $sc_content); ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
 <!-- GALLERY -->
 <?php
 $nabor_suffix_by_persons = [
@@ -433,6 +447,30 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
         </div>
     </div>
 </section>
+
+<!-- FAQ СЦЕНАРИЯ -->
+<?php
+$sc_faq_json = get_post_meta(get_the_ID(), 'seo_faq', true);
+$sc_faq_data = !empty($sc_faq_json) ? json_decode($sc_faq_json, true) : [];
+if (is_array($sc_faq_data) && !empty($sc_faq_data)) :
+?>
+<section class="scenario-faq">
+    <div class="container">
+        <div class="color-faq__inner">
+            <div class="eyebrow">Частые вопросы</div>
+            <h2>Что важно знать об этом сценарии</h2>
+            <div class="color-faq__list">
+                <?php foreach ($sc_faq_data as $item) : ?>
+                    <details class="color-faq__item">
+                        <summary class="color-faq__question"><?php echo esc_html($item['question'] ?? ''); ?></summary>
+                        <div class="color-faq__answer"><?php echo wp_kses_post($item['answer'] ?? ''); ?></div>
+                    </details>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- OTHER SCENARIOS -->
 <section class="section sc-other-sec">

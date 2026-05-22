@@ -345,8 +345,16 @@ get_header();
             <div class="chc-sub"><?php echo esc_html($color['subtitle']); ?></div>
             <p class="chc-desc"><?php echo esc_html($color['desc']); ?></p>
             <div class="chc-tags">
-                <?php foreach ($color['tags'] as $tag) : ?>
-                    <span class="chc-tag"><?php echo esc_html($tag); ?></span>
+                <?php
+                $tag_links = isset($color['scenarios']) ? $color['scenarios'] : [];
+                foreach ($color['tags'] as $i => $tag) :
+                    $href = isset($tag_links[$i]) ? home_url('/scenarios/' . $tag_links[$i] . '/') : '';
+                ?>
+                    <?php if ($href) : ?>
+                        <a href="<?php echo esc_url($href); ?>" class="chc-tag"><?php echo esc_html($tag); ?></a>
+                    <?php else : ?>
+                        <span class="chc-tag"><?php echo esc_html($tag); ?></span>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </div>
         </div>
@@ -681,6 +689,47 @@ get_header();
         <div class="care-item">100% полиэстер — быстро сохнет, не мнётся</div>
     </div>
 </section>
+
+<!-- SEO-ТЕКСТ -->
+<?php
+$seo_text = $term ? get_term_meta($term->term_id, 'seo_text', true) : '';
+if (!empty($seo_text)) :
+?>
+<section class="color-seo-text">
+    <div class="container">
+        <div class="color-seo-text__inner">
+            <?php echo wp_kses_post($seo_text); ?>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
+
+<!-- FAQ -->
+<?php
+$faq_json = $term ? get_term_meta($term->term_id, 'seo_faq', true) : '';
+if (empty($faq_json) && function_exists('loraleya_get_default_color_faq_json')) {
+    $faq_json = loraleya_get_default_color_faq_json();
+}
+$faq_data = !empty($faq_json) ? json_decode($faq_json, true) : [];
+if (is_array($faq_data) && !empty($faq_data)) :
+?>
+<section class="color-faq">
+    <div class="container">
+        <div class="color-faq__inner">
+            <div class="eyebrow">Частые вопросы</div>
+            <h2>Что важно знать об этом оттенке</h2>
+            <div class="color-faq__list">
+                <?php foreach ($faq_data as $item) : ?>
+                    <details class="color-faq__item">
+                        <summary class="color-faq__question"><?php echo esc_html($item['question'] ?? ''); ?></summary>
+                        <div class="color-faq__answer"><?php echo wp_kses_post($item['answer'] ?? ''); ?></div>
+                    </details>
+                <?php endforeach; ?>
+            </div>
+        </div>
+    </div>
+</section>
+<?php endif; ?>
 
 <!-- 7. SCENARIOS -->
 <section class="sec" style="border-top:1px solid rgba(197,165,90,.06)">

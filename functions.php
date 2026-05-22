@@ -164,6 +164,98 @@ add_action('edited_pa_fabric_color', function($term_id) {
     }
 });
 
+// === SEO-поля для цветовых страниц (Sprint 1, ТЗ E3) ===
+
+add_action('pa_fabric_color_add_form_fields', function() {
+    ?>
+    <div class="form-field">
+        <label for="seo_title">SEO Title</label>
+        <input type="text" name="seo_title" id="seo_title" value="" placeholder="Бежевая жаккардовая скатерть... | LoraLeya">
+        <p>50-65 символов. Заполняется по контенту из block-b1/b2/c.</p>
+    </div>
+    <div class="form-field">
+        <label for="seo_description">SEO Description</label>
+        <textarea name="seo_description" id="seo_description" rows="2"></textarea>
+        <p>120-160 символов.</p>
+    </div>
+    <div class="form-field">
+        <label for="seo_text">SEO Text (HTML)</label>
+        <textarea name="seo_text" id="seo_text" rows="10"></textarea>
+        <p>Расширенный текст с HTML-разметкой. 400-2000 знаков.</p>
+    </div>
+    <div class="form-field">
+        <label for="seo_faq">SEO FAQ (JSON)</label>
+        <textarea name="seo_faq" id="seo_faq" rows="8" placeholder='[{"question": "...", "answer": "..."}]'></textarea>
+        <p>JSON-массив объектов {question, answer}. Если пусто — используется общий fallback из 3 вопросов.</p>
+    </div>
+    <?php
+});
+
+add_action('pa_fabric_color_edit_form_fields', function($term) {
+    $seo_title       = get_term_meta($term->term_id, 'seo_title', true);
+    $seo_description = get_term_meta($term->term_id, 'seo_description', true);
+    $seo_text        = get_term_meta($term->term_id, 'seo_text', true);
+    $seo_faq         = get_term_meta($term->term_id, 'seo_faq', true);
+    ?>
+    <tr class="form-field">
+        <th><label for="seo_title">SEO Title</label></th>
+        <td>
+            <input type="text" name="seo_title" id="seo_title" value="<?php echo esc_attr($seo_title); ?>">
+            <p class="description">50-65 символов.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th><label for="seo_description">SEO Description</label></th>
+        <td>
+            <textarea name="seo_description" id="seo_description" rows="2" cols="50"><?php echo esc_textarea($seo_description); ?></textarea>
+            <p class="description">120-160 символов.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th><label for="seo_text">SEO Text (HTML)</label></th>
+        <td>
+            <textarea name="seo_text" id="seo_text" rows="15" cols="50" class="large-text"><?php echo esc_textarea($seo_text); ?></textarea>
+            <p class="description">Расширенный текст с HTML-разметкой. Допустимы теги h2, h3, p, ul, li, a, strong.</p>
+        </td>
+    </tr>
+    <tr class="form-field">
+        <th><label for="seo_faq">SEO FAQ (JSON)</label></th>
+        <td>
+            <textarea name="seo_faq" id="seo_faq" rows="10" cols="50" class="large-text"><?php echo esc_textarea($seo_faq); ?></textarea>
+            <p class="description">JSON-массив объектов {question, answer}. Если пусто — общий fallback.</p>
+        </td>
+    </tr>
+    <?php
+});
+
+add_action('created_pa_fabric_color', function($term_id) {
+    foreach (['seo_title', 'seo_description'] as $field) {
+        if (isset($_POST[$field])) {
+            update_term_meta($term_id, $field, sanitize_text_field($_POST[$field]));
+        }
+    }
+    if (isset($_POST['seo_text'])) {
+        update_term_meta($term_id, 'seo_text', wp_kses_post($_POST['seo_text']));
+    }
+    if (isset($_POST['seo_faq'])) {
+        update_term_meta($term_id, 'seo_faq', wp_unslash($_POST['seo_faq']));
+    }
+});
+
+add_action('edited_pa_fabric_color', function($term_id) {
+    foreach (['seo_title', 'seo_description'] as $field) {
+        if (isset($_POST[$field])) {
+            update_term_meta($term_id, $field, sanitize_text_field($_POST[$field]));
+        }
+    }
+    if (isset($_POST['seo_text'])) {
+        update_term_meta($term_id, 'seo_text', wp_kses_post($_POST['seo_text']));
+    }
+    if (isset($_POST['seo_faq'])) {
+        update_term_meta($term_id, 'seo_faq', wp_unslash($_POST['seo_faq']));
+    }
+});
+
 
 /**
  * Переопределяем rewrite slug для pa_fabric_color: оставляем /color/{slug}/.
@@ -875,9 +967,75 @@ function loraleya_privacy_consent_links_script() {
 }
 add_action('wp_footer', 'loraleya_privacy_consent_links_script');
 
-// === SEO: TITLE И META DESCRIPTION ГЛАВНОЙ ===
+// === SEO-поля для страниц сценариев (Sprint 1, ТЗ E3) ===
+
+add_action('add_meta_boxes_scenario', function() {
+    add_meta_box(
+        'scenario_seo_meta',
+        'SEO-поля сценария',
+        'loraleya_scenario_seo_meta_box',
+        'scenario',
+        'normal',
+        'high'
+    );
+});
+
+function loraleya_scenario_seo_meta_box($post) {
+    wp_nonce_field('loraleya_scenario_seo_save', 'loraleya_scenario_seo_nonce');
+    $seo_title       = get_post_meta($post->ID, 'seo_title', true);
+    $seo_description = get_post_meta($post->ID, 'seo_description', true);
+    $seo_faq         = get_post_meta($post->ID, 'seo_faq', true);
+    ?>
+    <p>
+        <label for="seo_title"><strong>SEO Title:</strong></label><br>
+        <input type="text" name="seo_title" id="seo_title" value="<?php echo esc_attr($seo_title); ?>" style="width:100%">
+        <small>50-65 символов</small>
+    </p>
+    <p>
+        <label for="seo_description"><strong>SEO Description:</strong></label><br>
+        <textarea name="seo_description" id="seo_description" rows="3" style="width:100%"><?php echo esc_textarea($seo_description); ?></textarea>
+        <small>120-160 символов</small>
+    </p>
+    <p>
+        <label for="seo_faq"><strong>SEO FAQ (JSON):</strong></label><br>
+        <textarea name="seo_faq" id="seo_faq" rows="12" style="width:100%; font-family:monospace"><?php echo esc_textarea($seo_faq); ?></textarea>
+        <small>JSON-массив объектов {question, answer}.</small>
+    </p>
+    <?php
+}
+
+add_action('save_post_scenario', function($post_id) {
+    if (!isset($_POST['loraleya_scenario_seo_nonce']) ||
+        !wp_verify_nonce($_POST['loraleya_scenario_seo_nonce'], 'loraleya_scenario_seo_save')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    foreach (['seo_title', 'seo_description'] as $field) {
+        if (isset($_POST[$field])) {
+            update_post_meta($post_id, $field, sanitize_text_field($_POST[$field]));
+        }
+    }
+    if (isset($_POST['seo_faq'])) {
+        update_post_meta($post_id, 'seo_faq', wp_unslash($_POST['seo_faq']));
+    }
+});
+
+// === SEO: TITLE И META DESCRIPTION ===
 
 add_filter('pre_get_document_title', function($title) {
+    if (is_tax('pa_fabric_color')) {
+        $term = get_queried_object();
+        if ($term && !is_wp_error($term)) {
+            $custom = get_term_meta($term->term_id, 'seo_title', true);
+            if (!empty($custom)) return $custom;
+        }
+    }
+    if (is_singular('scenario')) {
+        $custom = get_post_meta(get_the_ID(), 'seo_title', true);
+        if (!empty($custom)) return $custom;
+    }
     if (is_front_page()) {
         return 'Красивая сервировка стола — наборы в 17 цветах | LoraLeya';
     }
@@ -885,7 +1043,79 @@ add_filter('pre_get_document_title', function($title) {
 });
 
 add_action('wp_head', function() {
-    if (is_front_page()) {
-        echo '<meta name="description" content="Жаккардовая скатерть, дорожка, салфетки в 17 цветах. Готовые наборы и индивидуальный пошив. Бесплатная доставка от 100 000 ₽.">' . "\n";
+    $description = '';
+
+    if (is_tax('pa_fabric_color')) {
+        $term = get_queried_object();
+        if ($term && !is_wp_error($term)) {
+            $description = get_term_meta($term->term_id, 'seo_description', true);
+        }
+    } elseif (is_singular('scenario')) {
+        $description = get_post_meta(get_the_ID(), 'seo_description', true);
+    } elseif (is_front_page()) {
+        $description = 'Жаккардовая скатерть, дорожка, салфетки в 17 цветах. Готовые наборы и индивидуальный пошив. Бесплатная доставка от 100 000 ₽.';
     }
+
+    if (!empty($description)) {
+        echo "\n" . '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
+    }
+}, 5);
+
+// === JSON-LD FAQPage schema ===
+
+add_action('wp_head', function() {
+    $faq_json = '';
+
+    if (is_tax('pa_fabric_color')) {
+        $term = get_queried_object();
+        if ($term && !is_wp_error($term)) {
+            $faq_json = get_term_meta($term->term_id, 'seo_faq', true);
+            if (empty($faq_json)) {
+                $faq_json = loraleya_get_default_color_faq_json();
+            }
+        }
+    } elseif (is_singular('scenario')) {
+        $faq_json = get_post_meta(get_the_ID(), 'seo_faq', true);
+    }
+
+    if (empty($faq_json)) return;
+
+    $faq_data = json_decode($faq_json, true);
+    if (!is_array($faq_data) || empty($faq_data)) return;
+
+    $schema = [
+        '@context'   => 'https://schema.org',
+        '@type'      => 'FAQPage',
+        'mainEntity' => array_map(function($item) {
+            return [
+                '@type'          => 'Question',
+                'name'           => $item['question'] ?? '',
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text'  => $item['answer'] ?? '',
+                ],
+            ];
+        }, $faq_data),
+    ];
+
+    echo "\n" . '<script type="application/ld+json">' . "\n";
+    echo wp_json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+    echo "\n" . '</script>' . "\n";
 });
+
+function loraleya_get_default_color_faq_json() {
+    return wp_json_encode([
+        [
+            'question' => 'Из чего сделана ткань — это полиэстер или хлопок?',
+            'answer'   => 'Жаккард LoraLeya — это 100% полиэстер с характерным мраморным переплетением. Полиэстер не вытирается, не выцветает после стирок, держит цвет глубже, чем смесовые ткани, и быстро гладится. Стирка при 30°C в машине с любым моющим средством без отбеливателя.',
+        ],
+        [
+            'question' => 'Какой размер дорожки выбрать под мой стол?',
+            'answer'   => 'Правило простое: дорожка короче стола на 30–40 см. На стол 170 см берите дорожку 140; на 200–220 см — 175; на овальный или длинный 240+ см — 240 или 300. Для нестандартного стола (круглого, овального, длиннее 300 см) оформите индивидуальный пошив.',
+        ],
+        [
+            'question' => 'Что входит в готовый набор и насколько он выгоднее поштучно?',
+            'answer'   => 'Набор включает дорожку, четыре или шесть салфеток 40×40 см и столько же кувертов (конвертов для столовых приборов) 9×24 см — всё в одном цвете и из одной жаккардовой ткани. Готовый набор выгоднее поштучного сбора того же состава на 15%.',
+        ],
+    ], JSON_UNESCAPED_UNICODE);
+}
