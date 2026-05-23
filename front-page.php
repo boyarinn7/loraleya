@@ -138,7 +138,7 @@ get_header();
 <!-- PRODUCTS PREVIEW -->
 <?php
 $pp_runner_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('melanzh-zoloto', 'dorozhka')      : '';
-$pp_tablecloth_url = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('platina', 'skatert')              : '';
+$pp_tablecloth_url = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('belyj', 'skatert')               : '';
 $pp_napkin_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('fioletovyj', 'salfetka-tsvetok')  : '';
 $pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('blek-zoloto', 'kuvert-vert')      : '';
 ?>

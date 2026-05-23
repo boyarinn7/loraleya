@@ -1950,6 +1950,11 @@ h4 { font-size: 1.1rem; }
     border: 1px solid;
     font-weight: 400;
 }
+a.chc-tag {
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
+}
 
 /* === Color page hero — asymmetric layout === */
 .chc-right {
