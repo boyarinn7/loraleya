@@ -73,8 +73,8 @@ $colors_data = [
         'gradient'     => 'linear-gradient(135deg, #2a2518 0%, #1a1810 30%, #0e0e0c 70%)',
         'glow_rgba'    => 'rgba(212,197,160,.10)',
         'desc'         => 'Тёплый бежевый — основа элегантной сервировки. Подходит к любому стилю и сезону. Жаккардовый перелив придаёт ткани мягкое свечение.',
-        'tags'         => ['Каждый день', 'Семейный обед', 'Универсальный'],
-        'scenarios'    => ['kazhdyj-den', 'semejnyj-obed'],
+        'tags'         => ['Семейный обед', 'Каждый день', 'Праздничный стол'],
+        'scenarios'    => ['semejnyj-obed', 'kazhdyj-den', 'prazdnichnyj-stol'],
         'photo_prefix' => 'bezheviy',
     ],
     'belyj' => [
@@ -86,8 +86,8 @@ $colors_data = [
         'gradient'     => 'linear-gradient(135deg, #2a2a28 0%, #1a1a18 30%, #0e0e0c 70%)',
         'glow_rgba'    => 'rgba(240,236,228,.08)',
         'desc'         => 'Молочно-белый с тёплым подтоном. Классика праздничной сервировки. Жаккардовое плетение создаёт изысканную игру света и тени.',
-        'tags'         => ['Праздничный стол', 'Свадьба', 'Элегантность'],
-        'scenarios'    => ['prazdnichnyj-stol', 'semejnyj-obed'],
+        'tags'         => ['Праздничный стол', 'Романтический ужин', 'Каждый день'],
+        'scenarios'    => ['prazdnichnyj-stol', 'romanticheskij-uzhin', 'kazhdyj-den'],
         'photo_prefix' => 'beliy',
     ],
     'biryuza' => [
@@ -111,7 +111,7 @@ $colors_data = [
         'accent_light' => '#4a4035',
         'gradient'     => 'linear-gradient(135deg, #1a1510 0%, #100e0a 30%, #0e0e0c 70%)',
         'glow_rgba'    => 'rgba(42,37,32,.15)',
-        'desc'         => 'Блек-золото — чёрная жаккардовая основа с явным золотистым переливом в рисунке переплетения. Самый драматичный оттенок коллекции: ткань кажется чёрной издалека и проявляет золото при близком свете. Для самого торжественного оформления.',
+        'desc'         => 'Золотая жаккардовая ткань с глубоким переливом; изнанка чёрная, что делает золото на лице плотным и благородным. Парадный выбор для торжественного стола. Особенно красив при свечах.',
         'tags'         => ['Праздничный стол', 'Романтический ужин', 'День рождения'],
         'scenarios'    => ['prazdnichnyj-stol', 'romanticheskij-uzhin', 'den-rozhdenija'],
         'photo_prefix' => 'blek-zoloto',
@@ -327,7 +327,7 @@ get_header();
 <style>
     .color-hero-bg  { background: <?php echo $color['gradient']; ?>; }
     .color-hero-glow { background: radial-gradient(ellipse, <?php echo $color['glow_rgba']; ?> 0%, transparent 70%); }
-    .chc-tag        { border-color: rgba(106,58,122,.3); color: <?php echo $color['accent_light']; ?>; }
+    .chc-tag        { border-color: rgba(197,165,90,.35); color: #c5a55a; text-decoration: none; }
 </style>
 
 <!-- 1. HERO -->

@@ -7,7 +7,7 @@
             <a href="<?php echo get_permalink(wc_get_page_id('shop')); ?>">Каталог</a>
             <a href="<?php echo home_url('/#scenarios'); ?>">Сценарии</a>
             <a href="<?php echo home_url('/#palette'); ?>">Палитра</a>
-            <a href="<?php echo home_url('/custom-order/'); ?>">Индивидуальный заказ</a>
+            <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>">Индивидуальный заказ</a>
         </div>
         <div>
             <h4>Покупателю</h4>

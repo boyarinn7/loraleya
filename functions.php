@@ -87,7 +87,7 @@ function loraleya_scripts() {
     }
 
     // Custom order page script
-    if (is_page('custom-order')) {
+    if (is_page('individualnyy-zakaz')) {
         wp_enqueue_script('loraleya-custom-order', get_template_directory_uri() . '/assets/js/custom-order.js', [], '1.0.0', true);
     }
 }
