@@ -70,11 +70,15 @@ function loraleya_scripts() {
             'zelenyj','melanzh-zoloto','melanzh-serebro','melanzh-seryj','melanzh-chernyj',
             'platina','serebro','sirenevyj','temno-biryuzovyj','fioletovyj',
         ];
-        $map_by_color = [];
+        $map_by_color    = [];
+        $prices_by_color = [];
         foreach ($all_color_slugs as $cs) {
-            $map_by_color[$cs] = loraleya_build_item_map($cs);
+            $map_by_color[$cs]    = loraleya_build_item_map($cs);
+            $prices_by_color[$cs] = loraleya_get_item_prices($cs);
         }
-        wp_localize_script('loraleya-main', 'LORALEYA_ITEM_MAP_BY_COLOR', $map_by_color);
+        wp_localize_script('loraleya-main', 'LORALEYA_ITEM_MAP_BY_COLOR',    $map_by_color);
+        wp_localize_script('loraleya-main', 'LORALEYA_ITEM_PRICES_BY_COLOR', $prices_by_color);
+        // Совместимость: бирюза как дефолт (старый код, ещё не перешедший на BY_COLOR)
         wp_localize_script('loraleya-main', 'LORALEYA_ITEM_PRICES', loraleya_get_item_prices('biryuza'));
     }
 

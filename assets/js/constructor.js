@@ -20,7 +20,9 @@ document.addEventListener('DOMContentLoaded', function() {
         sw.addEventListener('click', function() {
             constructor.querySelectorAll('.sw').forEach(function(s) { s.classList.remove('on'); });
             sw.classList.add('on');
+            var colorSlug = sw.dataset.color;
             updateGallery();
+            updateItemPricesForColor(colorSlug);
         });
     });
 
@@ -90,6 +92,49 @@ document.addEventListener('DOMContentLoaded', function() {
     // --- FORMAT PRICE ---
     function formatPrice(n) {
         return n.toLocaleString('ru-RU') + ' ₽';
+    }
+
+    // --- HELPER: обновить цены поштучных товаров при смене цвета ---
+    function updateItemPricesForColor(colorSlug) {
+        if (typeof window.LORALEYA_ITEM_PRICES_BY_COLOR === 'undefined') return;
+        var prices = window.LORALEYA_ITEM_PRICES_BY_COLOR[colorSlug];
+        if (!prices) return;
+
+        // Обновляем поштучные строки (.ir) — data-price и видимый текст
+        document.querySelectorAll('.ir[data-item]').forEach(function(el) {
+            var key = el.getAttribute('data-item');
+            if (!prices[key]) return;
+            var price = parseInt(prices[key].price, 10);
+            if (!price) return;
+            el.setAttribute('data-price', price);
+            var priceEl = el.querySelector('.ir-price');
+            if (priceEl) {
+                var oldText = priceEl.textContent;
+                var suffixMatch = oldText.match(/\s*\/\s*\S+\s*$/);
+                var suffix = suffixMatch ? suffixMatch[0] : ' / шт';
+                priceEl.textContent = price.toLocaleString('ru-RU') + ' ₽' + suffix;
+            }
+        });
+
+        // Пересчитываем итог (data-price изменились)
+        recalcTotal();
+
+        // Обновляем карточку готового набора
+        var activePer = constructor.querySelector('.pbtn.on');
+        var persons = parseInt(activePer ? activePer.dataset.persons : '4', 10);
+        var keyByPersons = { 2: 'Набор 2п/140', 4: 'Набор 4п/140', 6: 'Набор 6п/240' };
+        var setKey = keyByPersons[persons];
+        if (setKey && prices[setKey]) {
+            var setBox = document.getElementById('setBox');
+            if (setBox) {
+                var newP = parseInt(prices[setKey].price, 10) || 0;
+                var oldP = parseInt((prices[setKey].old_price || 0), 10);
+                var np = document.getElementById('setNew');
+                var op = document.getElementById('setOld');
+                if (np) np.textContent = formatPrice(newP);
+                if (op) op.textContent = oldP > newP ? formatPrice(oldP) : '';
+            }
+        }
     }
 
     // --- HELPER: получить item_map для текущего активного цвета ---
@@ -345,6 +390,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (defaultSwatch) {
             constructor.querySelectorAll('.sw').forEach(function (s) { s.classList.remove('on'); });
             defaultSwatch.classList.add('on');
+            updateItemPricesForColor(defaultColor);
         }
     }
 
