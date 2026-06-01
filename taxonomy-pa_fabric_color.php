@@ -396,7 +396,26 @@ get_header();
 
 <!-- 2. VIDEO -->
 <section class="video-sec">
-    <?php $color_video = loraleya_color_video($photo_prefix); ?>
+    <?php
+    $color_video = loraleya_color_video($photo_prefix);
+
+    // Ken Burns fallback: если видео нет — собрать до 3 фото-кадров.
+    // Приоритет — сервировка и перелив (показывают «при разном освещении»).
+    // НАСТРАИВАЕТСЯ: порядок типов и максимум кадров.
+    $kb_types  = ['hero-servirovka', 'macro-pereliv', 'hero-detail', 'macro-faktura', 'salfetka-tsvetok'];
+    $kb_max    = 3;
+    $kb_frames = [];
+    if (!$color_video) {
+        foreach ($kb_types as $kb_t) {
+            $kb_u = loraleya_color_photo($upload_url, $photo_prefix, $kb_t);
+            if ($kb_u) {
+                $kb_frames[] = $kb_u;
+                if (count($kb_frames) >= $kb_max) break;
+            }
+        }
+    }
+    $kb_count = count($kb_frames);
+    ?>
 
     <?php if ($color_video) : ?>
         <div class="video-box video-box--playable">
@@ -407,6 +426,17 @@ get_header();
                 playsinline
                 aria-label="Сервировка <?php echo esc_attr(mb_strtolower($color['name'])); ?> при разном освещении"
             ></video>
+        </div>
+    <?php elseif ($kb_count > 0) : ?>
+        <div class="video-box video-box--kenburns kb--<?php echo (int)$kb_count; ?>"
+             role="img"
+             aria-label="Сервировка <?php echo esc_attr(mb_strtolower($color['name'])); ?> при разном освещении">
+            <?php foreach ($kb_frames as $kb_i => $kb_src) : ?>
+                <div class="kb-frame">
+                    <img src="<?php echo esc_url($kb_src); ?>" alt="" <?php echo $kb_i === 0 ? '' : 'loading="lazy"'; ?>>
+                </div>
+            <?php endforeach; ?>
+            <div class="vlabel vlabel--overlay">Сервировка <?php echo esc_html(mb_strtolower($color['name'])); ?> при разном освещении</div>
         </div>
     <?php else : ?>
         <div class="video-box video-box--empty">

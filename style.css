@@ -2038,6 +2038,79 @@ a.chc-tag {
     display: block;
 }
 
+/* ===== Ken Burns — фото вместо видео (временный фолбэк) ===== */
+/* .video-box--kenburns наследует .video-box: aspect-ratio 16/7, position:relative, overflow:hidden */
+
+.video-box--kenburns .kb-frame {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    will-change: opacity;
+}
+.video-box--kenburns .kb-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transform-origin: center;
+    will-change: transform;
+}
+
+/* подпись-оверлей + затемнение снизу для читаемости */
+.video-box--kenburns::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 5rem;
+    background: linear-gradient(to top, rgba(14,14,12,.6), transparent);
+    z-index: 1;
+    pointer-events: none;
+}
+.vlabel--overlay {
+    position: absolute;
+    left: 1.25rem;
+    bottom: 1rem;
+    margin: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+
+/* 1 кадр: только медленный зум, без смены */
+.kb--1 .kb-frame { opacity: 1; }
+.kb--1 .kb-frame img { animation: kbZoom 14s ease-in-out infinite alternate; }
+
+/* 2 кадра: crossfade, по 8с на кадр, цикл 16с */
+.kb--2 .kb-frame { animation: kbFade2 16s ease-in-out infinite; }
+.kb--2 .kb-frame:nth-child(1) { animation-delay: 0s; }
+.kb--2 .kb-frame:nth-child(2) { animation-delay: 8s; }
+.kb--2 .kb-frame img { animation: kbZoom 8s ease-in-out infinite alternate; }
+
+/* 3 кадра: crossfade, по 8с на кадр, цикл 24с */
+.kb--3 .kb-frame { animation: kbFade3 24s ease-in-out infinite; }
+.kb--3 .kb-frame:nth-child(1) { animation-delay: 0s; }
+.kb--3 .kb-frame:nth-child(2) { animation-delay: 8s; }
+.kb--3 .kb-frame:nth-child(3) { animation-delay: 16s; }
+.kb--3 .kb-frame img { animation: kbZoom 8s ease-in-out infinite alternate; }
+
+/* НАСТРАИВАЕТСЯ: деликатность зума и панорамы */
+@keyframes kbZoom {
+    from { transform: scale(1.0)  translate(0, 0); }
+    to   { transform: scale(1.08) translate(-1.5%, -1%); }
+}
+@keyframes kbFade2 {
+    0% { opacity: 0; } 6% { opacity: 1; } 44% { opacity: 1; } 50% { opacity: 0; } 100% { opacity: 0; }
+}
+@keyframes kbFade3 {
+    0% { opacity: 0; } 4% { opacity: 1; } 29% { opacity: 1; } 33% { opacity: 0; } 100% { opacity: 0; }
+}
+
+/* a11y: при reduce-motion — статичный первый кадр, без движения */
+@media (prefers-reduced-motion: reduce) {
+    .video-box--kenburns .kb-frame { animation: none; opacity: 0; }
+    .video-box--kenburns .kb-frame:first-child { opacity: 1; }
+    .video-box--kenburns .kb-frame img { animation: none; transform: none; }
+}
+
 .vlabel {
     font-size: 0.6rem;
     letter-spacing: 0.2em;
