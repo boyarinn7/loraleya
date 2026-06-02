@@ -1040,6 +1040,17 @@ add_filter('pre_get_document_title', function($title) {
         $custom = get_post_meta(get_the_ID(), 'seo_title', true);
         if (!empty($custom)) return $custom;
     }
+    if (is_singular('post')) {
+        $custom = get_post_meta(get_the_ID(), 'seo_title', true);
+        if (!empty($custom)) return $custom;
+    }
+    if (is_category()) {
+        $term = get_queried_object();
+        if ($term && !is_wp_error($term)) {
+            $custom = get_term_meta($term->term_id, 'seo_title', true);
+            if (!empty($custom)) return $custom;
+        }
+    }
     if (is_front_page()) {
         return 'Красивая сервировка стола — наборы в 17 цветах | LoraLeya';
     }
@@ -1056,6 +1067,13 @@ add_action('wp_head', function() {
         }
     } elseif (is_singular('scenario')) {
         $description = get_post_meta(get_the_ID(), 'seo_description', true);
+    } elseif (is_singular('post')) {
+        $description = get_post_meta(get_the_ID(), 'seo_description', true);
+    } elseif (is_category()) {
+        $term = get_queried_object();
+        if ($term && !is_wp_error($term)) {
+            $description = get_term_meta($term->term_id, 'seo_description', true);
+        }
     } elseif (is_front_page()) {
         $description = 'Жаккардовая скатерть, дорожка, салфетки в 17 цветах. Готовые наборы и индивидуальный пошив. Бесплатная доставка от 100 000 ₽.';
     }
@@ -1079,6 +1097,8 @@ add_action('wp_head', function() {
             }
         }
     } elseif (is_singular('scenario')) {
+        $faq_json = get_post_meta(get_the_ID(), 'seo_faq', true);
+    } elseif (is_singular('post')) {
         $faq_json = get_post_meta(get_the_ID(), 'seo_faq', true);
     }
 
@@ -1106,6 +1126,120 @@ add_action('wp_head', function() {
     echo wp_json_encode($schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     echo "\n" . '</script>' . "\n";
 });
+
+// === SEO-поля для статей блога (post) — ТЗ-1 ===
+
+add_action('init', function() {
+    foreach (['seo_title', 'seo_description', 'seo_faq'] as $key) {
+        register_post_meta('post', $key, [
+            'type'          => 'string',
+            'single'        => true,
+            'show_in_rest'  => true,
+            'auth_callback' => function() { return current_user_can('edit_posts'); },
+        ]);
+    }
+});
+
+add_action('add_meta_boxes_post', function() {
+    add_meta_box('post_seo_meta', 'SEO-поля статьи', 'loraleya_post_seo_meta_box', 'post', 'normal', 'high');
+});
+
+function loraleya_post_seo_meta_box($post) {
+    wp_nonce_field('loraleya_post_seo_save', 'loraleya_post_seo_nonce');
+    $seo_title       = get_post_meta($post->ID, 'seo_title', true);
+    $seo_description = get_post_meta($post->ID, 'seo_description', true);
+    $seo_faq         = get_post_meta($post->ID, 'seo_faq', true);
+    ?>
+    <p>
+        <label for="seo_title"><strong>SEO Title:</strong></label><br>
+        <input type="text" name="seo_title" id="seo_title" value="<?php echo esc_attr($seo_title); ?>" style="width:100%">
+        <small>50-65 символов</small>
+    </p>
+    <p>
+        <label for="seo_description"><strong>SEO Description:</strong></label><br>
+        <textarea name="seo_description" id="seo_description" rows="3" style="width:100%"><?php echo esc_textarea($seo_description); ?></textarea>
+        <small>120-160 символов</small>
+    </p>
+    <p>
+        <label for="seo_faq"><strong>SEO FAQ (JSON):</strong></label><br>
+        <textarea name="seo_faq" id="seo_faq" rows="12" style="width:100%; font-family:monospace"><?php echo esc_textarea($seo_faq); ?></textarea>
+        <small>JSON-массив объектов {question, answer}.</small>
+    </p>
+    <?php
+}
+
+add_action('save_post_post', function($post_id) {
+    if (!isset($_POST['loraleya_post_seo_nonce']) ||
+        !wp_verify_nonce($_POST['loraleya_post_seo_nonce'], 'loraleya_post_seo_save')) {
+        return;
+    }
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+
+    foreach (['seo_title', 'seo_description'] as $field) {
+        if (isset($_POST[$field])) {
+            update_post_meta($post_id, $field, sanitize_text_field($_POST[$field]));
+        }
+    }
+    if (isset($_POST['seo_faq'])) {
+        update_post_meta($post_id, 'seo_faq', wp_unslash($_POST['seo_faq']));
+    }
+});
+
+// === SEO-поля для категорий блога — ТЗ-1 ===
+
+add_action('category_add_form_fields', function() {
+    ?>
+    <div class="form-field">
+        <label for="seo_title">SEO Title</label>
+        <input type="text" name="seo_title" id="seo_title" value="">
+        <p>50-65 символов.</p>
+    </div>
+    <div class="form-field">
+        <label for="seo_description">SEO Description</label>
+        <textarea name="seo_description" id="seo_description" rows="2"></textarea>
+        <p>120-160 символов.</p>
+    </div>
+    <div class="form-field">
+        <label for="seo_text">SEO Text (HTML)</label>
+        <textarea name="seo_text" id="seo_text" rows="10"></textarea>
+        <p>Описание хаба. Допустимы h2, h3, p, ul, li, a, strong.</p>
+    </div>
+    <?php
+});
+
+add_action('category_edit_form_fields', function($term) {
+    $seo_title       = get_term_meta($term->term_id, 'seo_title', true);
+    $seo_description = get_term_meta($term->term_id, 'seo_description', true);
+    $seo_text        = get_term_meta($term->term_id, 'seo_text', true);
+    ?>
+    <tr class="form-field">
+        <th><label for="seo_title">SEO Title</label></th>
+        <td><input type="text" name="seo_title" id="seo_title" value="<?php echo esc_attr($seo_title); ?>"></td>
+    </tr>
+    <tr class="form-field">
+        <th><label for="seo_description">SEO Description</label></th>
+        <td><textarea name="seo_description" id="seo_description" rows="2" cols="50"><?php echo esc_textarea($seo_description); ?></textarea></td>
+    </tr>
+    <tr class="form-field">
+        <th><label for="seo_text">SEO Text (HTML)</label></th>
+        <td><textarea name="seo_text" id="seo_text" rows="15" cols="50" class="large-text"><?php echo esc_textarea($seo_text); ?></textarea></td>
+    </tr>
+    <?php
+});
+
+$loraleya_cat_seo_save = function($term_id) {
+    foreach (['seo_title', 'seo_description'] as $field) {
+        if (isset($_POST[$field])) {
+            update_term_meta($term_id, $field, sanitize_text_field($_POST[$field]));
+        }
+    }
+    if (isset($_POST['seo_text'])) {
+        update_term_meta($term_id, 'seo_text', wp_kses_post($_POST['seo_text']));
+    }
+};
+add_action('created_category', $loraleya_cat_seo_save);
+add_action('edited_category', $loraleya_cat_seo_save);
 
 function loraleya_get_default_color_faq_json() {
     return wp_json_encode([
