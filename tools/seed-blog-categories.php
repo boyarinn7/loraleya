@@ -1,5 +1,5 @@
 <?php
-require_once(dirname(__FILE__, 2) . '/wp-load.php');
+require_once(dirname(__FILE__, 3) . '/wp-load.php');
 if (!current_user_can('manage_options')) { wp_die('Доступ запрещён'); }
 $dry = !isset($_GET['run']);
 
