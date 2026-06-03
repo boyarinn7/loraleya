@@ -1241,6 +1241,33 @@ $loraleya_cat_seo_save = function($term_id) {
 add_action('created_category', $loraleya_cat_seo_save);
 add_action('edited_category', $loraleya_cat_seo_save);
 
+// === Свотчи на карточке товара (ТЗ-3) ===
+add_action('wp_enqueue_scripts', function () {
+    if (!function_exists('is_product') || !is_product()) return;
+
+    wp_enqueue_script(
+        'loraleya-product-swatches',
+        get_stylesheet_directory_uri() . '/assets/js/product-swatches.js',
+        ['jquery', 'wc-add-to-cart-variation'],
+        '1.0',
+        true
+    );
+
+    $colors = [
+        ['fioletovyj','Фиолетовый'],['grafit','Графит'],['bronza','Бронза'],['sirenevyj','Сиреневый'],
+        ['bezhevyj','Бежевый'],['belyj','Белый'],['biryuza','Бирюза'],['blek-zoloto','Блек золото'],
+        ['goluboj','Голубой'],['zelenyj','Зелёный'],['melanzh-zoloto','Меланж золото'],
+        ['melanzh-serebro','Меланж серебро'],['melanzh-seryj','Меланж серый'],['melanzh-chernyj','Меланж чёрный'],
+        ['platina','Платина'],['serebro','Серебро'],['temno-biryuzovyj','Тёмно-бирюзовый'],
+    ];
+    $map = [];
+    foreach ($colors as $c) {
+        $url = function_exists('loraleya_color_swatch_url') ? loraleya_color_swatch_url($c[0]) : '';
+        $map[$c[0]] = ['name' => $c[1], 'url' => $url];
+    }
+    wp_localize_script('loraleya-product-swatches', 'LoraleyaSwatches', ['colors' => $map]);
+});
+
 function loraleya_get_default_color_faq_json() {
     return wp_json_encode([
         [

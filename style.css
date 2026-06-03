@@ -4142,3 +4142,55 @@ textarea.co-ct-input {
 
 @media(max-width:900px){.blog-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.blog-grid{grid-template-columns:1fr}}
+
+
+/* ===== Премиум-карточка товара (ТЗ-3) ===== */
+.single-product div.product{
+    display:grid; grid-template-columns:1fr 1fr; gap:4rem;
+    max-width:1200px; margin:2.5rem auto 4rem; padding:0 2.5rem; align-items:start;
+}
+.single-product div.product .woocommerce-product-gallery{position:sticky; top:6rem; margin:0; width:auto !important; float:none !important}
+.single-product div.product .summary{margin:0}
+
+/* типографика сводки */
+.single-product .product_title{font-family:var(--serif); font-weight:500; font-size:clamp(2.2rem,4vw,3.2rem); line-height:1.05; color:var(--cream,#e8e0d0); margin-bottom:1rem}
+.single-product .summary .price{font-family:var(--serif); font-size:1.8rem; color:var(--gold-light,#d4bc7c)}
+.single-product .summary .price del{color:var(--gold-dim,#8a7a4a); font-size:1.2rem}
+.single-product .woocommerce-product-details__short-description{color:var(--gold-dim,#8a7a4a); margin:1rem 0 1.5rem}
+
+/* свотчи (как на сценариях) */
+.ll-sw-name{font-family:var(--serif); font-size:1.2rem; color:var(--cream,#e8e0d0); margin:.5rem 0 1rem}
+.ll-swatches{display:flex; gap:.5rem; flex-wrap:wrap; margin-bottom:2rem}
+.ll-sw{width:2.5rem; height:2.5rem; border-radius:50%; cursor:pointer; border:1px solid rgba(197,165,90,.3); transition:all .3s; position:relative; background-size:130%!important; background-position:center!important}
+.ll-sw:hover,.ll-sw.on{border-color:var(--gold,#c5a55a); transform:scale(1.12)}
+.ll-sw.on::after{content:'✓'; position:absolute; inset:0; display:flex; align-items:center; justify-content:center; color:#fff; font-size:.65rem; text-shadow:0 1px 3px rgba(0,0,0,.6)}
+
+/* размерный селект (дорожка/скатерть/набор) — стилизуем дропдаун */
+.single-product table.variations{margin-bottom:1.5rem; border-collapse:collapse}
+.single-product table.variations th{font-size:.7rem; letter-spacing:.18em; text-transform:uppercase; color:var(--gold-dim,#8a7a4a); text-align:left; padding-right:1rem; vertical-align:middle}
+.single-product table.variations select{background:var(--bg2,#1a1917); color:var(--cream,#e8e0d0); border:1px solid rgba(197,165,90,.3); padding:.6rem .8rem; font-family:var(--sans); border-radius:0}
+.single-product .reset_variations{color:var(--gold-dim,#8a7a4a); font-size:.78rem}
+
+/* количество + кнопка */
+.single-product .quantity input{background:var(--bg2,#1a1917); color:var(--cream,#e8e0d0); border:1px solid rgba(197,165,90,.3); height:48px; width:64px; text-align:center}
+.single-product .single_add_to_cart_button{
+    background:var(--gold,#c5a55a)!important; color:var(--bg,#0e0e0c)!important;
+    font-family:var(--sans); font-weight:600; letter-spacing:.18em; text-transform:uppercase;
+    font-size:.8rem; border:none; border-radius:0; padding:1.1rem 2rem; transition:.3s;
+}
+.single-product .single_add_to_cart_button:hover{background:var(--gold-light,#d4bc7c)!important}
+.single-product .product_meta{font-size:.78rem; color:var(--gold-dim,#8a7a4a); margin-top:1.5rem}
+.single-product .product_meta .sku{color:var(--cream,#e8e0d0)}
+
+/* табы описание/детали/отзывы */
+.single-product .woocommerce-tabs{grid-column:1 / -1; margin-top:3rem; border-top:1px solid rgba(197,165,90,.12); padding-top:1.8rem}
+.single-product .woocommerce-tabs ul.tabs{list-style:none; display:flex; gap:2rem; margin:0 0 1.4rem; padding:0}
+.single-product .woocommerce-tabs ul.tabs li{font-size:.72rem; letter-spacing:.18em; text-transform:uppercase}
+.single-product .woocommerce-tabs ul.tabs li a{color:var(--gold-dim,#8a7a4a); padding-bottom:.4rem}
+.single-product .woocommerce-tabs ul.tabs li.active a{color:var(--gold,#c5a55a); border-bottom:1px solid var(--gold,#c5a55a)}
+.single-product .woocommerce-tabs .panel{color:var(--cream,#e8e0d0); font-weight:300}
+
+@media(max-width:900px){
+    .single-product div.product{grid-template-columns:1fr; gap:2.5rem}
+    .single-product div.product .woocommerce-product-gallery{position:static}
+}
