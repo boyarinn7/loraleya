@@ -4194,3 +4194,13 @@ textarea.co-ct-input {
     .single-product div.product{grid-template-columns:1fr; gap:2.5rem}
     .single-product div.product .woocommerce-product-gallery{position:static}
 }
+
+
+/* ===== Блоки перелинковки блога (ТЗ-4) ===== */
+.blog-related{padding:4rem 0}
+.blog-related .eyebrow{text-align:center; display:block; margin-bottom:.8rem}
+.blog-related h2{font-family:var(--serif); font-weight:500; font-size:clamp(2rem,4vw,2.8rem); color:var(--cream,#e8e0d0); text-align:center; margin-bottom:2.5rem}
+.blog-related .blog-grid{padding-bottom:0}
+.blog-related__all{text-align:center; margin-top:2.5rem}
+.blog-related__all a{font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold,#c5a55a); border-bottom:1px solid rgba(197,165,90,.3); padding-bottom:.3rem; transition:.3s}
+.blog-related__all a:hover{border-color:var(--gold,#c5a55a)}

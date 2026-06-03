@@ -213,6 +213,12 @@ $pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_
     </div>
 </section>
 
+<?php
+if (function_exists('loraleya_render_blog_cards')) {
+    loraleya_render_blog_cards(['posts_per_page' => 3], 'Журнал LoraLeya', '', true);
+}
+?>
+
 <!-- CTA -->
 <section class="section" style="text-align:center">
     <div class="container">

@@ -824,6 +824,12 @@ if (is_array($faq_data) && !empty($faq_data)) :
 </section>
 
 
+<?php
+if (function_exists('loraleya_render_blog_cards')) {
+    loraleya_render_blog_cards(['posts_per_page' => 3], 'Читайте также', 'Журнал LoraLeya');
+}
+?>
+
 <!-- FLOATING COLOR SWITCHER -->
 <?php
 // Текущий цвет — для подсветки на иконке-палитре и обводки в шторке

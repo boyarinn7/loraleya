@@ -49,6 +49,17 @@ get_header(); ?>
     </section>
     <?php endif; ?>
 
+    <?php
+    if (function_exists('loraleya_render_blog_cards')) {
+        loraleya_render_blog_cards(
+            ['post__not_in' => [get_the_ID()], 'posts_per_page' => 3],
+            'Читать дальше', 'Журнал LoraLeya'
+        );
+        // когда статей станет много — заменить на похожие по рубрике:
+        // ['category__in' => wp_get_post_categories(get_the_ID()), 'post__not_in' => [get_the_ID()], 'posts_per_page' => 3]
+    }
+    ?>
+
 </article>
 <?php endwhile; ?>
 <?php get_footer(); ?>

@@ -1241,6 +1241,53 @@ $loraleya_cat_seo_save = function($term_id) {
 add_action('created_category', $loraleya_cat_seo_save);
 add_action('edited_category', $loraleya_cat_seo_save);
 
+/**
+ * Рендер грида карточек статей блога. Переиспользует стили .blog-card (витрина).
+ */
+function loraleya_render_blog_cards($args = [], $heading = '', $eyebrow = '', $show_all = false) {
+    $defaults = [
+        'post_type'           => 'post',
+        'post_status'         => 'publish',
+        'posts_per_page'      => 3,
+        'ignore_sticky_posts' => true,
+    ];
+    $q = new WP_Query(array_merge($defaults, $args));
+    if (!$q->have_posts()) { wp_reset_postdata(); return; }
+    ?>
+    <section class="section blog-related">
+        <div class="container">
+            <?php if ($eyebrow) : ?><div class="eyebrow"><?php echo esc_html($eyebrow); ?></div><?php endif; ?>
+            <?php if ($heading) : ?><h2><?php echo esc_html($heading); ?></h2><?php endif; ?>
+            <div class="blog-grid">
+                <?php while ($q->have_posts()) : $q->the_post();
+                    $cats   = get_the_category();
+                    $teaser = get_post_meta(get_the_ID(), 'seo_description', true);
+                    if (!$teaser) $teaser = get_the_excerpt();
+                ?>
+                    <a href="<?php the_permalink(); ?>" class="blog-card">
+                        <div class="blog-card__cover">
+                            <?php if (has_post_thumbnail()) :
+                                the_post_thumbnail('large', ['class' => 'blog-card__img']);
+                            else : ?><span class="blog-card__seal">&#10022;</span><?php endif; ?>
+                        </div>
+                        <div class="blog-card__body">
+                            <?php if (!empty($cats)) : ?><div class="blog-card__cat"><?php echo esc_html($cats[0]->name); ?></div><?php endif; ?>
+                            <div class="blog-card__title"><?php the_title(); ?></div>
+                            <div class="blog-card__teaser"><?php echo esc_html($teaser); ?></div>
+                            <div class="blog-card__meta"><span><?php echo esc_html(get_the_date()); ?></span><span class="blog-card__arrow">Читать &rarr;</span></div>
+                        </div>
+                    </a>
+                <?php endwhile; ?>
+            </div>
+            <?php if ($show_all) : ?>
+                <div class="blog-related__all"><a href="<?php echo esc_url(home_url('/blog/')); ?>">Все статьи &rarr;</a></div>
+            <?php endif; ?>
+        </div>
+    </section>
+    <?php
+    wp_reset_postdata();
+}
+
 // === Свотчи на карточке товара (ТЗ-3) ===
 add_action('wp_enqueue_scripts', function () {
     if (!function_exists('is_product') || !is_product()) return;

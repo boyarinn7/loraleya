@@ -506,4 +506,10 @@ if (is_array($sc_faq_data) && !empty($sc_faq_data)) :
 <script>
 window.LORALEYA_GALLERY_PHOTOS = <?php echo wp_json_encode($gallery_photo_map); ?>;
 </script>
+
+<?php
+if (function_exists('loraleya_render_blog_cards')) {
+    loraleya_render_blog_cards(['posts_per_page' => 3], 'Читайте также', 'Журнал LoraLeya');
+}
+?>
 <?php get_footer(); ?>
