@@ -4204,3 +4204,10 @@ textarea.co-ct-input {
 .blog-related__all{text-align:center; margin-top:2.5rem}
 .blog-related__all a{font-size:.72rem; letter-spacing:.2em; text-transform:uppercase; color:var(--gold,#c5a55a); border-bottom:1px solid rgba(197,165,90,.3); padding-bottom:.3rem; transition:.3s}
 .blog-related__all a:hover{border-color:var(--gold,#c5a55a)}
+
+
+/* ===== Превью товаров на главной — кликабельность (ТЗ-5) ===== */
+a.product-preview{text-decoration:none; color:inherit; display:block; transition:transform .4s ease, box-shadow .4s ease}
+a.product-preview:hover{transform:translateY(-6px); box-shadow:0 20px 40px -22px rgba(0,0,0,.7)}
+a.product-preview:hover .product-preview__label{color:var(--gold-light,#d4bc7c)}
+.product-preview__label{transition:color .35s}

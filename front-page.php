@@ -141,6 +141,16 @@ $pp_runner_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_
 $pp_tablecloth_url = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('belyj', 'skatert')               : '';
 $pp_napkin_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('fioletovyj', 'salfetka-tsvetok')  : '';
 $pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_get_color_photo_url('blek-zoloto', 'kuvert-vert')      : '';
+$pp_links = [
+    'runner'     => 39,
+    'tablecloth' => 44,
+    'napkin'     => 48,
+    'kuvert'     => 49,
+];
+$pp_href = [];
+foreach ($pp_links as $k => $pid) {
+    $pp_href[$k] = ($pid && get_post_status($pid) === 'publish') ? get_permalink($pid) : '';
+}
 ?>
 <section class="section">
     <div class="container">
@@ -149,38 +159,38 @@ $pp_kuvert_url     = function_exists('loraleya_get_color_photo_url') ? loraleya_
         <p class="section-desc">Дорожки на стол, скатерти, тканевые салфетки и куверты (конверты для столовых приборов) — всё из одной жаккардовой ткани, в едином цвете.</p>
 
         <div class="products-strip">
-            <div class="product-preview">
+            <a href="<?php echo esc_url($pp_href['runner']); ?>" class="product-preview">
                 <div class="product-preview__photo" <?php echo $pp_runner_url ? 'style="background-image:url(' . esc_url($pp_runner_url) . ')"' : ''; ?>></div>
                 <div class="product-preview__text">
                     <div class="product-preview__label">Дорожки</div>
                     <div class="product-preview__size">4 размера: от 140 до 300 см</div>
                     <div class="product-preview__price">от 890 ₽</div>
                 </div>
-            </div>
-            <div class="product-preview">
+            </a>
+            <a href="<?php echo esc_url($pp_href['tablecloth']); ?>" class="product-preview">
                 <div class="product-preview__photo" <?php echo $pp_tablecloth_url ? 'style="background-image:url(' . esc_url($pp_tablecloth_url) . ')"' : ''; ?>></div>
                 <div class="product-preview__text">
                     <div class="product-preview__label">Скатерти</div>
                     <div class="product-preview__size">3 размера: от 175 до 240 см</div>
                     <div class="product-preview__price">от 2 490 ₽</div>
                 </div>
-            </div>
-            <div class="product-preview">
+            </a>
+            <a href="<?php echo esc_url($pp_href['napkin']); ?>" class="product-preview">
                 <div class="product-preview__photo" <?php echo $pp_napkin_url ? 'style="background-image:url(' . esc_url($pp_napkin_url) . ')"' : ''; ?>></div>
                 <div class="product-preview__text">
                     <div class="product-preview__label">Салфетки</div>
                     <div class="product-preview__size">40 × 40 см</div>
                     <div class="product-preview__price">от 350 ₽</div>
                 </div>
-            </div>
-            <div class="product-preview">
+            </a>
+            <a href="<?php echo esc_url($pp_href['kuvert']); ?>" class="product-preview">
                 <div class="product-preview__photo" <?php echo $pp_kuvert_url ? 'style="background-image:url(' . esc_url($pp_kuvert_url) . ')"' : ''; ?>></div>
                 <div class="product-preview__text">
                     <div class="product-preview__label">Куверты</div>
                     <div class="product-preview__size">9 × 24 см</div>
                     <div class="product-preview__price">от 250 ₽</div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 </section>
