@@ -1288,6 +1288,11 @@ function loraleya_render_blog_cards($args = [], $heading = '', $eyebrow = '', $s
     wp_reset_postdata();
 }
 
+// === Доточка карточки товара (ТЗ-6) ===
+add_action('after_setup_theme', function () {
+    remove_theme_support('wc-product-gallery-zoom');
+}, 20);
+
 // === Свотчи на карточке товара (ТЗ-3) ===
 add_action('wp_enqueue_scripts', function () {
     if (!function_exists('is_product') || !is_product()) return;

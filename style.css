@@ -4211,3 +4211,47 @@ a.product-preview{text-decoration:none; color:inherit; display:block; transition
 a.product-preview:hover{transform:translateY(-6px); box-shadow:0 20px 40px -22px rgba(0,0,0,.7)}
 a.product-preview:hover .product-preview__label{color:var(--gold-light,#d4bc7c)}
 .product-preview__label{transition:color .35s}
+
+
+/* ===== Доточка карточки товара (ТЗ-6) ===== */
+
+/* 1. Скрыть бейдж «Распродажа!» */
+.woocommerce span.onsale,
+.single-product span.onsale { display:none !important; }
+
+/* 3. Текст сводки — к верхнему краю фото */
+.single-product div.product { align-items:start !important; }
+.single-product div.product .summary { margin-top:0 !important; padding-top:0 !important; }
+.single-product div.product .summary > :first-child { margin-top:0 !important; }
+
+/* 4. Убрать «липкость» галереи — фото больше не наезжает на табы */
+.single-product div.product .woocommerce-product-gallery { position:static !important; top:auto !important; }
+
+/* 5. Отзывы под luxury */
+.single-product #reviews .commentlist{list-style:none; margin:0 0 2rem; padding:0}
+.single-product #reviews .commentlist li{border:1px solid rgba(197,165,90,.12); background:var(--bg2,#1a1917); padding:1.2rem 1.4rem; margin-bottom:1rem}
+.single-product #reviews .comment-author,.single-product #reviews .meta{color:var(--gold-dim,#8a7a4a); font-size:.8rem}
+.single-product #reviews .description{color:var(--cream,#e8e0d0); font-weight:300}
+.single-product #reviews .star-rating span,
+.single-product .star-rating span{color:var(--gold,#c5a55a)}
+
+.single-product #review_form_wrapper{border-top:1px solid rgba(197,165,90,.12); margin-top:1.5rem; padding-top:1.5rem}
+.single-product #reviews #reply-title{font-family:var(--serif); font-size:1.5rem; color:var(--cream,#e8e0d0); font-weight:500}
+.single-product #reviews .comment-form label{color:var(--gold-dim,#8a7a4a); font-size:.78rem; letter-spacing:.05em; text-transform:uppercase; display:block; margin-bottom:.4rem}
+.single-product #reviews .comment-form input[type="text"],
+.single-product #reviews .comment-form input[type="email"],
+.single-product #reviews .comment-form textarea{
+    width:100%; background:var(--bg3,#252420); color:var(--cream,#e8e0d0);
+    border:1px solid rgba(197,165,90,.3); border-radius:0; padding:.7rem .9rem; font-family:var(--sans);
+}
+.single-product #reviews .comment-form textarea:focus,
+.single-product #reviews .comment-form input:focus{outline:none; border-color:var(--gold,#c5a55a)}
+.single-product #reviews .comment-form-rating .stars a{color:var(--gold-dim,#8a7a4a)}
+.single-product #reviews .comment-form-rating .stars a:hover,
+.single-product #reviews .comment-form-rating .stars a.active{color:var(--gold,#c5a55a)}
+.single-product #reviews .form-submit input{
+    background:var(--gold,#c5a55a)!important; color:var(--bg,#0e0e0c)!important; border:none; border-radius:0;
+    font-family:var(--sans); font-weight:600; letter-spacing:.18em; text-transform:uppercase; font-size:.78rem;
+    padding:.9rem 2rem; cursor:pointer; transition:.3s;
+}
+.single-product #reviews .form-submit input:hover{background:var(--gold-light,#d4bc7c)!important}
