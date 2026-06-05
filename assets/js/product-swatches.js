@@ -69,7 +69,7 @@ jQuery(function ($) {
     var $select = $rating.find('select[name="rating"]');
     if (!$select.length) return;
 
-    $rating.find('p.stars').remove();
+    $rating.find('p.stars, .stars').remove();
     $select.hide();
 
     var $stars = $('<div class="ll-stars"></div>');

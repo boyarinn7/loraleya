@@ -4278,3 +4278,9 @@ a.product-preview:hover .product-preview__label{color:var(--gold-light,#d4bc7c)}
 .single-product .ll-stars{display:inline-flex; gap:.25rem; font-size:1.6rem; line-height:1; cursor:pointer; margin:.2rem 0 1.2rem}
 .single-product .ll-star{color:var(--gold,#c5a55a); transition:transform .12s}
 .single-product .ll-star:hover{transform:scale(1.12)}
+
+/* Скрыть нативную текстовую строку рейтинга (оставляем только .ll-stars) */
+.single-product .comment-form-rating p.stars,
+.single-product .comment-form-rating .stars,
+.single-product .comment-form-rating select{ display:none !important; }
+.single-product .comment-form-rating .ll-stars{ display:inline-flex !important; }
