@@ -1288,6 +1288,23 @@ function loraleya_render_blog_cards($args = [], $heading = '', $eyebrow = '', $s
     wp_reset_postdata();
 }
 
+// === Закрыть комментарии и пинги для статей/страниц, отзывы товаров не трогаем (ТЗ-8) ===
+add_filter('comments_open', function ($open, $post_id) {
+    $post = get_post($post_id);
+    if ($post && in_array($post->post_type, ['post', 'page'], true)) {
+        return false;
+    }
+    return $open;
+}, 10, 2);
+
+add_filter('pings_open', function ($open, $post_id) {
+    $post = get_post($post_id);
+    if ($post && in_array($post->post_type, ['post', 'page'], true)) {
+        return false;
+    }
+    return $open;
+}, 10, 2);
+
 // === Доточка карточки товара (ТЗ-6) ===
 add_action('after_setup_theme', function () {
     remove_theme_support('wc-product-gallery-zoom');
