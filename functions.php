@@ -31,22 +31,31 @@ add_action('after_setup_theme', 'loraleya_setup');
 
 // ===== ENQUEUE STYLES & SCRIPTS =====
 function loraleya_scripts() {
-    // Google Fonts
+    // Self-hosted fonts (бывш. Google Fonts — убраны для устранения render-blocking)
+    $fonts_css = get_template_directory() . '/assets/css/fonts.css';
     wp_enqueue_style(
         'loraleya-fonts',
-        'https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Raleway:wght@300;400;500;600&display=swap',
+        get_template_directory_uri() . '/assets/css/fonts.css',
         [],
-        null
+        file_exists($fonts_css) ? filemtime($fonts_css) : '1.0.0'
     );
 
     // Main stylesheet
-    wp_enqueue_style('loraleya-style', get_stylesheet_uri(), ['loraleya-fonts'], '1.0.0');
+    $style_path = get_stylesheet_directory() . '/style.css';
+    wp_enqueue_style(
+        'loraleya-style',
+        get_stylesheet_uri(),
+        ['loraleya-fonts'],
+        file_exists($style_path) ? filemtime($style_path) : '1.0.0'
+    );
 
     // Main script
-    wp_enqueue_script('loraleya-main', get_template_directory_uri() . '/assets/js/main.js', [], '1.0.0', true);
+    $main_js = get_template_directory() . '/assets/js/main.js';
+    wp_enqueue_script('loraleya-main', get_template_directory_uri() . '/assets/js/main.js', [], file_exists($main_js) ? filemtime($main_js) : '1.0.0', true);
 
     // Constructor script
-    wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], '1.0', true);
+    $constructor_js = get_template_directory() . '/assets/js/constructor.js';
+    wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], file_exists($constructor_js) ? filemtime($constructor_js) : '1.0', true);
 
     // Pass data to JS
     wp_localize_script('loraleya-main', 'loraleya', [
