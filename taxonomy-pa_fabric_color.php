@@ -285,6 +285,16 @@ function loraleya_color_photo($upload_url, $prefix, $type, $ext = 'webp') {
     return '';
 }
 
+function loraleya_color_img($prefix, $type, $size = 'medium_large', $attr = []) {
+    $search_title = $prefix . '-' . $type;
+    $att = get_posts(['post_type'=>'attachment','post_status'=>'inherit','numberposts'=>1,'title'=>$search_title]);
+    if (empty($att)) {
+        $att = get_posts(['post_type'=>'attachment','post_status'=>'inherit','numberposts'=>1,'s'=>$search_title]);
+    }
+    if (empty($att)) return '';
+    return wp_get_attachment_image((int) $att[0]->ID, $size, false, $attr);
+}
+
 function loraleya_color_video($prefix) {
     $search_title = $prefix . '-video';
 
@@ -359,32 +369,37 @@ get_header();
             </div>
         </div>
         <div class="chc-right">
-            <?php
-            $hero_main   = loraleya_color_photo($upload_url, $photo_prefix, 'hero-servirovka');
-            $hero_kuvert = loraleya_color_photo($upload_url, $photo_prefix, 'kuvert');
-            $hero_detail = loraleya_color_photo($upload_url, $photo_prefix, 'hero-detail');
-            ?>
-
             <div class="chc-main">
-                <?php if ($hero_main) : ?>
-                    <img src="<?php echo esc_url($hero_main); ?>" alt="Сервировка <?php echo esc_attr($color['name']); ?>" loading="lazy">
-                <?php else : ?>
+                <?php
+                $hero_main_img = loraleya_color_img($photo_prefix, 'hero-servirovka', 'large', [
+                    'alt'           => 'Сервировка ' . esc_attr($color['name']),
+                    'loading'       => 'eager',
+                    'fetchpriority' => 'high',
+                    'sizes'         => '(max-width: 700px) 100vw, 600px',
+                ]);
+                if ($hero_main_img) : echo $hero_main_img; else : ?>
                     <span class="chc-ph">Фото · сервировка в этом цвете</span>
                 <?php endif; ?>
             </div>
 
             <div class="chc-side">
                 <div class="chc-detail">
-                    <?php if ($hero_detail) : ?>
-                        <img src="<?php echo esc_url($hero_detail); ?>" alt="Детали · салфетка <?php echo esc_attr($color['name']); ?>" loading="lazy">
-                    <?php else : ?>
+                    <?php
+                    $hero_detail_img = loraleya_color_img($photo_prefix, 'hero-detail', 'medium_large', [
+                        'alt'   => 'Детали · салфетка ' . esc_attr($color['name']),
+                        'sizes' => '(max-width: 700px) 45vw, 200px',
+                    ]);
+                    if ($hero_detail_img) : echo $hero_detail_img; else : ?>
                         <span class="chc-ph">Детали · салфетка</span>
                     <?php endif; ?>
                 </div>
                 <div class="chc-kuvert">
-                    <?php if ($hero_kuvert) : ?>
-                        <img src="<?php echo esc_url($hero_kuvert); ?>" alt="Куверт <?php echo esc_attr($color['name']); ?>" loading="lazy">
-                    <?php else : ?>
+                    <?php
+                    $hero_kuvert_img = loraleya_color_img($photo_prefix, 'kuvert', 'medium_large', [
+                        'alt'   => 'Куверт ' . esc_attr($color['name']),
+                        'sizes' => '(max-width: 700px) 45vw, 200px',
+                    ]);
+                    if ($hero_kuvert_img) : echo $hero_kuvert_img; else : ?>
                         <span class="chc-ph">Куверт · веер</span>
                     <?php endif; ?>
                 </div>
@@ -451,10 +466,14 @@ get_header();
     $macros       = ['macro-faktura', 'macro-strochka', 'macro-pereliv'];
     $macro_labels = ['Макро · плетение', 'Макро · строчка', 'Макро · перелив'];
     foreach ($macros as $i => $m) :
-        $macro_url = loraleya_color_photo($upload_url, $photo_prefix, $m);
+        $macro_img = loraleya_color_img($photo_prefix, $m, 'medium', [
+            'alt'   => esc_attr($macro_labels[$i]),
+            'sizes' => '(max-width: 700px) 33vw, 200px',
+            'style' => 'width:100%;height:100%;object-fit:cover',
+        ]);
     ?>
-        <?php if ($macro_url) : ?>
-            <div class="macro-item"><img src="<?php echo esc_url($macro_url); ?>" alt="<?php echo esc_attr($macro_labels[$i]); ?>" loading="lazy" style="width:100%;height:100%;object-fit:cover"></div>
+        <?php if ($macro_img) : ?>
+            <div class="macro-item"><?php echo $macro_img; ?></div>
         <?php else : ?>
             <div class="macro-item"><?php echo $macro_labels[$i]; ?></div>
         <?php endif; ?>
@@ -478,9 +497,9 @@ get_header();
         ?>
 
         <div class="set">
-            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-4-140'); ?>
-            <?php if ($nabor_photo) : ?>
-                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 4п · дорожка 140 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php $nabor_img = loraleya_color_img($photo_prefix, 'nabor-4-140', 'medium_large', ['alt' => 'Набор 4п · дорожка 140 · ' . esc_attr($color['name']), 'sizes' => '(max-width: 700px) 90vw, 280px']); ?>
+            <?php if ($nabor_img) : ?>
+                <div class="set-img"><?php echo $nabor_img; ?></div>
             <?php endif; ?>
             <div class="set-badge">Хит</div>
             <div class="set-name">Набор на 4 персоны · дорожка 140</div>
@@ -506,9 +525,9 @@ get_header();
         </div>
 
         <div class="set">
-            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-4-175'); ?>
-            <?php if ($nabor_photo) : ?>
-                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 4п · дорожка 175 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php $nabor_img = loraleya_color_img($photo_prefix, 'nabor-4-175', 'medium_large', ['alt' => 'Набор 4п · дорожка 175 · ' . esc_attr($color['name']), 'sizes' => '(max-width: 700px) 90vw, 280px']); ?>
+            <?php if ($nabor_img) : ?>
+                <div class="set-img"><?php echo $nabor_img; ?></div>
             <?php endif; ?>
             <div class="set-badge">Хит плюс</div>
             <div class="set-name">Набор на 4 персоны · дорожка 175</div>
@@ -534,9 +553,9 @@ get_header();
         </div>
 
         <div class="set">
-            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-6-240'); ?>
-            <?php if ($nabor_photo) : ?>
-                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 6п · дорожка 240 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php $nabor_img = loraleya_color_img($photo_prefix, 'nabor-6-240', 'medium_large', ['alt' => 'Набор 6п · дорожка 240 · ' . esc_attr($color['name']), 'sizes' => '(max-width: 700px) 90vw, 280px']); ?>
+            <?php if ($nabor_img) : ?>
+                <div class="set-img"><?php echo $nabor_img; ?></div>
             <?php endif; ?>
             <div class="set-badge">Семейный</div>
             <div class="set-name">Набор на 6 персон · дорожка 240</div>
@@ -562,9 +581,9 @@ get_header();
         </div>
 
         <div class="set">
-            <?php $nabor_photo = loraleya_color_photo($upload_url, $photo_prefix, 'nabor-6-300'); ?>
-            <?php if ($nabor_photo) : ?>
-                <div class="set-img"><img src="<?php echo esc_url($nabor_photo); ?>" alt="Набор 6п · дорожка 300 · <?php echo esc_attr($color['name']); ?>" loading="lazy"></div>
+            <?php $nabor_img = loraleya_color_img($photo_prefix, 'nabor-6-300', 'medium_large', ['alt' => 'Набор 6п · дорожка 300 · ' . esc_attr($color['name']), 'sizes' => '(max-width: 700px) 90vw, 280px']); ?>
+            <?php if ($nabor_img) : ?>
+                <div class="set-img"><?php echo $nabor_img; ?></div>
             <?php endif; ?>
             <div class="set-badge">Для большого стола</div>
             <div class="set-name">Набор на 6 персон · дорожка 300</div>
@@ -642,7 +661,6 @@ get_header();
         ];
 
         foreach ($products as $p) :
-            $photo_url    = loraleya_color_photo($upload_url, $photo_prefix, $p['photo']);
             $has_variants = !empty($p['variants']);
             $default      = $has_variants ? ($p['default'] ?? 0) : 0;
             $current_item = $has_variants ? $p['variants'][$default]['item'] : $p['item'];
@@ -652,8 +670,9 @@ get_header();
             $cur_old      = $cur_ip['old_price'] ?? null;
         ?>
         <div class="prod<?php echo $has_variants ? ' prod--variants' : ''; ?>">
-            <?php if ($photo_url) : ?>
-                <div class="prod-img"><img src="<?php echo esc_url($photo_url); ?>" alt="<?php echo esc_attr($p['name']); ?>" loading="lazy"></div>
+            <?php $prod_img = loraleya_color_img($photo_prefix, $p['photo'], 'medium_large', ['alt' => esc_attr($p['name']), 'sizes' => '(max-width: 700px) 45vw, 260px']); ?>
+            <?php if ($prod_img) : ?>
+                <div class="prod-img"><?php echo $prod_img; ?></div>
             <?php else : ?>
                 <div class="prod-img">Фото <?php echo esc_html(mb_strtolower($p['cat'])); ?></div>
             <?php endif; ?>
