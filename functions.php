@@ -120,7 +120,7 @@ function loraleya_register_post_types() {
         ],
         'public'       => true,
         'has_archive'  => true,
-        'rewrite'      => ['slug' => 'scenarios'],
+        'rewrite'      => ['slug' => 'scenarios', 'with_front' => false],
         'supports'     => ['title', 'editor', 'thumbnail', 'excerpt', 'custom-fields', 'page-attributes'],
         'menu_icon'    => 'dashicons-food',
         'show_in_rest' => true,

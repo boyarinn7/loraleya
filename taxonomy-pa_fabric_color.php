@@ -338,7 +338,7 @@ get_header();
         <div class="chc-left">
             <div class="chc-bc">
                 <a href="<?php echo home_url('/'); ?>">Главная</a> →
-                <a href="<?php echo home_url('/palette/'); ?>">Палитра</a> →
+                <a href="<?php echo home_url('/#palette'); ?>">Палитра</a> →
                 <?php echo esc_html($color['name']); ?>
             </div>
             <h1 class="chc-title"><?php echo esc_html($color['name']); ?></h1>
