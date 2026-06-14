@@ -1136,6 +1136,79 @@ add_action('wp_head', function() {
     echo "\n" . '</script>' . "\n";
 });
 
+// === Schema.org для страницы /about/ ===
+
+add_action('wp_head', function() {
+    if (!is_page('about')) return;
+
+    $schemas = [
+        [
+            '@context'      => 'https://schema.org',
+            '@type'         => ['Organization', 'Brand'],
+            'name'          => 'LoraLeya',
+            'alternateName' => ['ЛораЛея', 'LoraLeya — столовый текстиль'],
+            'url'           => 'https://loraleya.ru/',
+            'foundingDate'  => '2022-01',
+            'founder'       => [
+                '@type'    => 'Person',
+                'name'     => 'Наталья Куренкова',
+                'jobTitle' => 'Основательница',
+                'worksFor' => ['@type' => 'Organization', 'name' => 'LoraLeya'],
+            ],
+            'description'  => 'Российский бренд жаккардового столового текстиля. Готовые наборы и индивидуальный пошив скатертей, дорожек, салфеток и кувертов в 17 цветах. Мастерская в Раменском районе Подмосковья.',
+            'slogan'       => 'Магия сервировки',
+            'address'      => [
+                '@type'           => 'PostalAddress',
+                'addressCountry'  => 'RU',
+                'addressRegion'   => 'Московская область',
+                'addressLocality' => 'Раменский район',
+            ],
+            'contactPoint' => [
+                '@type'             => 'ContactPoint',
+                'telephone'         => '+79264950210',
+                'email'             => 'loraleya-tex@yandex.ru',
+                'contactType'       => 'customer service',
+                'availableLanguage' => ['ru'],
+            ],
+            'sameAs' => [],
+        ],
+        [
+            '@context' => 'https://schema.org',
+            '@type'    => 'LocalBusiness',
+            'name'     => 'LoraLeya — мастерская столового текстиля',
+            'address'  => [
+                '@type'           => 'PostalAddress',
+                'addressCountry'  => 'RU',
+                'addressRegion'   => 'Московская область',
+                'addressLocality' => 'Раменский район',
+            ],
+            'telephone' => '+79264950210',
+            'email'     => 'loraleya-tex@yandex.ru',
+            'url'       => 'https://loraleya.ru/about/',
+            'priceRange'=> '₽₽',
+        ],
+        [
+            '@context'    => 'https://schema.org',
+            '@type'       => 'Person',
+            'name'        => 'Наталья Куренкова',
+            'jobTitle'    => 'Основательница',
+            'worksFor'    => [
+                '@type' => 'Organization',
+                'name'  => 'LoraLeya',
+                'url'   => 'https://loraleya.ru/',
+            ],
+            'description' => 'Экономист по образованию. Основательница бренда жаккардового столового текстиля LoraLeya. Создала бренд в январе 2022 года после двух неудачных бизнес-попыток.',
+            'knowsAbout'  => ['столовый текстиль', 'жаккард', 'сервировка стола', 'индивидуальный пошив'],
+        ],
+    ];
+
+    foreach ($schemas as $s) {
+        echo "\n" . '<script type="application/ld+json">' . "\n";
+        echo wp_json_encode($s, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+        echo "\n" . '</script>' . "\n";
+    }
+});
+
 // === SEO-поля для статей блога (post) — ТЗ-1 ===
 
 add_action('init', function() {
