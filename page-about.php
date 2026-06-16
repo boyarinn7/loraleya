@@ -31,11 +31,19 @@ get_header();
     font-weight: 500;
     font-family: var(--sans);
 }
+.ab-hero-h1 {
+    font-family: var(--serif);
+    font-size: clamp(2rem, 4.5vw, 3.2rem);
+    font-weight: 300;
+    color: var(--cream);
+    line-height: 1.15;
+    margin-bottom: .8rem;
+}
 .ab-hero-sub {
     font-family: var(--serif);
     font-size: clamp(1.2rem, 2.5vw, 1.7rem);
     font-weight: 300;
-    color: var(--cream);
+    color: var(--text-muted);
     line-height: 1.3;
     margin-bottom: 1.2rem;
 }
@@ -185,28 +193,8 @@ get_header();
 }
 .ab-reason-text a { color: var(--gold); }
 
-/* BLOCK 4 — production photo slot */
-.ab-prod-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 3rem;
-    align-items: start;
-    margin-top: 1.5rem;
-}
-.ab-prod-photo {
-    aspect-ratio: 3/4;
-    background: var(--bg3);
-    border: 1px solid rgba(197,165,90,.06);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .52rem;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-align: center;
-    padding: 1rem;
-}
+/* BLOCK 4 — body full-width */
+.ab-sec .ab-body { max-width: 760px; }
 
 /* BLOCK 6 — manifesto blockquote */
 .ab-manifesto {
@@ -214,14 +202,6 @@ get_header();
     margin-top: 1.5rem;
     border-left: 2px solid rgba(197,165,90,.3);
     padding-left: 2rem;
-}
-.ab-manifesto__title {
-    font-family: var(--serif);
-    font-size: 1.05rem;
-    color: var(--cream);
-    font-weight: 500;
-    font-style: italic;
-    margin-bottom: 1rem;
 }
 .ab-manifesto__body {
     font-family: var(--serif);
@@ -356,7 +336,6 @@ get_header();
     .ab-hero-right { flex: none; }
     .ab-sec { padding: 3rem 1.5rem; }
     .ab-sec--alt > .ab-sec-inner { padding: 3rem 1.5rem; }
-    .ab-prod-grid { grid-template-columns: 1fr; }
     .ab-contacts-grid { grid-template-columns: 1fr; }
     .ab-numbers { grid-template-columns: repeat(2, 1fr); }
     .ab-cta { padding: 3rem 1.5rem; }
@@ -372,6 +351,7 @@ get_header();
 <section class="ab-hero">
     <div class="ab-hero-left">
         <div class="ab-hero-ey">О бренде</div>
+        <h1 class="ab-hero-h1"><?php the_title(); ?></h1>
         <div class="ab-hero-sub">Жаккардовый столовый текстиль из Раменского района Подмосковья</div>
         <div class="ab-hero-quote">«Красиво накрытый стол — это не роскошь, а ежедневный ритуал, который делает жизнь теплее»</div>
         <p class="ab-hero-text">LoraLeya — российский бренд жаккардового столового текстиля, основан в 2022 году Натальей Куренковой. Мастерская в Подмосковье шьёт скатерти, дорожки, салфетки и куверты в 17 цветах.</p>
@@ -453,15 +433,12 @@ get_header();
 <section class="ab-sec">
     <div class="ab-ey">Как мы шьём</div>
     <div class="ab-h2">Мастерская в Подмосковье</div>
-    <div class="ab-prod-grid">
-        <div class="ab-prod-photo">Фото · ателье в Раменском — добавить позже</div>
-        <div class="ab-body">
-            <p>Мастерская LoraLeya — в Раменском районе Подмосковья.</p>
-            <p>Небольшое профессиональное ателье. Швеи, закройщицы, отпарщицы, упаковщицы — у каждого этапа свои руки.</p>
-            <p>Жаккард везём от проверенных международных поставщиков. Раскрой и пошив — здесь, в России. На продукцию есть Декларация о соответствии.</p>
-            <p>Каждый набор проходит через всю цепочку: от раскроя до упаковки. Качество смотрим на каждом шаге, не только в финале.</p>
-            <p>Под нестандартный стол — <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>">индивидуальный пошив</a> по точным меркам. Срок — 7–14 дней.</p>
-        </div>
+    <div class="ab-body">
+        <p>Мастерская LoraLeya — в Раменском районе Подмосковья.</p>
+        <p>Небольшое профессиональное ателье. Швеи, закройщицы, отпарщицы, упаковщицы — у каждого этапа свои руки.</p>
+        <p>Жаккард везём от проверенных международных поставщиков. Раскрой и пошив — здесь, в России. На продукцию есть Декларация о соответствии.</p>
+        <p>Каждый набор проходит через всю цепочку: от раскроя до упаковки. Качество смотрим на каждом шаге, не только в финале.</p>
+        <p>Под нестандартный стол — <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>">индивидуальный пошив</a> по точным меркам. Срок — 7–14 дней.</p>
     </div>
 </section>
 
@@ -499,7 +476,6 @@ get_header();
 <section class="ab-sec">
     <div class="ab-h2">Магия сервировки</div>
     <div class="ab-manifesto">
-        <div class="ab-manifesto__title">Магия сервировки</div>
         <div class="ab-manifesto__body">
             <p>Насколько важна сервировка? Зачем делать культ из простого приёма пищи?</p>
             <p>Конечно, можно поесть прямо с плиты, не подогревая, на ходу, просто насытить желудок. Но что в итоге — сплошное кусочничество, никакого удовольствия от еды, переедание и гастрит.</p>
@@ -528,7 +504,6 @@ get_header();
             <div class="ab-ct">
                 <div class="ab-ct-label">Телефон</div>
                 <div class="ab-ct-val"><a href="tel:+79264950210">+7 926 495 02 10</a></div>
-                <div class="ab-ct-hint">Пн–Пт, 10:00–19:00 <em>(уточнить у Натальи)</em></div>
             </div>
             <div class="ab-ct">
                 <div class="ab-ct-label">Индивидуальный пошив</div>
