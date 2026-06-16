@@ -151,6 +151,20 @@ $pp_href = [];
 foreach ($pp_links as $k => $pid) {
     $pp_href[$k] = ($pid && get_post_status($pid) === 'publish') ? get_permalink($pid) : '';
 }
+
+// Минимальная цена товара из WooCommerce (берём min_price вариаций)
+function loraleya_pp_min_price($pid) {
+    if (!$pid || get_post_status($pid) !== 'publish') return '';
+    $product = wc_get_product($pid);
+    if (!$product) return '';
+    $price = $product->get_price();
+    if ($price === '' || $price === null) return '';
+    return 'от ' . number_format((float)$price, 0, '.', ' ') . ' ₽';
+}
+$pp_price = [];
+foreach ($pp_links as $k => $pid) {
+    $pp_price[$k] = loraleya_pp_min_price($pid);
+}
 ?>
 <section class="section">
     <div class="container">
@@ -164,7 +178,7 @@ foreach ($pp_links as $k => $pid) {
                 <div class="product-preview__text">
                     <div class="product-preview__label">Дорожки</div>
                     <div class="product-preview__size">4 размера: от 140 до 300 см</div>
-                    <div class="product-preview__price">от 890 ₽</div>
+                    <?php if ($pp_price['runner']) : ?><div class="product-preview__price"><?php echo esc_html($pp_price['runner']); ?></div><?php endif; ?>
                 </div>
             </a>
             <a href="<?php echo esc_url($pp_href['tablecloth']); ?>" class="product-preview">
@@ -172,7 +186,7 @@ foreach ($pp_links as $k => $pid) {
                 <div class="product-preview__text">
                     <div class="product-preview__label">Скатерти</div>
                     <div class="product-preview__size">3 размера: от 175 до 240 см</div>
-                    <div class="product-preview__price">от 2 490 ₽</div>
+                    <?php if ($pp_price['tablecloth']) : ?><div class="product-preview__price"><?php echo esc_html($pp_price['tablecloth']); ?></div><?php endif; ?>
                 </div>
             </a>
             <a href="<?php echo esc_url($pp_href['napkin']); ?>" class="product-preview">
@@ -180,7 +194,7 @@ foreach ($pp_links as $k => $pid) {
                 <div class="product-preview__text">
                     <div class="product-preview__label">Салфетки</div>
                     <div class="product-preview__size">40 × 40 см</div>
-                    <div class="product-preview__price">от 350 ₽</div>
+                    <?php if ($pp_price['napkin']) : ?><div class="product-preview__price"><?php echo esc_html($pp_price['napkin']); ?></div><?php endif; ?>
                 </div>
             </a>
             <a href="<?php echo esc_url($pp_href['kuvert']); ?>" class="product-preview">
@@ -188,7 +202,7 @@ foreach ($pp_links as $k => $pid) {
                 <div class="product-preview__text">
                     <div class="product-preview__label">Куверты</div>
                     <div class="product-preview__size">9 × 24 см</div>
-                    <div class="product-preview__price">от 250 ₽</div>
+                    <?php if ($pp_price['kuvert']) : ?><div class="product-preview__price"><?php echo esc_html($pp_price['kuvert']); ?></div><?php endif; ?>
                 </div>
             </a>
         </div>
@@ -206,15 +220,15 @@ foreach ($pp_links as $k => $pid) {
                     <span class="brand-seal__bottom">С любовью</span>
                 </div>
                 <div class="brand-features">
-                    <span>100% полиэстер · Жаккардовое плетение</span>
-                    <span>17 цветов · Наборы от 2 до 12 персон</span>
-                    <span>Индивидуальный пошив · Монограммы</span>
+                    <span>Жаккардовое плетение · мраморный перелив</span>
+                    <span>17 цветов · готовые наборы на 2–6 персон</span>
+                    <span>Индивидуальный пошив под форму стола</span>
                 </div>
             </div>
             <div class="brand-right">
                 <div class="eyebrow">О бренде</div>
                 <blockquote class="brand-quote">«Красиво накрытый стол — это не роскошь, а ежедневный ритуал, который делает жизнь теплее»</blockquote>
-                <p class="brand-text">LoraLeya — российский бренд жаккардовых тканей для сервировки стола. Наша мастерская в Подмосковье шьёт скатерти, дорожки и салфетки из 100% полиэстерового жаккарда с характерным «мраморным» переливом — этот рисунок играет по-разному при любом освещении. Семнадцать оттенков, готовые наборы на 2–12 персон, индивидуальный пошив под любую форму стола. Мы не просто шьём текстиль — мы помогаем создать ритуал, к которому хочется возвращаться каждый день.</p>
+                <p class="brand-text">LoraLeya — российский бренд жаккардовых тканей для сервировки стола. Наша мастерская в Подмосковье шьёт скатерти, дорожки и салфетки из жаккарда с характерным «мраморным» переливом — этот рисунок играет по-разному при любом освещении. Семнадцать оттенков, готовые наборы на 2–6 персон, индивидуальный пошив под любую форму стола. Мы не просто шьём текстиль — мы помогаем создать ритуал, к которому хочется возвращаться каждый день.</p>
                 <a href="<?php echo home_url('/about/'); ?>" class="btn btn--outline" style="margin-top:1.5rem">
                     Подробнее о бренде
                 </a>
