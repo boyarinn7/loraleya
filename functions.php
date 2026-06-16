@@ -582,6 +582,18 @@ remove_action('wp_print_styles', 'print_emoji_styles');
 // ===== REMOVE WORDPRESS VERSION =====
 remove_action('wp_head', 'wp_generator');
 
+// ===== 301 REDIRECTS =====
+add_action('template_redirect', function() {
+    $redirects = [
+        '/blog/kak-vybrat-skatert-hlopok-ili-poliester/' => '/blog/kak-vybrat-skatert/',
+    ];
+    $request = rtrim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/') . '/';
+    if (isset($redirects[$request])) {
+        wp_redirect(home_url($redirects[$request]), 301);
+        exit;
+    }
+});
+
 // ===== BODY CLASS =====
 function loraleya_body_classes($classes) {
     if (is_front_page()) {
