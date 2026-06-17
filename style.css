@@ -4284,3 +4284,76 @@ a.product-preview:hover .product-preview__label{color:var(--gold-light,#d4bc7c)}
 .single-product .comment-form-rating .stars,
 .single-product .comment-form-rating select{ display:none !important; }
 .single-product .comment-form-rating .ll-stars{ display:inline-flex !important; }
+
+/* ===== Мобильное меню (компонента адаптива A) ===== */
+.nav-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.3rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0.6rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 110;
+}
+.nav-toggle span {
+  display: block;
+  width: 1.5rem;
+  height: 2px;
+  background: var(--cream);
+  transition: transform 0.3s, opacity 0.3s;
+}
+.mobile-nav {
+  display: none;
+  position: fixed;
+  top: 0; right: 0;
+  width: min(80vw, 20rem);
+  height: 100dvh;
+  z-index: 109;
+  flex-direction: column;
+  padding: 5rem 2rem 2rem;
+  background: rgba(14, 14, 12, 0.98);
+  backdrop-filter: blur(20px);
+  border-left: 1px solid rgba(197, 165, 90, 0.12);
+  transform: translateX(100%);
+  transition: transform 0.35s ease;
+  overflow-y: auto;
+}
+.mobile-nav a {
+  display: flex;
+  align-items: center;
+  min-height: 2.75rem;
+  font-family: var(--sans);
+  font-size: 0.9rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--cream);
+  border-bottom: 1px solid rgba(197, 165, 90, 0.08);
+}
+.mobile-nav a.current-menu-item { color: var(--gold); }
+.mobile-nav-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 108;
+  background: rgba(0, 0, 0, 0.5);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+@media (max-width: 1024px) {
+  .nav-toggle { display: flex; }
+  .mobile-nav { display: flex; }
+  .mobile-nav-overlay { display: block; }
+}
+/* Открытое состояние */
+body.nav-open { overflow: hidden; }
+body.nav-open .mobile-nav { transform: translateX(0); }
+body.nav-open .mobile-nav-overlay { opacity: 1; pointer-events: auto; }
+body.nav-open .nav-toggle span:nth-child(1) { transform: translateY(0.5rem) rotate(45deg); }
+body.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
+body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rotate(-45deg); }
+

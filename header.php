@@ -31,6 +31,22 @@
     <a href="<?php echo home_url('/my-account/'); ?>" class="header-account" aria-label="Личный кабинет">
         Личный кабинет
     </a>
+
+    <button class="nav-toggle" id="navToggle" aria-label="Открыть меню" aria-expanded="false" aria-controls="mobileNav">
+        <span></span><span></span><span></span>
+    </button>
 </header>
+
+<!-- Мобильная навигация (выезжает на ≤1024) -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+<nav id="mobileNav" class="mobile-nav" aria-label="Мобильное меню" aria-hidden="true">
+    <a href="<?php echo home_url('/#scenarios'); ?>" class="<?php echo $is_scenario ? 'current-menu-item' : ''; ?>">Сценарии</a>
+    <a href="<?php echo home_url('/#palette'); ?>" class="<?php echo $is_palette ? 'current-menu-item' : ''; ?>">Палитра</a>
+    <a href="<?php echo home_url('/blog/'); ?>" class="<?php echo $is_blog ? 'current-menu-item' : ''; ?>">Блог</a>
+    <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>" class="<?php echo $is_custom_order ? 'current-menu-item' : ''; ?>">Индивидуальный заказ</a>
+    <a href="<?php echo home_url('/about/'); ?>" class="<?php echo $is_about ? 'current-menu-item' : ''; ?>">О бренде</a>
+    <a href="<?php echo home_url('/shop/'); ?>">Каталог</a>
+    <a href="<?php echo home_url('/my-account/'); ?>">Личный кабинет</a>
+</nav>
 
 <main id="main" class="site-main">

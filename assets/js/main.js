@@ -1,4 +1,4 @@
-/**
+﻿/**
  * LoraLeya Theme - Main JS
  */
 
@@ -617,4 +617,33 @@ document.addEventListener('DOMContentLoaded', function() {
     } else {
         init();
     }
+})();
+/* ===== Мобильное меню (компонента адаптива A) ===== */
+(function () {
+  var toggle  = document.getElementById('navToggle');
+  var nav     = document.getElementById('mobileNav');
+  var overlay = document.getElementById('mobileNavOverlay');
+  if (!toggle || !nav) return;
+
+  function openMenu() {
+    document.body.classList.add('nav-open');
+    toggle.setAttribute('aria-expanded', 'true');
+    nav.setAttribute('aria-hidden', 'false');
+  }
+  function closeMenu() {
+    document.body.classList.remove('nav-open');
+    toggle.setAttribute('aria-expanded', 'false');
+    nav.setAttribute('aria-hidden', 'true');
+  }
+
+  toggle.addEventListener('click', function () {
+    document.body.classList.contains('nav-open') ? closeMenu() : openMenu();
+  });
+  if (overlay) overlay.addEventListener('click', closeMenu);
+  nav.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', closeMenu);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' || e.key === 'Esc') closeMenu();
+  });
 })();
