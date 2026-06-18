@@ -647,3 +647,24 @@ document.addEventListener('DOMContentLoaded', function() {
     if (e.key === 'Escape' || e.key === 'Esc') closeMenu();
   });
 })();
+
+/* ===== Адаптив B: приподнять плавающую корзину над нижним баром (мобайл) ===== */
+(function () {
+  var fab = document.getElementById('llCartFab');
+  var bar = document.querySelector('.total-sticky');
+  if (!fab || !bar) return; // только на страницах конструктора, где есть бар
+
+  var mq = window.matchMedia('(max-width: 768px)');
+
+  function liftFab() {
+    if (mq.matches) {
+      fab.style.bottom = 'calc(' + bar.offsetHeight + 'px + 1.25rem)';
+    } else {
+      fab.style.bottom = ''; // на десктопе вернуть значение из CSS
+    }
+  }
+
+  liftFab();
+  window.addEventListener('resize', liftFab);
+  document.addEventListener('loraleya:cart-updated', liftFab); // бар мог изменить высоту
+})();

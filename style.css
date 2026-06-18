@@ -4358,8 +4358,3 @@ body.nav-open .nav-toggle span:nth-child(1) { transform: translateY(0.5rem) rota
 body.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
 body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rotate(-45deg); }
 
-/* ===== Адаптив B: на страницах с нижним баром прячем плавающую корзину на мобиле ===== */
-@media (max-width: 768px) {
-  body:has(.total-sticky) .ll-cart-fab { display: none; }
-}
-
