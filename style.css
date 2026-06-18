@@ -4348,6 +4348,7 @@ a.product-preview:hover .product-preview__label{color:var(--gold-light,#d4bc7c)}
   .nav-toggle { display: flex; }
   .mobile-nav { display: flex; }
   .mobile-nav-overlay { display: block; }
+  .header-account { display: none; }
 }
 /* Открытое состояние */
 body.nav-open { overflow: hidden; }
