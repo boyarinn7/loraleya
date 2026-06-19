@@ -4369,3 +4369,10 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     .qv { min-width: 2rem; }
 }
 
+/* Адаптив C2: кнопки количества в индивидуальном заказе под палец (≥44px на тач) */
+@media (pointer: coarse) {
+    .co-qty-btn { width: 2.75rem; height: 2.75rem; font-size: 1.1rem; }
+    .co-qty-val { min-width: 2rem; }
+    .co-item-right { gap: 0.6rem; } /* чуть теснее, чтобы имя слева не зажималось */
+}
+
