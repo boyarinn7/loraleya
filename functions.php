@@ -607,10 +607,11 @@ function loraleya_body_classes($classes) {
 }
 add_filter('body_class', 'loraleya_body_classes');
 
-function loraleya_color_swatch_url($slug) {
+function loraleya_color_swatch_url($slug, $size = 'thumbnail') {
     static $cache = [];
-    if (isset($cache[$slug])) {
-        return $cache[$slug];
+    $ck = $slug . '|' . $size;
+    if (isset($cache[$ck])) {
+        return $cache[$ck];
     }
 
     $prefix_map = [
@@ -645,12 +646,12 @@ function loraleya_color_swatch_url($slug) {
     ]);
 
     if (!empty($attachment)) {
-        $url = wp_get_attachment_image_url($attachment[0]->ID, 'thumbnail');
-        $cache[$slug] = $url ?: '';
-        return $cache[$slug];
+        $url = wp_get_attachment_image_url($attachment[0]->ID, $size);
+        $cache[$ck] = $url ?: '';
+        return $cache[$ck];
     }
 
-    $cache[$slug] = '';
+    $cache[$ck] = '';
     return '';
 }
 
@@ -1427,7 +1428,8 @@ add_action('wp_enqueue_scripts', function () {
     $map = [];
     foreach ($colors as $c) {
         $url = function_exists('loraleya_color_swatch_url') ? loraleya_color_swatch_url($c[0]) : '';
-        $map[$c[0]] = ['name' => $c[1], 'url' => $url];
+        $img = function_exists('loraleya_color_swatch_url') ? loraleya_color_swatch_url($c[0], 'large') : '';
+        $map[$c[0]] = ['name' => $c[1], 'url' => $url, 'image' => $img];
     }
     wp_localize_script('loraleya-product-swatches', 'LoraleyaSwatches', ['colors' => $map]);
 });

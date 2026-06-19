@@ -4395,3 +4395,10 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 /* Картинка товара в корзине — кликабельная ссылка на карточку */
 .ll-cart-item__imglink { display: block; line-height: 0; }
 
+/* Убрать дефолтное подчёркивание у акционной цены (тег ins) */
+.single-product .summary .price ins {
+    text-decoration: none;
+    background: transparent;
+    color: var(--gold-light, #d4bc7c);
+}
+

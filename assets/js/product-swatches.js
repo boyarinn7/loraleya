@@ -24,10 +24,31 @@ jQuery(function ($) {
         $label.text((data[slug] || {}).name || '');
     }
 
+    // Сменить главное фото галереи на картинку выбранного цвета (сразу, без полной вариации)
+    function setGalleryImage(slug) {
+        var url = (data[slug] || {}).image;
+        if (!url) return;
+        var $img = $('.woocommerce-product-gallery__wrapper .wp-post-image').first();
+        if (!$img.length) $img = $('.woocommerce-product-gallery img').first();
+        if (!$img.length) return;
+        $img.attr('src', url).attr('srcset', '').removeAttr('data-src').removeAttr('data-large_image');
+    }
+
+    var userPicked = false;
+
     $wrap.on('click', '.ll-sw', function () {
         var slug = $(this).data('slug');
-        $sel.val(slug).trigger('change'); // WooCommerce сам обновит цену, фото, наличие, вариацию
+        userPicked = true;
+        $sel.val(slug).trigger('change'); // WC обновит цену/вариацию; цвет записан в «память»
         activate(slug);
+        setGalleryImage(slug);             // фото меняем сразу, не дожидаясь размера
+    });
+
+    // Если WC не собрал полную вариацию (нет размера) — удержать превью выбранного цвета
+    $(document.body).on('hide_variation', function () {
+        if (!userPicked) return;
+        var slug = $sel.val();
+        if (slug) setGalleryImage(slug);
     });
 
     if ($sel.val()) activate($sel.val());
