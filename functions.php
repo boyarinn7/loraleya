@@ -1432,6 +1432,26 @@ add_action('wp_enqueue_scripts', function () {
         $map[$c[0]] = ['name' => $c[1], 'url' => $url, 'image' => $img];
     }
     wp_localize_script('loraleya-product-swatches', 'LoraleyaSwatches', ['colors' => $map]);
+
+    // Фото товара по цвету (специфично для ТЕКУЩЕГО товара): цвет → фото вариации
+    if (function_exists('is_product') && is_product()) {
+        $prod = wc_get_product(get_queried_object_id());
+        if ($prod && $prod->is_type('variable')) {
+            $color_imgs = [];
+            foreach ($prod->get_children() as $vid) {
+                $thumb_id = get_post_thumbnail_id($vid); // только собственное фото вариации
+                if (!$thumb_id) continue;
+                $variation = wc_get_product($vid);
+                if (!$variation) continue;
+                $attrs = $variation->get_variation_attributes();
+                $color = isset($attrs['attribute_pa_fabric_color']) ? $attrs['attribute_pa_fabric_color'] : '';
+                if ($color === '' || isset($color_imgs[$color])) continue;
+                $u = wp_get_attachment_image_url($thumb_id, 'woocommerce_single');
+                if ($u) $color_imgs[$color] = $u;
+            }
+            wp_localize_script('loraleya-product-swatches', 'LoraleyaProductColors', ['images' => $color_imgs]);
+        }
+    }
 });
 
 function loraleya_get_default_color_faq_json() {

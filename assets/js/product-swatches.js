@@ -24,10 +24,14 @@ jQuery(function ($) {
         $label.text((data[slug] || {}).name || '');
     }
 
-    // Сменить главное фото галереи на картинку выбранного цвета (сразу, без полной вариации)
+    // Фото товара по выбранному цвету: фото вариации ИМЕННО этого товара (не общая фактура)
+    function colorPhoto(slug) {
+        var pc = (window.LoraleyaProductColors || {}).images || {};
+        return pc[slug] || '';
+    }
     function setGalleryImage(slug) {
-        var url = (data[slug] || {}).image;
-        if (!url) return;
+        var url = colorPhoto(slug);
+        if (!url) return; // нет фото этого цвета у товара — НЕ подменяем (не показываем чужую картинку)
         var $img = $('.woocommerce-product-gallery__wrapper .wp-post-image').first();
         if (!$img.length) $img = $('.woocommerce-product-gallery img').first();
         if (!$img.length) return;
