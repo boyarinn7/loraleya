@@ -1830,14 +1830,19 @@ h4 { font-size: 1.1rem; }
         padding: 1rem 1.5rem;
         margin: 0 -1.5rem -2rem;
     }
+    /* Позиция набора в 2 строки: имя сверху, цена·кол-во·сумма снизу */
     .ir {
-        grid-template-columns: 1fr;
-        gap: 0.4rem;
+        grid-template-columns: 1fr auto 1fr;
+        grid-template-areas:
+            "name  name name"
+            "price qty  sub";
+        gap: 0.4rem 0.75rem;
+        align-items: center;
     }
-    .ir-price,
-    .ir-sub {
-        text-align: left;
-    }
+    .ir > div:first-child { grid-area: name; }
+    .ir-price { grid-area: price; text-align: left; }
+    .ir-qty   { grid-area: qty;   justify-content: center; }
+    .ir-sub   { grid-area: sub;   text-align: right; }
 }
 
 @media (max-width: 640px) {
@@ -4357,4 +4362,10 @@ body.nav-open .mobile-nav-overlay { opacity: 1; pointer-events: auto; }
 body.nav-open .nav-toggle span:nth-child(1) { transform: translateY(0.5rem) rotate(45deg); }
 body.nav-open .nav-toggle span:nth-child(2) { opacity: 0; }
 body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rotate(-45deg); }
+
+/* Адаптив C1: кнопки ± в конструкторе под палец (≥44px на тач) */
+@media (pointer: coarse) {
+    .qb { width: 2.75rem; height: 2.75rem; font-size: 1.1rem; }
+    .qv { min-width: 2rem; }
+}
 
