@@ -506,6 +506,7 @@ function loraleya_ajax_get_cart() {
             'cart_key'         => $cart_key,
             'product_id'       => $cart_item['product_id'],
             'variation_id'     => $cart_item['variation_id'],
+            'permalink'        => get_permalink($cart_item['product_id']),
             'name'             => $product->get_name(),
             'price'            => wc_price($product->get_price()),
             'price_raw'        => $product->get_price(),

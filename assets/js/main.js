@@ -477,6 +477,7 @@ document.addEventListener('DOMContentLoaded', function() {
         var html = '';
         items.forEach(function(item) {
             var imgSrc = item.image || '';
+            var permalink = item.permalink || '';
             var variationText = '';
             if (item.variation_labels && item.variation_labels.length > 0) {
                 variationText = item.variation_labels.join(' · ');
@@ -484,7 +485,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
             html += '<div class="ll-cart-item" data-cart-key="' + escapeHtml(item.cart_key) + '">';
             if (imgSrc) {
-                html += '  <img class="ll-cart-item__img" src="' + escapeHtml(imgSrc) + '" alt="' + escapeHtml(item.name) + '">';
+                var imgTag = '<img class="ll-cart-item__img" src="' + escapeHtml(imgSrc) + '" alt="' + escapeHtml(item.name) + '">';
+                if (permalink) {
+                    html += '  <a class="ll-cart-item__imglink" href="' + escapeHtml(permalink) + '">' + imgTag + '</a>';
+                } else {
+                    html += '  ' + imgTag;
+                }
             } else {
                 html += '  <div class="ll-cart-item__img ll-cart-item__img--empty" aria-hidden="true">';
                 html += '    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round">';
