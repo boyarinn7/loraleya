@@ -352,6 +352,7 @@ h4 { font-size: 1.1rem; }
 .hero {
   position: relative;
   min-height: 100vh;
+  min-height: 100svh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -498,6 +499,7 @@ h4 { font-size: 1.1rem; }
 @media (max-width: 640px) {
   .hero {
     min-height: 85vh;
+    min-height: 85svh;
     padding-top: 3rem;
     padding-bottom: 3rem;
   }
