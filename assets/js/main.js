@@ -674,3 +674,25 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('resize', liftFab);
   document.addEventListener('loraleya:cart-updated', liftFab); // бар мог изменить высоту
 })();
+
+/* ===== Адаптив F: подписи колонок в свёрнутых таблицах статьи (мобайл) ===== */
+(function () {
+  var tables = document.querySelectorAll('.article-body table');
+  if (!tables.length) return;
+  tables.forEach(function (table) {
+    var heads = [];
+    table.querySelectorAll('thead th').forEach(function (th) {
+      heads.push(th.textContent.trim());
+    });
+    if (heads.length < 2) return; // нет шапки — нечего подписывать
+    table.querySelectorAll('tbody tr').forEach(function (tr) {
+      tr.querySelectorAll('td').forEach(function (td, i) {
+        if (i === 0) {
+          td.classList.add('article-td-head'); // первая ячейка — имя параметра
+        } else if (heads[i]) {
+          td.setAttribute('data-col', heads[i]);
+        }
+      });
+    });
+  });
+})();

@@ -4402,3 +4402,17 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     color: var(--gold-light, #d4bc7c);
 }
 
+/* Адаптив F: подписи колонок в свёрнутой таблице статьи (только мобайл) */
+@media (max-width: 640px) {
+    .article-body td[data-col]::before {
+        content: attr(data-col) ": ";
+        color: var(--gold-dim, #8a7a4a);
+        font-weight: 600;
+    }
+    .article-body td.article-td-head {
+        color: var(--cream, #e8e0d0);
+        font-weight: 600;
+        padding-top: 0.6rem;
+    }
+}
+
