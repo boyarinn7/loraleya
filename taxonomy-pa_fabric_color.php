@@ -419,12 +419,11 @@ get_header();
     // НАСТРАИВАЕТСЯ: порядок типов и максимум кадров.
     $kb_types  = ['hero-servirovka', 'macro-pereliv', 'hero-detail', 'macro-faktura', 'salfetka-tsvetok'];
     $kb_max    = 3;
-    $kb_frames = [];
+    $kb_frames = []; // теперь храним ТИП кадра, а не URL оригинала
     if (!$color_video) {
         foreach ($kb_types as $kb_t) {
-            $kb_u = loraleya_color_photo($upload_url, $photo_prefix, $kb_t);
-            if ($kb_u) {
-                $kb_frames[] = $kb_u;
+            if (loraleya_color_photo($upload_url, $photo_prefix, $kb_t)) { // только проверка наличия
+                $kb_frames[] = $kb_t;
                 if (count($kb_frames) >= $kb_max) break;
             }
         }
@@ -446,10 +445,14 @@ get_header();
         <div class="video-box video-box--kenburns kb--<?php echo (int)$kb_count; ?>"
              role="img"
              aria-label="Сервировка <?php echo esc_attr(mb_strtolower($color['name'])); ?> при разном освещении">
-            <?php foreach ($kb_frames as $kb_i => $kb_src) : ?>
-                <div class="kb-frame">
-                    <img src="<?php echo esc_url($kb_src); ?>" alt="" <?php echo $kb_i === 0 ? '' : 'loading="lazy"'; ?>>
-                </div>
+            <?php foreach ($kb_frames as $kb_type) :
+                $kb_img = loraleya_color_img($photo_prefix, $kb_type, 'large', [
+                    'alt'     => '',
+                    'loading' => 'lazy',
+                    'sizes'   => '(max-width: 700px) 100vw, 900px',
+                ]);
+            ?>
+                <div class="kb-frame"><?php echo $kb_img; ?></div>
             <?php endforeach; ?>
             <div class="vlabel vlabel--overlay">Сервировка <?php echo esc_html(mb_strtolower($color['name'])); ?> при разном освещении</div>
         </div>
