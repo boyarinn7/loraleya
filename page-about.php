@@ -73,17 +73,16 @@ get_header();
 .ab-photo-slot {
     width: 200px;
     aspect-ratio: 3/4;
-    background: var(--bg2);
-    border: 1px solid rgba(197,165,90,.08);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: .52rem;
-    letter-spacing: .12em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    text-align: center;
-    padding: 1rem;
+    border: 1px solid rgba(197,165,90,.12);
+    border-radius: 4px;
+    overflow: hidden;
+}
+.ab-photo-slot img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 20%;
+    display: block;
 }
 .ab-seal-since {
     font-size: .6rem;
@@ -334,6 +333,7 @@ get_header();
 @media (max-width: 1024px) {
     .ab-hero { flex-direction: column; padding: 7rem 1.5rem 3rem; gap: 2rem; }
     .ab-hero-right { flex: none; }
+    .ab-photo-slot { width: 100%; max-width: 260px; }
     .ab-sec { padding: 3rem 1.5rem; }
     .ab-sec--alt > .ab-sec-inner { padding: 3rem 1.5rem; }
     .ab-contacts-grid { grid-template-columns: 1fr; }
@@ -363,7 +363,12 @@ get_header();
             <span class="brand-seal__bottom">С любовью</span>
         </div>
         <div class="ab-seal-since">Раменское · с 2022 года</div>
-        <div class="ab-photo-slot">Фото · Наталья Куренкова в мастерской — добавить позже</div>
+        <div class="ab-photo-slot">
+            <img src="https://loraleya.ru/wp-content/uploads/2026/06/natalia-kurenkova-loraleya.webp"
+                 alt="Наталья Куренкова, основательница бренда LoraLeya"
+                 width="1600" height="2133"
+                 fetchpriority="high">
+        </div>
     </div>
 </section>
 
