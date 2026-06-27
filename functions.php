@@ -122,6 +122,13 @@ add_action( 'wp_enqueue_scripts', function () {
 }, 20 );
 
 // ===== WOOCOMMERCE ADJUSTMENTS =====
+
+add_filter( 'woocommerce_no_shipping_available_html', 'loraleya_no_shipping_text' );
+add_filter( 'woocommerce_cart_no_shipping_available_html', 'loraleya_no_shipping_text' );
+function loraleya_no_shipping_text( $html ) {
+    return '<p>В этом населённом пункте пока нет пунктов выдачи 5Post. Попробуйте ближайший крупный город или напишите нам на loraleya-tex@yandex.ru — подберём доставку.</p>';
+}
+
 // Remove default WooCommerce styles
 add_filter('woocommerce_enqueue_styles', '__return_empty_array');
 
