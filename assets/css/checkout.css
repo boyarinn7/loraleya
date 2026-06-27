@@ -1,0 +1,199 @@
+/* ============================================================
+   LoraLeya — Checkout (классический [woocommerce_checkout])
+   Грузится только на чекауте через is_checkout().
+   ============================================================ */
+
+/* ---- Раскладка: две колонки, sticky-панель заказа ---- */
+.woocommerce-checkout form.checkout.woocommerce-checkout {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr;
+  column-gap: 3rem;
+  align-items: start;
+  max-width: var(--max-width);
+  margin: 0 auto;
+}
+.woocommerce-checkout form.checkout #customer_details { grid-column: 1; grid-row: 1 / span 2; }
+.woocommerce-checkout form.checkout #order_review_heading { grid-column: 2; grid-row: 1; margin-top: 0; }
+.woocommerce-checkout form.checkout #order_review { grid-column: 2; grid-row: 2; position: sticky; top: 6rem; }
+.woocommerce-checkout .woocommerce-form-coupon-toggle,
+.woocommerce-checkout form.checkout_coupon { grid-column: 1 / -1; }
+
+/* дефолтная внутренняя 2-колонка #customer_details — складываем в одну */
+.woocommerce-checkout #customer_details .col2-set,
+.woocommerce-checkout #customer_details .col-1,
+.woocommerce-checkout #customer_details .col-2 { width: 100%; float: none; }
+
+/* ---- Заголовки секций ---- */
+.woocommerce-checkout #customer_details h3,
+.woocommerce-checkout #order_review_heading {
+  font-family: var(--serif);
+  font-weight: 300;
+  color: var(--cream);
+  font-size: 1.5rem;
+  margin: 0 0 1.2rem;
+  padding-bottom: 0.6rem;
+  border-bottom: 1px solid rgba(197, 165, 90, 0.15);
+}
+
+/* ---- Лейблы ---- */
+.woocommerce-checkout .form-row label {
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 0.35rem;
+}
+.woocommerce-checkout .required { color: var(--gold); border: 0; text-decoration: none; }
+.woocommerce-checkout .optional { color: var(--text-muted); }
+
+/* ---- Поля ---- */
+.woocommerce-checkout .input-text,
+.woocommerce-checkout select,
+.woocommerce-checkout textarea,
+.woocommerce-checkout .select2-container .select2-selection {
+  width: 100%;
+  background: var(--bg2);
+  border: 1px solid rgba(197, 165, 90, 0.22);
+  border-radius: var(--radius);
+  color: var(--cream);
+  font-family: var(--sans);
+  font-weight: 300;
+  font-size: 0.95rem;
+  padding: 0.65rem 0.8rem;
+  transition: border-color var(--transition);
+}
+.woocommerce-checkout .input-text:focus,
+.woocommerce-checkout select:focus,
+.woocommerce-checkout textarea:focus,
+.woocommerce-checkout .select2-container--focus .select2-selection {
+  outline: none;
+  border-color: var(--gold);
+}
+.woocommerce-checkout .input-text::placeholder { color: var(--text-muted); }
+.woocommerce-checkout .form-row { margin-bottom: 1rem; }
+
+/* select2 (страна) — тёмная тема */
+.woocommerce-checkout .select2-container .select2-selection__rendered { color: var(--cream); line-height: 1.7; }
+.select2-dropdown { background: var(--bg2); border: 1px solid rgba(197, 165, 90, 0.22); color: var(--cream); }
+.select2-results__option--highlighted { background: var(--bg3) !important; color: var(--gold) !important; }
+
+/* «Доставка по другому адресу» + примечание */
+.woocommerce-checkout #ship-to-different-address label {
+  text-transform: none; letter-spacing: 0; font-size: 1.05rem;
+  color: var(--cream); font-family: var(--serif);
+}
+
+/* ---- Панель «Ваш заказ» ---- */
+.woocommerce-checkout #order_review {
+  background: var(--bg2);
+  border: 1px solid rgba(197, 165, 90, 0.22);
+  border-radius: var(--radius);
+  padding: 1.4rem;
+}
+.woocommerce-checkout #order_review .shop_table { width: 100%; border-collapse: collapse; }
+.woocommerce-checkout #order_review th,
+.woocommerce-checkout #order_review td {
+  padding: 0.6rem 0;
+  border-bottom: 1px solid rgba(197, 165, 90, 0.1);
+  font-size: 0.9rem;
+  text-align: left;
+  color: var(--text);
+}
+.woocommerce-checkout #order_review thead th {
+  color: var(--text-muted); font-weight: 400;
+  text-transform: uppercase; letter-spacing: 0.1em; font-size: 0.7rem;
+}
+.woocommerce-checkout #order_review td.product-total,
+.woocommerce-checkout #order_review th.product-total { text-align: right; white-space: nowrap; }
+.woocommerce-checkout #order_review .order-total th,
+.woocommerce-checkout #order_review .order-total td { border-bottom: 0; padding-top: 0.9rem; }
+.woocommerce-checkout #order_review .order-total .amount {
+  font-family: var(--serif); color: var(--gold); font-size: 1.4rem;
+}
+
+/* ---- Кнопка «Выбрать на карте» (5Post) ----
+   ВНИМАНИЕ: подтвердить точный класс кнопки в live DOM (плагин fivepost).
+   Если у неё свой класс — добавить его явно. Селектор ниже ловит любую
+   .button внутри #order_review, КРОМЕ #place_order. */
+.woocommerce-checkout #order_review .button:not(#place_order):not(.single_add_to_cart_button) {
+  display: inline-block;
+  background: transparent;
+  border: 1px solid var(--gold);
+  border-radius: var(--radius);
+  color: var(--gold);
+  font-family: var(--sans);
+  font-weight: 400;
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 0.45rem 0.85rem;
+  cursor: pointer;
+  transition: all var(--transition);
+}
+.woocommerce-checkout #order_review .button:not(#place_order):hover { background: var(--gold); color: var(--bg); }
+
+/* ---- Оплата ---- */
+.woocommerce-checkout #payment { background: transparent; padding: 0; margin-top: 1rem; }
+.woocommerce-checkout #payment ul.payment_methods {
+  list-style: none; margin: 0; padding: 0;
+  border: 1px solid rgba(197, 165, 90, 0.15);
+}
+.woocommerce-checkout #payment ul.payment_methods li { padding: 0.8rem; }
+.woocommerce-checkout #payment label { color: var(--cream); text-transform: none; letter-spacing: 0; font-size: 0.95rem; }
+.woocommerce-checkout #payment .payment_box {
+  background: var(--bg3); color: var(--text-muted); font-size: 0.85rem; border-radius: var(--radius);
+}
+.woocommerce-checkout #payment .payment_box::before { display: none; }
+
+/* ---- Кнопка «Подтвердить заказ» (по образцу .single_add_to_cart_button) ---- */
+.woocommerce-checkout #place_order {
+  width: 100%;
+  background: var(--gold);
+  color: var(--bg);
+  border: 0;
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: 0.8rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 1rem;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  transition: background var(--transition);
+}
+.woocommerce-checkout #place_order:hover { background: var(--gold-light); }
+
+/* ---- Купон ---- */
+.woocommerce-checkout .woocommerce-form-coupon-toggle .woocommerce-info {
+  background: transparent; border: 0; color: var(--text-muted); padding: 0 0 0.5rem; font-size: 0.85rem;
+}
+.woocommerce-checkout form.checkout_coupon {
+  background: var(--bg2); border: 1px solid rgba(197, 165, 90, 0.15);
+  border-radius: var(--radius); padding: 1.2rem; margin-bottom: 1.5rem;
+}
+.woocommerce-checkout form.checkout_coupon .button {
+  background: transparent; border: 1px solid var(--gold); color: var(--gold);
+  border-radius: var(--radius); text-transform: uppercase; letter-spacing: 0.1em;
+  font-size: 0.72rem; padding: 0.6rem 1.1rem; cursor: pointer; transition: all var(--transition);
+}
+.woocommerce-checkout form.checkout_coupon .button:hover { background: var(--gold); color: var(--bg); }
+
+/* ---- Уведомления ---- */
+.woocommerce-checkout .woocommerce-info,
+.woocommerce-checkout .woocommerce-message {
+  background: var(--bg2); border-top: 2px solid var(--gold); color: var(--text); border-radius: 0;
+}
+.woocommerce-checkout .woocommerce-error {
+  background: var(--bg2); border-top: 2px solid #a14a3a; color: var(--cream); border-radius: 0;
+}
+
+/* ---- Адаптив ---- */
+@media (max-width: 900px) {
+  .woocommerce-checkout form.checkout.woocommerce-checkout { grid-template-columns: 1fr; }
+  .woocommerce-checkout form.checkout #customer_details,
+  .woocommerce-checkout form.checkout #order_review_heading,
+  .woocommerce-checkout form.checkout #order_review { grid-column: 1; grid-row: auto; }
+  .woocommerce-checkout form.checkout #order_review { position: static; margin-top: 1.5rem; }
+}

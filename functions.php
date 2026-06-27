@@ -106,6 +106,21 @@ function loraleya_scripts() {
 }
 add_action('wp_enqueue_scripts', 'loraleya_scripts');
 
+add_action( 'wp_enqueue_scripts', function () {
+    if ( function_exists( 'is_checkout' ) && is_checkout() ) {
+        $path = get_stylesheet_directory() . '/assets/css/checkout.css';
+        $uri  = get_stylesheet_directory_uri() . '/assets/css/checkout.css';
+        if ( file_exists( $path ) ) {
+            wp_enqueue_style(
+                'loraleya-checkout',
+                $uri,
+                array( 'loraleya-style' ),
+                filemtime( $path )
+            );
+        }
+    }
+}, 20 );
+
 // ===== WOOCOMMERCE ADJUSTMENTS =====
 // Remove default WooCommerce styles
 add_filter('woocommerce_enqueue_styles', '__return_empty_array');
