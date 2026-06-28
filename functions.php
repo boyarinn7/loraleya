@@ -121,6 +121,16 @@ add_action( 'wp_enqueue_scripts', function () {
     }
 }, 20 );
 
+add_action( 'wp_enqueue_scripts', function () {
+    if ( function_exists( 'is_account_page' ) && is_account_page() ) {
+        $path = get_stylesheet_directory() . '/assets/css/account.css';
+        $uri  = get_stylesheet_directory_uri() . '/assets/css/account.css';
+        if ( file_exists( $path ) ) {
+            wp_enqueue_style( 'loraleya-account', $uri, array( 'loraleya-style' ), filemtime( $path ) );
+        }
+    }
+}, 20 );
+
 // ===== WOOCOMMERCE ADJUSTMENTS =====
 
 add_filter( 'woocommerce_no_shipping_available_html', 'loraleya_no_shipping_text' );

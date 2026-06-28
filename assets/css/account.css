@@ -1,0 +1,107 @@
+/* ============================================================
+   LoraLeya — Личный кабинет (My Account). Грузится через is_account_page().
+   ============================================================ */
+
+.woocommerce-account .woocommerce { max-width: var(--max-width); margin: 0 auto; }
+
+/* ---- Раскладка: меню слева, контент справа ---- */
+.woocommerce-account .woocommerce-MyAccount-navigation { float: left; width: 24%; }
+.woocommerce-account .woocommerce-MyAccount-content    { float: right; width: 72%; }
+@media (max-width: 768px) {
+  .woocommerce-account .woocommerce-MyAccount-navigation,
+  .woocommerce-account .woocommerce-MyAccount-content { float: none; width: 100%; }
+}
+
+/* ---- Навигация кабинета ---- */
+.woocommerce-MyAccount-navigation ul { list-style: none; margin: 0; padding: 0; border: 1px solid rgba(197,165,90,.15); }
+.woocommerce-MyAccount-navigation ul li { border-bottom: 1px solid rgba(197,165,90,.1); }
+.woocommerce-MyAccount-navigation ul li:last-child { border-bottom: 0; }
+.woocommerce-MyAccount-navigation ul li a {
+  display: block; padding: .85rem 1.1rem;
+  font-family: var(--sans); font-size: .82rem; letter-spacing: .08em; text-transform: uppercase;
+  color: var(--text-muted); text-decoration: none; transition: all var(--transition);
+}
+.woocommerce-MyAccount-navigation ul li a:hover { color: var(--cream); background: var(--bg2); }
+.woocommerce-MyAccount-navigation ul li.is-active a { color: var(--gold); border-left: 2px solid var(--gold); }
+
+/* ---- Заголовки / текст ---- */
+.woocommerce-account .woocommerce-MyAccount-content h2,
+.woocommerce-account .woocommerce-MyAccount-content h3 { font-family: var(--serif); font-weight: 300; color: var(--cream); }
+.woocommerce-account .woocommerce-MyAccount-content p { color: var(--text); }
+.woocommerce-account .woocommerce-MyAccount-content a { color: var(--gold); }
+
+/* ---- Таблица заказов ---- */
+.woocommerce-account .woocommerce-orders-table,
+.woocommerce-account table.shop_table { width: 100%; border-collapse: collapse; }
+.woocommerce-account .shop_table th,
+.woocommerce-account .shop_table td {
+  padding: .7rem .6rem; border-bottom: 1px solid rgba(197,165,90,.1);
+  text-align: left; font-size: .88rem; color: var(--text);
+}
+.woocommerce-account .shop_table thead th {
+  color: var(--text-muted); text-transform: uppercase; letter-spacing: .08em; font-size: .7rem; font-weight: 400;
+}
+
+/* ---- Формы (вход / регистрация / адреса / детали) ---- */
+.woocommerce-account .input-text,
+.woocommerce-account input[type="text"],
+.woocommerce-account input[type="email"],
+.woocommerce-account input[type="password"],
+.woocommerce-account input[type="tel"],
+.woocommerce-account select,
+.woocommerce-account textarea {
+  width: 100%; background: var(--bg2);
+  border: 1px solid rgba(197,165,90,.22); border-radius: var(--radius);
+  color: var(--cream); font-family: var(--sans); font-weight: 300; font-size: .95rem;
+  padding: .65rem .8rem; transition: border-color var(--transition);
+}
+.woocommerce-account .input-text:focus,
+.woocommerce-account input:focus, .woocommerce-account select:focus, .woocommerce-account textarea:focus {
+  outline: none; border-color: var(--gold);
+}
+.woocommerce-account .form-row label,
+.woocommerce-account label {
+  display: block; font-size: .72rem; letter-spacing: .13em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: .35rem;
+}
+.woocommerce-account .form-row { margin-bottom: 1rem; }
+.woocommerce-account .required { color: var(--gold); border: 0; }
+
+/* ---- Карточки логин/регистрация ---- */
+.woocommerce-account .u-columns .col-1,
+.woocommerce-account .u-columns .col-2,
+.woocommerce-account .woocommerce-form-login,
+.woocommerce-account .woocommerce-form-register {
+  background: var(--bg2); border: 1px solid rgba(197,165,90,.15);
+  border-radius: var(--radius); padding: 1.5rem;
+}
+
+/* ---- Кнопки (по образцу .single_add_to_cart_button) ---- */
+.woocommerce-account .button,
+.woocommerce-account button[type="submit"],
+.woocommerce-account .woocommerce-Button {
+  background: var(--gold); color: var(--bg); border: 0; border-radius: var(--radius);
+  font-family: var(--sans); font-weight: 600; font-size: .8rem; letter-spacing: .12em; text-transform: uppercase;
+  padding: .8rem 1.4rem; cursor: pointer; transition: background var(--transition);
+}
+.woocommerce-account .button:hover,
+.woocommerce-account button[type="submit"]:hover { background: var(--gold-light); }
+
+/* «Заказать снова» / второстепенные действия — золотой outline */
+.woocommerce-account .order-again .button,
+.woocommerce-account .woocommerce-button.view {
+  background: transparent; border: 1px solid var(--gold); color: var(--gold);
+}
+.woocommerce-account .order-again .button:hover { background: var(--gold); color: var(--bg); }
+
+/* ---- Адреса ---- */
+.woocommerce-account .woocommerce-Address { background: var(--bg2); border: 1px solid rgba(197,165,90,.15); padding: 1.2rem; }
+.woocommerce-account .woocommerce-Address address { color: var(--text); font-style: normal; line-height: 1.7; }
+
+/* ---- Уведомления ---- */
+.woocommerce-account .woocommerce-message,
+.woocommerce-account .woocommerce-info { background: var(--bg2); border-top: 2px solid var(--gold); color: var(--text); border-radius: 0; }
+.woocommerce-account .woocommerce-error { background: var(--bg2); border-top: 2px solid #a14a3a; color: var(--cream); border-radius: 0; }
+
+/* clearfix для float-раскладки */
+.woocommerce-account .woocommerce::after { content: ""; display: table; clear: both; }
