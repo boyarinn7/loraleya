@@ -28,7 +28,7 @@
         <a href="<?php echo home_url('/about/'); ?>" class="<?php echo $is_about ? 'current-menu-item' : ''; ?>">О бренде</a>
     </nav>
 
-    <a href="<?php echo home_url('/my-account/'); ?>" class="header-account" aria-label="Личный кабинет">
+    <a href="<?php echo function_exists('wc_get_page_permalink') ? esc_url(wc_get_page_permalink('myaccount')) : esc_url(home_url('/my-account/')); ?>" class="header-account" aria-label="Личный кабинет">
         Личный кабинет
     </a>
 
@@ -46,7 +46,7 @@
     <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>" class="<?php echo $is_custom_order ? 'current-menu-item' : ''; ?>">Индивидуальный заказ</a>
     <a href="<?php echo home_url('/about/'); ?>" class="<?php echo $is_about ? 'current-menu-item' : ''; ?>">О бренде</a>
     <a href="<?php echo home_url('/shop/'); ?>">Каталог</a>
-    <a href="<?php echo home_url('/my-account/'); ?>">Личный кабинет</a>
+    <a href="<?php echo function_exists('wc_get_page_permalink') ? esc_url(wc_get_page_permalink('myaccount')) : esc_url(home_url('/my-account/')); ?>">Личный кабинет</a>
 </nav>
 
 <main id="main" class="site-main">
