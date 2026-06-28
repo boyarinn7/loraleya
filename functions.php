@@ -1026,6 +1026,25 @@ function loraleya_privacy_consent_links_script() {
 }
 add_action('wp_footer', 'loraleya_privacy_consent_links_script');
 
+// === СОГЛАСИЕ НА ОБРАБОТКУ ПДн НА ФОРМЕ РЕГИСТРАЦИИ (/my-account/) ===
+
+add_action('woocommerce_register_form', function () {
+    ?>
+    <p class="form-row">
+        <label class="woocommerce-form__label woocommerce-form__label-for-checkbox" style="display:flex;align-items:flex-start;gap:.5rem;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--text,#c8c0b4);">
+            <input type="checkbox" name="loraleya_privacy_consent" id="loraleya_privacy_consent" value="1" style="margin-top:.2rem;flex-shrink:0;">
+            <span>Я согласен(на) с <a href="<?php echo esc_url(home_url('/privacy-policy/')); ?>" target="_blank" rel="noopener" style="color:var(--gold,#c5a55a);">Политикой обработки персональных данных</a> и <a href="<?php echo esc_url(home_url('/oferta/')); ?>" target="_blank" rel="noopener" style="color:var(--gold,#c5a55a);">Условиями оферты</a> <span class="required">*</span></span>
+        </label>
+    </p>
+    <?php
+});
+
+add_action('woocommerce_register_post', function ($username, $email, $errors) {
+    if (empty($_POST['loraleya_privacy_consent'])) {
+        $errors->add('loraleya_privacy_consent', __('Необходимо согласие на обработку персональных данных.', 'loraleya'));
+    }
+}, 10, 3);
+
 // === SEO-поля для страниц сценариев (Sprint 1, ТЗ E3) ===
 
 add_action('add_meta_boxes_scenario', function() {
