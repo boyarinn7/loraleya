@@ -106,6 +106,28 @@
 /* clearfix для float-раскладки */
 .woocommerce-account .woocommerce::after { content: ""; display: table; clear: both; }
 
+/* ---- Форма входа/регистрации — тёмные поля ---- */
+.woocommerce-account .woocommerce-form-login .input-text,
+.woocommerce-account .woocommerce-form-register .input-text {
+  background: var(--bg2); border: 1px solid rgba(197,165,90,.3); color: var(--cream);
+}
+.woocommerce-account .woocommerce-form-login,
+.woocommerce-account .woocommerce-form-register {
+  background: var(--bg2); border: 1px solid rgba(197,165,90,.15); padding: 1.5rem; max-width: 520px;
+}
+
+/* Гасим жёлтый фон автозаполнения Chrome/WebKit */
+.woocommerce-account input:-webkit-autofill,
+.woocommerce-account input:-webkit-autofill:hover,
+.woocommerce-account input:-webkit-autofill:focus {
+  -webkit-text-fill-color: var(--cream);
+  -webkit-box-shadow: 0 0 0 1000px var(--bg2) inset;
+  box-shadow: 0 0 0 1000px var(--bg2) inset;
+  border: 1px solid rgba(197,165,90,.3);
+  transition: background-color 9999s ease-in-out 0s;
+  caret-color: var(--cream);
+}
+
 /* ---- Ссылка «В каталог» у повтора заказа ---- */
 .ll-order-add-more { margin-top: 1rem; }
 .woocommerce-account .ll-btn-outline,
