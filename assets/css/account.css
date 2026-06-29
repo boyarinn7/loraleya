@@ -10,7 +10,7 @@
    1rem ≈ 16px ≈ 0.4 см. Шаг 0.25rem ≈ 4px для точной подгонки.
    ============================================================ */
 :root {
-  --ll-account-content-shift: -2rem;   /* ← КРУТИ ЭТО */
+  --ll-account-content-shift: -6.5rem;   /* ← КРУТИ ЭТО */
 }
 
 .woocommerce-account .woocommerce { max-width: var(--max-width); margin: 0 auto; }
