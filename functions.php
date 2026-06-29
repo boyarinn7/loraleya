@@ -1070,6 +1070,18 @@ add_action( 'template_redirect', function () {
     }
 } );
 
+// === ЛИЧНЫЙ КАБИНЕТ: ПРИВЕТСТВИЕ-ШАПКА ===
+
+add_action( 'woocommerce_account_content', function () {
+    if ( ! is_user_logged_in() ) return;
+    $user = wp_get_current_user();
+    $name = $user->first_name ? $user->first_name : $user->display_name;
+    echo '<div class="ll-account-greeting">';
+    echo '<p class="ll-account-greeting__eyebrow">Личный кабинет</p>';
+    echo '<h2 class="ll-account-greeting__title">Здравствуйте, ' . esc_html( $name ) . '</h2>';
+    echo '</div>';
+}, 5 );
+
 // === SEO-поля для страниц сценариев (Sprint 1, ТЗ E3) ===
 
 add_action('add_meta_boxes_scenario', function() {

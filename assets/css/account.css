@@ -105,3 +105,13 @@
 
 /* clearfix для float-раскладки */
 .woocommerce-account .woocommerce::after { content: ""; display: table; clear: both; }
+
+/* ---- Приветствие-шапка ---- */
+.ll-account-greeting { margin-bottom: 1.8rem; padding-bottom: 1.4rem; border-bottom: 1px solid rgba(197,165,90,.12); }
+.ll-account-greeting__eyebrow {
+  font-family: var(--sans); font-size: .68rem; letter-spacing: .3em; text-transform: uppercase;
+  color: var(--text-muted); margin: 0 0 .5rem;
+}
+.ll-account-greeting__title {
+  font-family: var(--serif); font-weight: 300; font-size: 2rem; color: var(--cream); margin: 0;
+}
