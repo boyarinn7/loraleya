@@ -13,6 +13,10 @@
   --ll-orders-content-shift:   -5rem;    /* ← ЗАКАЗЫ */
   --ll-address-content-shift:  -6.5rem;  /* ← АДРЕСА */
   --ll-profile-content-shift:  -6.5rem;  /* ← ПРОФИЛЬ */
+  /* Размер шрифта заголовка раздела (Заказы/Адреса/Профиль): меньше = мельче, больше = крупнее */
+  --ll-section-title-size: 2.8rem;       /* ← КРУТИ ЭТО (заголовок раздела) */
+  /* Размер шрифта приветствия («Здравствуйте, …»): меньше = мельче, больше = крупнее */
+  --ll-greeting-size: 1rem;              /* ← КРУТИ ЭТО (приветствие) */
 }
 
 .woocommerce-account .woocommerce { max-width: var(--max-width); margin: 0 auto; }
@@ -167,7 +171,7 @@
 .ll-account-greeting__eyebrow { font-size: .62rem; letter-spacing: .28em; text-transform: uppercase; color: var(--text-muted); margin: 0 0 .3rem; }
 .ll-account-greeting__title {
   font-family: var(--sans);
-  font-weight: 400; font-size: 1rem; color: var(--text); margin: 0; letter-spacing: .02em;
+  font-weight: 400; font-size: var(--ll-greeting-size); color: var(--text); margin: 0; letter-spacing: .02em;
 }
 
 /* ---- Fieldset «Смена пароля» ---- */
@@ -233,3 +237,9 @@
   color: var(--text-muted); margin-bottom: .3rem;
 }
 .woocommerce-account fieldset .input-text { padding: .55rem .75rem; font-size: .9rem; max-width: 440px; }
+
+/* ---- Размер заголовка раздела (Заказы/Адреса/Профиль) — управляется --ll-section-title-size ---- */
+.woocommerce-account .woocommerce-MyAccount-content h2,
+.woocommerce-account .woocommerce-MyAccount-content h3 {
+  font-size: var(--ll-section-title-size);
+}
