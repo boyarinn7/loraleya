@@ -2,14 +2,25 @@
    LoraLeya — Личный кабинет (My Account). Грузится через is_account_page().
    ============================================================ */
 
+/* ============================================================
+   РЕГУЛИРОВКА ВЫСОТЫ ПРАВОЙ КОЛОНКИ КАБИНЕТА
+   Меняй только это число:
+     меньше (например -3rem, -4rem) = контент ВЫШЕ
+     больше (например -1rem, 0)     = контент НИЖЕ
+   1rem ≈ 16px ≈ 0.4 см. Шаг 0.25rem ≈ 4px для точной подгонки.
+   ============================================================ */
+:root {
+  --ll-account-content-shift: -2rem;   /* ← КРУТИ ЭТО */
+}
+
 .woocommerce-account .woocommerce { max-width: var(--max-width); margin: 0 auto; }
 
 /* ---- Раскладка: меню слева, контент справа ---- */
 .woocommerce-account .woocommerce-MyAccount-navigation { float: left; width: 24%; }
-.woocommerce-account .woocommerce-MyAccount-content    { float: right; width: 72%; }
+.woocommerce-account .woocommerce-MyAccount-content    { float: right; width: 72%; margin-top: var(--ll-account-content-shift); }
 @media (max-width: 768px) {
   .woocommerce-account .woocommerce-MyAccount-navigation,
-  .woocommerce-account .woocommerce-MyAccount-content { float: none; width: 100%; }
+  .woocommerce-account .woocommerce-MyAccount-content { float: none; width: 100%; margin-top: 0; }
 }
 
 /* ---- Навигация кабинета ---- */
@@ -174,11 +185,39 @@
 .woocommerce-account .input-text:focus,
 .woocommerce-account input:focus { outline: none; border-color: var(--gold); }
 
-/* ---- Пустое состояние «Заказов ещё нет»: инфо-блок и кнопка не налезают ---- */
+/* ---- Пустое состояние «Заказов ещё нет»: текст и кнопка на отдельных строках ---- */
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-info {
-  display: block; margin-bottom: 1.2rem; position: static;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 1rem;
+  background: var(--bg2); border-top: 2px solid var(--gold); border-radius: 0;
+  padding: 1.2rem 1.4rem; color: var(--text); position: static;
 }
-.woocommerce-account .woocommerce-MyAccount-content .woocommerce-info .button,
-.woocommerce-account .woocommerce-MyAccount-content .woocommerce-Button {
-  position: static; float: none; display: inline-block; margin-top: .4rem;
+.woocommerce-account .woocommerce-MyAccount-content .woocommerce-info .button {
+  position: static; float: none; margin: 0;
 }
+/* Кнопка в инфо-блоке: тёмный текст на золоте (читаемо) */
+.woocommerce-account .woocommerce-info .button,
+.woocommerce-account .woocommerce-MyAccount-content .button {
+  background: var(--gold); color: var(--bg) !important;
+  font-family: var(--sans); font-weight: 600; font-size: .78rem;
+  letter-spacing: .12em; text-transform: uppercase;
+  padding: .75rem 1.6rem; border: 0; border-radius: 0;
+  transition: background var(--transition);
+}
+.woocommerce-account .woocommerce-info .button:hover { background: var(--gold-light); }
+
+/* ---- Поля «Профиля» — компактные и изящные ---- */
+.woocommerce-account .woocommerce-EditAccountForm .input-text,
+.woocommerce-account .woocommerce-EditAccountForm input[type="text"],
+.woocommerce-account .woocommerce-EditAccountForm input[type="email"],
+.woocommerce-account .woocommerce-EditAccountForm input[type="password"] {
+  padding: .55rem .75rem;
+  font-size: .9rem; font-weight: 300;
+  background: var(--bg2); border: 1px solid rgba(197,165,90,.25); color: var(--cream);
+  max-width: 440px;
+}
+.woocommerce-account .woocommerce-EditAccountForm .form-row { margin-bottom: .9rem; }
+.woocommerce-account .woocommerce-EditAccountForm label {
+  font-size: .68rem; letter-spacing: .12em; text-transform: uppercase;
+  color: var(--text-muted); margin-bottom: .3rem;
+}
+.woocommerce-account fieldset .input-text { padding: .55rem .75rem; font-size: .9rem; max-width: 440px; }
