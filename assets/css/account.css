@@ -125,6 +125,33 @@
   font-weight: 400; font-size: 1rem; color: var(--text); margin: 0; letter-spacing: .02em;
 }
 
+/* ---- Fieldset «Смена пароля» ---- */
+.woocommerce-account fieldset {
+  border: 1px solid rgba(197,165,90,.15); padding: 1.2rem 1.4rem; margin-top: 1.2rem;
+}
+.woocommerce-account fieldset legend {
+  font-family: var(--sans); font-size: .72rem; letter-spacing: .14em; text-transform: uppercase;
+  color: var(--gold); padding: 0 .5rem;
+}
+.woocommerce-account fieldset .woocommerce-form-row,
+.woocommerce-account fieldset .form-row { margin-bottom: 1rem; display: block; }
+.woocommerce-account fieldset label { display: block; margin-bottom: .35rem; }
+.woocommerce-account .required { color: var(--gold); border: 0; text-decoration: none; }
+
+/* ---- Поля ввода — усиленная рамка (читается на тёмном фоне) ---- */
+.woocommerce-account .input-text,
+.woocommerce-account input[type="text"],
+.woocommerce-account input[type="email"],
+.woocommerce-account input[type="password"],
+.woocommerce-account input[type="tel"] {
+  background: var(--bg2);
+  border: 1px solid rgba(197,165,90,.3);
+  color: var(--cream); padding: .7rem .85rem; width: 100%;
+  border-radius: 0; transition: border-color var(--transition);
+}
+.woocommerce-account .input-text:focus,
+.woocommerce-account input:focus { outline: none; border-color: var(--gold); }
+
 /* ---- Пустое состояние «Заказов ещё нет»: инфо-блок и кнопка не налезают ---- */
 .woocommerce-account .woocommerce-MyAccount-content .woocommerce-info {
   display: block; margin-bottom: 1.2rem; position: static;
