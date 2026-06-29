@@ -1045,6 +1045,31 @@ add_action('woocommerce_register_post', function ($username, $email, $errors) {
     }
 }, 10, 3);
 
+// === ЛИЧНЫЙ КАБИНЕТ: МЕНЮ И СТАРТ ===
+
+add_filter( 'woocommerce_account_menu_items', function ( $items ) {
+    unset( $items['dashboard'] );        // Консоль — убрать
+    unset( $items['downloads'] );        // Загрузки — убрать
+    unset( $items['payment-methods'] );  // Способы оплаты — убрать
+    return $items;
+}, 20 );
+
+add_filter( 'woocommerce_account_menu_items', function ( $items ) {
+    if ( isset( $items['orders'] ) )          $items['orders']          = 'Мои заказы';
+    if ( isset( $items['edit-address'] ) )    $items['edit-address']    = 'Адреса';
+    if ( isset( $items['edit-account'] ) )    $items['edit-account']    = 'Профиль';
+    if ( isset( $items['customer-logout'] ) ) $items['customer-logout'] = 'Выйти';
+    return $items;
+}, 30 );
+
+add_action( 'template_redirect', function () {
+    if ( ! function_exists( 'is_account_page' ) ) return;
+    if ( is_account_page() && is_user_logged_in() && empty( WC()->query->get_current_endpoint() ) ) {
+        wp_safe_redirect( wc_get_account_endpoint_url( 'orders' ) );
+        exit;
+    }
+} );
+
 // === SEO-поля для страниц сценариев (Sprint 1, ТЗ E3) ===
 
 add_action('add_meta_boxes_scenario', function() {
