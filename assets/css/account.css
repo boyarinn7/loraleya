@@ -3,15 +3,16 @@
    ============================================================ */
 
 /* ============================================================
-   РЕГУЛИРОВКА ВЫСОТЫ ПРАВОЙ КОЛОНКИ — ТОЛЬКО РАЗДЕЛ «ЗАКАЗЫ»
-   Меняй только это число:
+   РЕГУЛИРОВКА ВЫСОТЫ ПРАВОЙ КОЛОНКИ — ТРИ НЕЗАВИСИМЫЕ РУЧКИ
+   Меняй нужное число:
      меньше (например -3rem, -4rem) = контент ВЫШЕ
      больше (например -1rem, 0)     = контент НИЖЕ
    1rem ≈ 16px ≈ 0.4 см. Шаг 0.25rem ≈ 4px для точной подгонки.
-   Адреса и Профиль этим НЕ двигаются.
    ============================================================ */
 :root {
-  --ll-orders-content-shift: -6.5rem;   /* ← КРУТИ ЭТО (только заказы) */
+  --ll-orders-content-shift:   -5rem;    /* ← ЗАКАЗЫ */
+  --ll-address-content-shift:  -6.5rem;  /* ← АДРЕСА */
+  --ll-profile-content-shift:  -6.5rem;  /* ← ПРОФИЛЬ */
 }
 
 .woocommerce-account .woocommerce { max-width: var(--max-width); margin: 0 auto; }
@@ -24,12 +25,14 @@
   .woocommerce-account .woocommerce-MyAccount-content { float: none; width: 100%; }
 }
 
-/* Сдвиг применяется ТОЛЬКО на странице заказов */
-.woocommerce-account.woocommerce-orders .woocommerce-MyAccount-content {
-  margin-top: var(--ll-orders-content-shift);
-}
+/* Сдвиг — каждый раздел независимо */
+.woocommerce-account.woocommerce-orders .woocommerce-MyAccount-content        { margin-top: var(--ll-orders-content-shift); }
+.woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content  { margin-top: var(--ll-address-content-shift); }
+.woocommerce-account.woocommerce-edit-account .woocommerce-MyAccount-content  { margin-top: var(--ll-profile-content-shift); }
 @media (max-width: 768px) {
-  .woocommerce-account.woocommerce-orders .woocommerce-MyAccount-content { margin-top: 0; }
+  .woocommerce-account.woocommerce-orders .woocommerce-MyAccount-content,
+  .woocommerce-account.woocommerce-edit-address .woocommerce-MyAccount-content,
+  .woocommerce-account.woocommerce-edit-account .woocommerce-MyAccount-content { margin-top: 0; }
 }
 
 /* ---- Навигация кабинета ---- */
