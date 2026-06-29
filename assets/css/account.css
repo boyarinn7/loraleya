@@ -14,9 +14,9 @@
   --ll-address-content-shift:  -6.5rem;  /* ← АДРЕСА */
   --ll-profile-content-shift:  -6.5rem;  /* ← ПРОФИЛЬ */
   /* Размер шрифта заголовка раздела (Заказы/Адреса/Профиль): меньше = мельче, больше = крупнее */
-  --ll-section-title-size: 2.8rem;       /* ← КРУТИ ЭТО (заголовок раздела) */
+  --ll-section-title-size: 2rem;       /* ← КРУТИ ЭТО (заголовок раздела) */
   /* Размер шрифта приветствия («Здравствуйте, …»): меньше = мельче, больше = крупнее */
-  --ll-greeting-size: 1rem;              /* ← КРУТИ ЭТО (приветствие) */
+  --ll-greeting-size: 1.5rem;              /* ← КРУТИ ЭТО (приветствие) */
 }
 
 .woocommerce-account .woocommerce { max-width: var(--max-width); margin: 0 auto; }
@@ -242,4 +242,20 @@
 .woocommerce-account .woocommerce-MyAccount-content h2,
 .woocommerce-account .woocommerce-MyAccount-content h3 {
   font-size: var(--ll-section-title-size);
+}
+
+/* ---- Подсказки под полями (description): мелкая строка под полем, без обтекания ---- */
+.woocommerce-account .woocommerce-EditAccountForm .description,
+.woocommerce-account .form-row .description,
+.woocommerce-account span.description {
+  display: block;
+  clear: both;
+  width: 100%;
+  margin-top: .35rem;
+  font-family: var(--sans);
+  font-size: .72rem;
+  font-style: normal;
+  line-height: 1.4;
+  letter-spacing: .02em;
+  color: var(--text-muted);
 }
