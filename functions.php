@@ -1079,6 +1079,11 @@ add_action( 'woocommerce_order_details_after_order_table', function ( $order ) {
     echo '<p class="ll-order-add-more"><a href="' . esc_url( $shop ) . '" class="button ll-btn-outline">В каталог — добавить ещё</a></p>';
 }, 20 );
 
+// Заголовок вкладки «Профиль» — вместо «Анкета»
+add_filter( 'woocommerce_endpoint_edit-account_title', function () {
+    return 'Профиль';
+} );
+
 // === ЛИЧНЫЙ КАБИНЕТ: ПРИВЕТСТВИЕ-ШАПКА ===
 
 add_action( 'woocommerce_account_content', function () {
