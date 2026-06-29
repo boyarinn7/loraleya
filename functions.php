@@ -1070,6 +1070,15 @@ add_action( 'template_redirect', function () {
     }
 } );
 
+// === ЛИЧНЫЙ КАБИНЕТ: ССЫЛКА «В КАТАЛОГ» НА СТРАНИЦЕ ЗАКАЗА ===
+
+add_action( 'woocommerce_order_details_after_order_table', function ( $order ) {
+    if ( ! $order ) return;
+    $shop = get_permalink( wc_get_page_id( 'shop' ) );
+    if ( ! $shop ) $shop = home_url( '/#palette' );
+    echo '<p class="ll-order-add-more"><a href="' . esc_url( $shop ) . '" class="button ll-btn-outline">В каталог — добавить ещё</a></p>';
+}, 20 );
+
 // === ЛИЧНЫЙ КАБИНЕТ: ПРИВЕТСТВИЕ-ШАПКА ===
 
 add_action( 'woocommerce_account_content', function () {
