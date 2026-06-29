@@ -257,10 +257,10 @@
   clear: both !important;
   float: none !important;
   width: 100% !important;
-  max-width: 100% !important;
+  max-width: 440px !important;
   margin: .35rem 0 0 !important;
   font-family: var(--sans);
-  font-size: .72rem;
+  font-size: .66rem;
   font-style: normal;
   line-height: 1.4;
   letter-spacing: .02em;
