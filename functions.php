@@ -1572,3 +1572,23 @@ function loraleya_get_default_color_faq_json() {
         ],
     ], JSON_UNESCAPED_UNICODE);
 }
+
+// === КАТАЛОГ: текст кнопки «Выбрать» для variable-товаров ===
+
+add_filter( 'woocommerce_product_add_to_cart_text', function ( $text, $product ) {
+    if ( $product && $product->is_type( 'variable' ) ) {
+        return 'Выбрать';
+    }
+    return $text;
+}, 10, 2 );
+
+// === КАТАЛОГ: краткое описание товара в карточке архива ===
+
+add_action( 'woocommerce_after_shop_loop_item_title', function () {
+    global $product;
+    if ( ! $product ) return;
+    $excerpt = $product->get_short_description();
+    if ( $excerpt ) {
+        echo '<p class="woocommerce-loop-product__excerpt">' . wp_kses_post( $excerpt ) . '</p>';
+    }
+}, 15 );

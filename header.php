@@ -20,9 +20,11 @@
     $is_custom_order  = is_page('individualnyy-zakaz');
     $is_about         = is_page('about');
     ?>
+    <?php $is_shop = is_shop() || is_product_category() || is_product_tag(); ?>
     <nav class="main-nav" role="navigation">
         <a href="<?php echo home_url('/#scenarios'); ?>" class="<?php echo $is_scenario ? 'current-menu-item' : ''; ?>">Сценарии</a>
         <a href="<?php echo home_url('/#palette'); ?>" class="<?php echo $is_palette ? 'current-menu-item' : ''; ?>">Палитра</a>
+        <a href="<?php echo function_exists('wc_get_page_permalink') ? esc_url(wc_get_page_permalink('shop')) : esc_url(home_url('/shop/')); ?>" class="<?php echo $is_shop ? 'current-menu-item' : ''; ?>">Каталог</a>
         <a href="<?php echo home_url('/blog/'); ?>" class="<?php echo $is_blog ? 'current-menu-item' : ''; ?>">Блог</a>
         <a href="<?php echo home_url('/individualnyy-zakaz/'); ?>" class="<?php echo $is_custom_order ? 'current-menu-item' : ''; ?>">Индивидуальный заказ</a>
         <a href="<?php echo home_url('/about/'); ?>" class="<?php echo $is_about ? 'current-menu-item' : ''; ?>">О бренде</a>
