@@ -2177,7 +2177,7 @@ a.chc-tag {
     font-size: 0.8rem;
 }
 
-/* Products grid */
+/* Products grid — переопределено каталогом-лукбуком ниже */
 .products {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -2734,6 +2734,171 @@ a.chc-tag {
 
 #scenarios {
     scroll-margin-top: 5rem;
+}
+
+/* ============================================================
+   КАТАЛОГ — лукбук-развороты (/shop/)
+   ============================================================ */
+
+/* B3: отступ под фиксированную шапку */
+.woocommerce-shop .site-main,
+.post-type-archive-product .site-main {
+    padding-top: 6rem;
+}
+
+/* A3: заголовок — скрыть дефолтный «Магазин», добавить свой через ::before */
+.woocommerce-shop .woocommerce-products-header { display: none; }
+.woocommerce-shop .woocommerce > nav.woocommerce-breadcrumb { display: none; }
+
+/* A2: сброс auto-fill и переход на вертикальный список */
+.woocommerce-shop ul.products,
+.woocommerce ul.products.ll-catalog {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    grid-template-columns: none;
+    /* Заголовок каталога над списком */
+}
+.woocommerce-shop ul.products::before {
+    content: '';
+    display: block;
+    margin-bottom: 2.5rem;
+}
+
+/* Эйбрау + заголовок каталога через отдельный хук (PHP), здесь типографика */
+.ll-catalog-header { margin-bottom: 2rem; }
+.ll-catalog-header__eyebrow {
+    font-family: var(--sans);
+    font-size: .75rem;
+    letter-spacing: .28em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 .5rem;
+}
+.ll-catalog-header__title {
+    font-family: var(--serif);
+    font-weight: 300;
+    font-size: clamp(2rem, 4vw, 3rem);
+    color: var(--cream);
+    margin: 0;
+    line-height: 1.1;
+}
+
+/* A2: карточка — горизонтальный разворот */
+.woocommerce-shop li.product.ll-card {
+    display: grid;
+    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+    gap: 2rem;
+    align-items: center;
+    padding: 2.25rem 0;
+    border-bottom: 1px solid rgba(197,165,90,.15);
+    background: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    width: 100%;
+    margin: 0;
+}
+
+/* Зона A: фото */
+.woocommerce-shop .ll-card__photo {
+    display: block;
+    line-height: 0;
+}
+.woocommerce-shop .ll-card__photo img {
+    width: 100%;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    display: block;
+}
+
+/* Зона B: инфо */
+.woocommerce-shop .ll-card__info {
+    display: flex;
+    flex-direction: column;
+    gap: .7rem;
+}
+
+/* A2: название */
+.woocommerce-shop .ll-card__title {
+    font-family: var(--serif);
+    font-size: clamp(1.7rem, 3vw, 2.2rem);
+    font-weight: 300;
+    color: var(--cream);
+    margin: 0;
+    line-height: 1.15;
+}
+.woocommerce-shop .ll-card__title a {
+    color: inherit;
+    text-decoration: none;
+}
+.woocommerce-shop .ll-card__title a:hover { color: var(--gold); }
+
+/* C2: краткое описание */
+.woocommerce-shop .ll-card__excerpt {
+    font-family: var(--sans);
+    font-size: .875rem;
+    color: rgba(232,224,208,.7);
+    line-height: 1.65;
+    max-width: 52ch;
+    margin: 0;
+}
+.woocommerce-shop .ll-card__excerpt p { margin: 0; }
+
+/* C1: цена */
+.woocommerce-shop .ll-card__price {
+    font-family: var(--serif);
+    font-size: 1.5rem;
+    color: var(--gold);
+    line-height: 1;
+}
+.woocommerce-shop .ll-card__price .woocommerce-Price-amount { color: var(--gold); }
+.woocommerce-shop .ll-card__price del { color: var(--text-muted); font-size: 1.1rem; opacity: .7; }
+.woocommerce-shop .ll-card__price ins { text-decoration: none; }
+
+/* A2: кнопка «Выбрать» */
+.woocommerce-shop .ll-card__btn {
+    display: inline-block;
+    align-self: flex-start;
+    background: transparent;
+    border: 1px solid rgba(197,165,90,.5);
+    color: var(--cream);
+    font-family: var(--sans);
+    font-size: .75rem;
+    letter-spacing: .2em;
+    text-transform: uppercase;
+    padding: .65rem 1.4rem;
+    text-decoration: none;
+    transition: all var(--transition);
+    margin-top: .3rem;
+}
+.woocommerce-shop .ll-card__btn:hover {
+    background: var(--gold);
+    border-color: var(--gold);
+    color: var(--bg);
+}
+
+/* B2: select сортировки — тёмная тема */
+.woocommerce-ordering select.orderby {
+    background: var(--bg2);
+    color: var(--cream);
+    border: 1px solid rgba(197,165,90,.4);
+    font-family: var(--sans);
+    font-size: .8rem;
+    padding: .45rem .8rem;
+    border-radius: 0;
+    cursor: pointer;
+}
+.woocommerce-ordering select.orderby:focus { outline: none; border-color: var(--gold); }
+
+/* Мобильный: одна колонка */
+@media (max-width: 620px) {
+    .woocommerce-shop li.product.ll-card {
+        grid-template-columns: 1fr;
+        gap: 1.2rem;
+    }
+    .woocommerce-shop .ll-card__photo {
+        max-width: 280px;
+    }
 }
 
 #palette {

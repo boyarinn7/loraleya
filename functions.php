@@ -1572,3 +1572,12 @@ function loraleya_get_default_color_faq_json() {
         ],
     ], JSON_UNESCAPED_UNICODE);
 }
+
+// === КАТАЛОГ: заголовок лукбука (эйбрау + h1) ===
+
+add_action( 'woocommerce_before_shop_loop', function () {
+    echo '<div class="ll-catalog-header">';
+    echo '<p class="ll-catalog-header__eyebrow">Коллекция LoraLeya</p>';
+    echo '<h1 class="ll-catalog-header__title">Каталог</h1>';
+    echo '</div>';
+}, 5 );
