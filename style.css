@@ -2736,170 +2736,108 @@ a.chc-tag {
     scroll-margin-top: 5rem;
 }
 
-/* ============================================================
-   КАТАЛОГ — лукбук-развороты (/shop/)
-   ============================================================ */
-
-/* B3: отступ под фиксированную шапку */
-.woocommerce-shop .site-main,
-.post-type-archive-product .site-main {
-    padding-top: 6rem;
+/* ===== LoraLeya catalog lookbook ===== */
+.woocommerce ul.products.columns-4,
+.woocommerce ul.products {
+	display: block !important;
+	grid-template-columns: none !important;
+	margin: 0;
+	padding: 0;
 }
 
-/* A3: заголовок — скрыть дефолтный «Магазин», добавить свой через ::before */
-.woocommerce-shop .woocommerce-products-header { display: none; }
-.woocommerce-shop .woocommerce > nav.woocommerce-breadcrumb { display: none; }
-
-/* A2: сброс auto-fill и переход на вертикальный список */
-.woocommerce-shop ul.products,
-.woocommerce ul.products.ll-catalog {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    grid-template-columns: none;
-    /* Заголовок каталога над списком */
-}
-.woocommerce-shop ul.products::before {
-    content: '';
-    display: block;
-    margin-bottom: 2.5rem;
+.woocommerce ul.products li.product.ll-card {
+	width: 100% !important;
+	float: none !important;
+	margin: 0 !important;
+	display: grid;
+	grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+	gap: 2rem;
+	align-items: center;
+	padding: 2.25rem 0;
+	border-bottom: 1px solid rgba(197, 165, 90, .15);
 }
 
-/* Эйбрау + заголовок каталога через отдельный хук (PHP), здесь типографика */
-.ll-catalog-header { margin-bottom: 2rem; }
-.ll-catalog-header__eyebrow {
-    font-family: var(--sans);
-    font-size: .75rem;
-    letter-spacing: .28em;
-    text-transform: uppercase;
-    color: var(--gold);
-    margin: 0 0 .5rem;
+.ll-card__photo {
+	display: block;
+	position: relative;
+	overflow: hidden;
+	border-radius: 2px;
 }
-.ll-catalog-header__title {
-    font-family: var(--serif);
-    font-weight: 300;
-    font-size: clamp(2rem, 4vw, 3rem);
-    color: var(--cream);
-    margin: 0;
-    line-height: 1.1;
+.ll-card__photo img {
+	display: block;
+	width: 100%;
+	aspect-ratio: 3 / 4;
+	object-fit: cover;
+	margin: 0;
 }
-
-/* A2: карточка — горизонтальный разворот */
-.woocommerce-shop li.product.ll-card {
-    display: grid;
-    grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
-    gap: 2rem;
-    align-items: center;
-    padding: 2.25rem 0;
-    border-bottom: 1px solid rgba(197,165,90,.15);
-    background: transparent;
-    border-radius: 0;
-    box-shadow: none;
-    width: 100%;
-    margin: 0;
+.ll-card__photo .onsale {
+	position: absolute;
+	top: .75rem; left: .75rem;
+	background: var(--gold, #c5a55a);
+	color: var(--bg, #0e0e0c);
+	font-family: 'Raleway', sans-serif;
+	font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
+	padding: .35rem .75rem; border-radius: 0;
 }
 
-/* Зона A: фото */
-.woocommerce-shop .ll-card__photo {
-    display: block;
-    line-height: 0;
+.ll-card__info { min-width: 0; }
+.ll-card__title {
+	font-family: 'Cormorant Garamond', Georgia, serif;
+	font-weight: 400;
+	font-size: clamp(1.7rem, 3vw, 2.2rem);
+	line-height: 1.1;
+	color: var(--cream, #e8e0d0);
+	margin: 0 0 .75rem;
 }
-.woocommerce-shop .ll-card__photo img {
-    width: 100%;
-    aspect-ratio: 3 / 4;
-    object-fit: cover;
-    display: block;
+.ll-card__excerpt {
+	font-family: 'Raleway', sans-serif;
+	font-size: 14px; line-height: 1.75;
+	color: rgba(232, 224, 208, .7);
+	max-width: 52ch;
+	margin: 0 0 1.25rem;
 }
-
-/* Зона B: инфо */
-.woocommerce-shop .ll-card__info {
-    display: flex;
-    flex-direction: column;
-    gap: .7rem;
+.ll-card__excerpt p { margin: 0; }
+.ll-card__price {
+	font-family: 'Cormorant Garamond', Georgia, serif;
+	font-size: 1.5rem;
+	color: var(--gold, #c5a55a);
+	margin: 0 0 1.5rem;
 }
-
-/* A2: название */
-.woocommerce-shop .ll-card__title {
-    font-family: var(--serif);
-    font-size: clamp(1.7rem, 3vw, 2.2rem);
-    font-weight: 300;
-    color: var(--cream);
-    margin: 0;
-    line-height: 1.15;
+.ll-card__btn {
+	display: inline-block;
+	font-family: 'Raleway', sans-serif;
+	font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+	color: var(--cream, #e8e0d0);
+	text-decoration: none;
+	border: 1px solid rgba(197, 165, 90, .5);
+	padding: .9rem 2.25rem;
+	transition: all .3s ease;
 }
-.woocommerce-shop .ll-card__title a {
-    color: inherit;
-    text-decoration: none;
-}
-.woocommerce-shop .ll-card__title a:hover { color: var(--gold); }
-
-/* C2: краткое описание */
-.woocommerce-shop .ll-card__excerpt {
-    font-family: var(--sans);
-    font-size: .875rem;
-    color: rgba(232,224,208,.7);
-    line-height: 1.65;
-    max-width: 52ch;
-    margin: 0;
-}
-.woocommerce-shop .ll-card__excerpt p { margin: 0; }
-
-/* C1: цена */
-.woocommerce-shop .ll-card__price {
-    font-family: var(--serif);
-    font-size: 1.5rem;
-    color: var(--gold);
-    line-height: 1;
-}
-.woocommerce-shop .ll-card__price .woocommerce-Price-amount { color: var(--gold); }
-.woocommerce-shop .ll-card__price del { color: var(--text-muted); font-size: 1.1rem; opacity: .7; }
-.woocommerce-shop .ll-card__price ins { text-decoration: none; }
-
-/* A2: кнопка «Выбрать» */
-.woocommerce-shop .ll-card__btn {
-    display: inline-block;
-    align-self: flex-start;
-    background: transparent;
-    border: 1px solid rgba(197,165,90,.5);
-    color: var(--cream);
-    font-family: var(--sans);
-    font-size: .75rem;
-    letter-spacing: .2em;
-    text-transform: uppercase;
-    padding: .65rem 1.4rem;
-    text-decoration: none;
-    transition: all var(--transition);
-    margin-top: .3rem;
-}
-.woocommerce-shop .ll-card__btn:hover {
-    background: var(--gold);
-    border-color: var(--gold);
-    color: var(--bg);
+.ll-card__btn:hover {
+	background: var(--gold, #c5a55a);
+	color: var(--bg, #0e0e0c);
+	border-color: var(--gold, #c5a55a);
 }
 
-/* B2: select сортировки — тёмная тема */
-.woocommerce-ordering select.orderby {
-    background: var(--bg2);
-    color: var(--cream);
-    border: 1px solid rgba(197,165,90,.4);
-    font-family: var(--sans);
-    font-size: .8rem;
-    padding: .45rem .8rem;
-    border-radius: 0;
-    cursor: pointer;
+/* Sorting dropdown — dark theme */
+.woocommerce .woocommerce-ordering select.orderby {
+	background: transparent;
+	color: var(--cream, #e8e0d0);
+	border: 1px solid rgba(197, 165, 90, .4);
+	padding: .5rem .75rem;
+	font-family: 'Raleway', sans-serif;
 }
-.woocommerce-ordering select.orderby:focus { outline: none; border-color: var(--gold); }
+.woocommerce .woocommerce-ordering select.orderby option { color: #111; }
 
-/* Мобильный: одна колонка */
+/* Mobile — stack photo over info */
 @media (max-width: 620px) {
-    .woocommerce-shop li.product.ll-card {
-        grid-template-columns: 1fr;
-        gap: 1.2rem;
-    }
-    .woocommerce-shop .ll-card__photo {
-        max-width: 280px;
-    }
+	.woocommerce ul.products li.product.ll-card {
+		grid-template-columns: 1fr;
+		gap: 1.25rem;
+	}
+	.ll-card__photo { max-width: 280px; }
 }
+/* ===== end catalog lookbook ===== */
 
 #palette {
     scroll-margin-top: 5rem;
