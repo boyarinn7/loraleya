@@ -2737,105 +2737,123 @@ a.chc-tag {
 }
 
 /* ===== LoraLeya catalog lookbook ===== */
+
+/* контейнер каталога: воздух по бокам + верхний отступ под шапку */
+.woocommerce.archive .site-main,
+.woocommerce-page.archive .site-main {
+	padding-top: 3rem;
+}
+.woocommerce ul.products,
+.ll-catalog-head {
+	max-width: 1200px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: 2rem;
+	padding-right: 2rem;
+	box-sizing: border-box;
+}
+
+/* заголовок каталога */
+.ll-catalog-head {
+	margin-bottom: 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid rgba(197,165,90,.25);
+}
+.ll-catalog-eyebrow {
+	font-family: 'Raleway', sans-serif;
+	font-size: 12px; letter-spacing: .28em; text-transform: uppercase;
+	color: var(--gold, #c5a55a);
+	margin: 0 0 .75rem; font-weight: 500;
+}
+.ll-catalog-title {
+	font-family: 'Cormorant Garamond', Georgia, serif;
+	font-weight: 400;
+	font-size: clamp(2rem, 5vw, 3rem);
+	line-height: 1.05;
+	color: var(--cream, #e8e0d0);
+	margin: 0;
+}
+
+/* сброс прежнего auto-fill grid (причина прыгающей сетки) */
 .woocommerce ul.products.columns-4,
 .woocommerce ul.products {
 	display: block !important;
 	grid-template-columns: none !important;
-	margin: 0;
-	padding: 0;
 }
 
+/* карточка-разворот */
 .woocommerce ul.products li.product.ll-card {
 	width: 100% !important;
 	float: none !important;
 	margin: 0 !important;
 	display: grid;
 	grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
-	gap: 2rem;
-	align-items: center;
-	padding: 2.25rem 0;
+	gap: 2.5rem;
+	align-items: start;
+	padding: 2.5rem 0;
 	border-bottom: 1px solid rgba(197, 165, 90, .15);
 }
+.woocommerce ul.products li.product.ll-card:first-of-type {
+	padding-top: 0;
+}
 
+/* фото — единая высота, кроп по центру */
 .ll-card__photo {
-	display: block;
-	position: relative;
-	overflow: hidden;
-	border-radius: 2px;
+	display: block; position: relative; overflow: hidden; border-radius: 2px;
 }
 .ll-card__photo img {
 	display: block;
 	width: 100%;
-	aspect-ratio: 3 / 4;
+	height: 360px;
 	object-fit: cover;
+	object-position: center;
 	margin: 0;
 }
 .ll-card__photo .onsale {
-	position: absolute;
-	top: .75rem; left: .75rem;
-	background: var(--gold, #c5a55a);
-	color: var(--bg, #0e0e0c);
-	font-family: 'Raleway', sans-serif;
-	font-size: 11px; letter-spacing: .1em; text-transform: uppercase;
-	padding: .35rem .75rem; border-radius: 0;
+	position: absolute; top: .75rem; left: .75rem;
+	background: var(--gold, #c5a55a); color: var(--bg, #0e0e0c);
+	font-family: 'Raleway', sans-serif; font-size: 11px;
+	letter-spacing: .1em; text-transform: uppercase;
+	padding: .35rem .75rem;
 }
 
-.ll-card__info { min-width: 0; }
+/* инфо-зона */
+.ll-card__info { min-width: 0; max-width: 46ch; }
 .ll-card__title {
-	font-family: 'Cormorant Garamond', Georgia, serif;
-	font-weight: 400;
-	font-size: clamp(1.7rem, 3vw, 2.2rem);
-	line-height: 1.1;
-	color: var(--cream, #e8e0d0);
-	margin: 0 0 .75rem;
+	font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 400;
+	font-size: clamp(1.7rem, 3vw, 2.2rem); line-height: 1.1;
+	color: var(--cream, #e8e0d0); margin: 0 0 .75rem;
 }
 .ll-card__excerpt {
-	font-family: 'Raleway', sans-serif;
-	font-size: 14px; line-height: 1.75;
-	color: rgba(232, 224, 208, .7);
-	max-width: 52ch;
-	margin: 0 0 1.25rem;
+	font-family: 'Raleway', sans-serif; font-size: 14px; line-height: 1.75;
+	color: rgba(232, 224, 208, .7); margin: 0 0 1.25rem;
 }
 .ll-card__excerpt p { margin: 0; }
 .ll-card__price {
-	font-family: 'Cormorant Garamond', Georgia, serif;
-	font-size: 1.5rem;
-	color: var(--gold, #c5a55a);
-	margin: 0 0 1.5rem;
+	font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem;
+	color: var(--gold, #c5a55a); margin: 0 0 1.5rem;
 }
 .ll-card__btn {
-	display: inline-block;
-	font-family: 'Raleway', sans-serif;
+	display: inline-block; font-family: 'Raleway', sans-serif;
 	font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
-	color: var(--cream, #e8e0d0);
-	text-decoration: none;
-	border: 1px solid rgba(197, 165, 90, .5);
-	padding: .9rem 2.25rem;
+	color: var(--cream, #e8e0d0); text-decoration: none;
+	border: 1px solid rgba(197, 165, 90, .5); padding: .9rem 2.25rem;
 	transition: all .3s ease;
 }
 .ll-card__btn:hover {
-	background: var(--gold, #c5a55a);
-	color: var(--bg, #0e0e0c);
+	background: var(--gold, #c5a55a); color: var(--bg, #0e0e0c);
 	border-color: var(--gold, #c5a55a);
 }
 
-/* Sorting dropdown — dark theme */
-.woocommerce .woocommerce-ordering select.orderby {
-	background: transparent;
-	color: var(--cream, #e8e0d0);
-	border: 1px solid rgba(197, 165, 90, .4);
-	padding: .5rem .75rem;
-	font-family: 'Raleway', sans-serif;
-}
-.woocommerce .woocommerce-ordering select.orderby option { color: #111; }
-
-/* Mobile — stack photo over info */
+/* мобильный — фото над инфо */
 @media (max-width: 620px) {
+	.woocommerce ul.products,
+	.ll-catalog-head { padding-left: 1.25rem; padding-right: 1.25rem; }
 	.woocommerce ul.products li.product.ll-card {
-		grid-template-columns: 1fr;
-		gap: 1.25rem;
+		grid-template-columns: 1fr; gap: 1.25rem;
 	}
-	.ll-card__photo { max-width: 280px; }
+	.ll-card__photo img { height: 280px; }
+	.ll-card__info { max-width: none; }
 }
 /* ===== end catalog lookbook ===== */
 

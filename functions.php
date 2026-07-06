@@ -1573,7 +1573,22 @@ function loraleya_get_default_color_faq_json() {
     ], JSON_UNESCAPED_UNICODE);
 }
 
-// Убрать WooCommerce breadcrumb на странице каталога (дубль над заголовком «Каталог»)
+// Каталог: убрать дефолтный заголовок «Магазин», крошки и вывести кастомный заголовок
 add_action( 'init', function () {
-    remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
+	remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
+	add_filter( 'woocommerce_show_page_title', '__return_false' );
+} );
+
+// Вывести кастомный заголовок «Коллекция LoraLeya / Каталог» перед циклом товаров
+add_action( 'woocommerce_before_shop_loop', function () {
+	echo '<header class="ll-catalog-head">'
+	   . '<p class="ll-catalog-eyebrow">Коллекция LoraLeya</p>'
+	   . '<h1 class="ll-catalog-title">Каталог</h1>'
+	   . '</header>';
+}, 5 );
+
+// Каталог: убрать счётчик результатов и выпадашку сортировки
+add_action( 'init', function () {
+	remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
+	remove_action( 'woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30 );
 } );
