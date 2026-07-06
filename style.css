@@ -2788,7 +2788,7 @@ a.chc-tag {
 	margin: 0 !important;
 	display: grid;
 	grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
-	gap: 8.5rem;
+	gap: 15rem;
 	align-items: start;
 	padding: 2.5rem 0;
 	border-bottom: 1px solid rgba(197, 165, 90, .15);
