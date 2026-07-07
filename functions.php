@@ -1642,3 +1642,42 @@ add_action('init', function () {
         }
     }, 20);
 });
+
+/* ===================================================================
+   LoraLeya — селекты вариаций: подпись «Выбрать» + расшифровка опций
+   Вывод, не данные: термины в БД не трогаем. В корзине/заказе/5Post
+   остаются короткие коды — меняется только текст в выпадашке.
+   =================================================================== */
+
+/* Русское склонение слова «персона» по числу */
+if (!function_exists('ll_persons_word')) {
+    function ll_persons_word($n) {
+        $n = abs((int)$n) % 100;
+        if ($n >= 11 && $n <= 14) return 'персон';
+        $d = $n % 10;
+        if ($d === 1) return 'персона';
+        if ($d >= 2 && $d <= 4) return 'персоны';
+        return 'персон';
+    }
+}
+
+/* 1. Плейсхолдер селекта: «Выбрать опцию» -> «Выбрать» */
+add_filter('woocommerce_dropdown_variation_attribute_options_args', function ($args) {
+    $args['show_option_none'] = 'Выбрать';
+    return $args;
+});
+
+/* 2. Расшифровка подписей опций в выпадашке */
+add_filter('woocommerce_variation_option_name', function ($name) {
+    $n = trim(wp_strip_all_tags((string)$name));
+
+    // Набор: "2п/140" или "6п-300" -> "на 6 персон, дорожка 300 см"
+    if (preg_match('~^(\d+)\s*п\s*[/\-]\s*(\d+)\s*$~u', $n, $m)) {
+        return 'на ' . (int)$m[1] . ' ' . ll_persons_word($m[1]) . ', дорожка ' . (int)$m[2] . ' см';
+    }
+    // Дорожка и Скатерть: чистое число "140" -> "140 см"
+    if (preg_match('~^\d+$~', $n)) {
+        return $n . ' см';
+    }
+    return $name;
+}, 10, 1);

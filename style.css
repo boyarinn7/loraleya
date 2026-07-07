@@ -4557,3 +4557,41 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     }
 }
 
+
+/* ===== LoraLeya: селект вариаций в стиле кнопки каталога ===== */
+.single-product form.cart .variations td.value select,
+.single-product form.cart .variations select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-family: 'Raleway', sans-serif;
+    font-size: 13px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--cream, #e8e0d0);
+    background-color: transparent;
+    border: 1px solid rgba(197,165,90,.55);
+    border-radius: 0;
+    padding: 14px 46px 14px 18px;
+    min-width: 260px;
+    max-width: 100%;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23c5a55a' stroke-width='1.4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    transition: border-color .2s ease;
+}
+.single-product form.cart .variations select:hover,
+.single-product form.cart .variations select:focus-visible {
+    border-color: var(--gold, #c5a55a);
+    outline: none;
+}
+.single-product form.cart .variations select option {
+    font-family: 'Raleway', sans-serif;
+    color: #1a1a1a;
+    background: #fff;
+}
+@media (pointer: coarse) {
+    .single-product form.cart .variations select { min-width: 100%; }
+}
