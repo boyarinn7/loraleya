@@ -4595,3 +4595,36 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 @media (pointer: coarse) {
     .single-product form.cart .variations select { min-width: 100%; }
 }
+
+/* ===== LoraLeya: фото товара вписываем по высоте экрана ===== */
+.single-product div.product .woocommerce-product-gallery {
+    margin-top: 3vh;
+    margin-bottom: 4vh;
+}
+
+.single-product div.product .woocommerce-product-gallery__wrapper,
+.single-product div.product .woocommerce-product-gallery__image {
+    max-height: calc(100vh - 64px - 10vh);
+}
+
+.single-product div.product .woocommerce-product-gallery__image img {
+    max-height: calc(100vh - 64px - 10vh);
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: top center;
+    margin: 0 auto;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .single-product div.product .woocommerce-product-gallery,
+    .single-product div.product .woocommerce-product-gallery__wrapper,
+    .single-product div.product .woocommerce-product-gallery__image,
+    .single-product div.product .woocommerce-product-gallery__image img {
+        max-height: none;
+        margin-top: 0;
+        margin-bottom: 2vh;
+    }
+}
