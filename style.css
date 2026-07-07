@@ -4628,3 +4628,18 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
         margin-bottom: 2vh;
     }
 }
+
+/* ===== LoraLeya: резерв высоты под название цвета — убираем скачок раскладки ===== */
+/* .ll-sw-name — кастомный div темы (product-swatches.js), существует всегда.
+   При выборе JS пишет в него название цвета через .text(), при сбросе очищает.
+   Фиксируем высоту заранее — размер блока не меняется, колонка не прыгает. */
+.single-product .ll-sw-name {
+    display: block;
+    min-height: 1.5em;
+    line-height: 1.5em;
+    margin: 0 0 6px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 13px;
+    letter-spacing: .06em;
+    color: var(--cream, #e8e0d0);
+}
