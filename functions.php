@@ -1592,3 +1592,53 @@ add_action( 'init', function () {
 	remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
 	remove_action( 'woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30 );
 } );
+
+/* ===================================================================
+   LoraLeya — трёхуровневые тексты товара
+   Длинный  -> «Описание товара» (post_content)  -> вкладка «Описание»
+   Средний  -> «Краткое описание» (post_excerpt) -> каталог
+   Коротыш  -> мета _ll_price_teaser             -> карточка, под ценой
+   =================================================================== */
+
+/* 1. Поле «Коротыш под ценой» на экране редактирования товара */
+add_action('add_meta_boxes_product', function () {
+    add_meta_box(
+        'll_price_teaser',
+        'Коротыш под ценой (карточка товара)',
+        function ($post) {
+            wp_nonce_field('ll_price_teaser_save', 'll_price_teaser_nonce');
+            $val = get_post_meta($post->ID, '_ll_price_teaser', true);
+            echo '<p style="margin:0 0 6px;color:#666">Короткая фраза-крючок под ценой на странице товара. '
+               . 'В каталоге показывается «Краткое описание», в блоке «Описание» ниже — «Описание товара».</p>';
+            echo '<textarea name="ll_price_teaser" style="width:100%;min-height:70px" '
+               . 'placeholder="Напр.: Готовая сервировка на 2, 4 или 6 персон">'
+               . esc_textarea($val) . '</textarea>';
+        },
+        'product', 'normal', 'high'
+    );
+});
+
+/* 2. Сохранение поля */
+add_action('save_post_product', function ($post_id) {
+    if (!isset($_POST['ll_price_teaser_nonce']) ||
+        !wp_verify_nonce($_POST['ll_price_teaser_nonce'], 'll_price_teaser_save')) return;
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+    if (isset($_POST['ll_price_teaser'])) {
+        update_post_meta($post_id, '_ll_price_teaser',
+            sanitize_textarea_field(wp_unslash($_POST['ll_price_teaser'])));
+    }
+});
+
+/* 3. Вывод: убрать штатное краткое из шапки, поставить коротыш под ценой */
+add_action('init', function () {
+    remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 20);
+    add_action('woocommerce_single_product_summary', function () {
+        global $post;
+        $teaser = trim((string) get_post_meta($post->ID, '_ll_price_teaser', true));
+        if ($teaser !== '') {
+            echo '<div class="woocommerce-product-details__short-description ll-price-teaser">'
+               . wp_kses_post(wpautop($teaser)) . '</div>';
+        }
+    }, 20);
+});
