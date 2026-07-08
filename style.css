@@ -4657,3 +4657,25 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 .single-product div.product .woocommerce-variation-price {
     font-family: 'Cormorant Garamond', serif;
 }
+
+/* ===== LoraLeya: компактная правая колонка товара — кнопка влезает в экран =====
+   Режем только вертикальные отступы, в vh. Кружки/шрифты не трогаем. */
+
+.single-product div.product .summary .product_title {
+    margin-bottom: 1.2vh;
+}
+
+.single-product div.product .summary .ll-price-teaser {
+    margin-top: 1vh;
+    margin-bottom: 1.4vh;
+}
+
+.single-product div.product .summary .product_meta {
+    margin-top: 1.4vh;
+}
+
+@media (max-width: 768px) {
+    .single-product div.product .summary .product_title { margin-bottom: 12px; }
+    .single-product div.product .summary .ll-price-teaser { margin-top: 10px; margin-bottom: 16px; }
+    .single-product div.product .summary .product_meta { margin-top: 20px; }
+}
