@@ -4644,12 +4644,14 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     color: var(--cream, #e8e0d0);
 }
 
-/* ===== LoraLeya: резерв высоты под цену вариации — убираем скачок кнопки =====
-   Факт (замер): .single_variation прячется WC (display:none, 0px), при выборе
-   разворачивается до 46px; .single_variation_wrap: 54px до -> 98px после.
-   Резервируем раскрытую высоту обёртки заранее — при выборе ничего не двигается. */
-.single-product div.product .single_variation_wrap {
-    min-height: 98px;
+/* ===== LoraLeya: резерв под цену вариации (правильный таргет) =====
+   .single_variation — соседний блок кнопки внутри .single_variation_wrap.
+   WC прячет его inline display:none (h=0), при выборе разворачивается до 46px
+   и толкает кнопку. Держим блок в потоке всегда (перебиваем inline !important),
+   фиксируем высоту цены — кнопка «В корзину» не двигается. */
+.single-product div.product .single_variation_wrap .single_variation {
+    display: block !important;
+    min-height: 46px;
 }
 
 .single-product div.product .woocommerce-variation-price {
