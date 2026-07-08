@@ -4695,7 +4695,7 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 
 /* ===== LoraLeya: каталог — каждая позиция на экран (воздушный лукбук) ===== */
 .woocommerce ul.products li.product.ll-card {
-    min-height: 88vh;
+    min-height: 74vh;
     align-items: center;
     align-content: center;
     padding-top: 4vh;
@@ -4714,4 +4714,11 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     .woocommerce ul.products li.product.ll-card:first-of-type {
         padding-top: 3vh;
     }
+}
+
+/* ===== LoraLeya: каталог — подтянуть заголовок к шапке =====
+   Только на странице каталога, .site-main глобально не трогаем. */
+.post-type-archive-product .site-main,
+.woocommerce-shop .site-main {
+    padding-top: 24px;
 }
