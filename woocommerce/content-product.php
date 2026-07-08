@@ -25,7 +25,21 @@ $short_desc  = $product->get_short_description();
 		if ( $product->is_on_sale() ) {
 			echo '<span class="onsale">' . esc_html__( 'Распродажа!', 'loraleya' ) . '</span>';
 		}
-		echo woocommerce_get_product_thumbnail(); // main product image
+		$ll_thumb_id = $product->get_image_id();
+		if ( $ll_thumb_id ) {
+			echo wp_get_attachment_image(
+				$ll_thumb_id,
+				'scenario-card',
+				false,
+				array(
+					'class'   => 'll-card__img',
+					'loading' => 'lazy',
+					'alt'     => esc_attr( $product->get_name() ),
+				)
+			);
+		} else {
+			echo wc_placeholder_img( 'scenario-card' );
+		}
 		?>
 	</a>
 

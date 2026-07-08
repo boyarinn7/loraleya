@@ -2797,15 +2797,17 @@ a.chc-tag {
 	padding-top: 0;
 }
 
-/* фото — единая высота, кроп по центру */
+/* фото — пропорция 3:4, фото целиком (contain), источник scenario-card 600×800 */
 .ll-card__photo {
 	display: block; position: relative; overflow: hidden; border-radius: 2px;
+	aspect-ratio: 3 / 4;
 }
-.ll-card__photo img {
+.ll-card__photo img,
+.ll-card__photo .ll-card__img {
 	display: block;
 	width: 100%;
-	height: 360px;
-	object-fit: cover;
+	height: 100%;
+	object-fit: contain;
 	object-position: center;
 	margin: 0;
 }
@@ -2852,7 +2854,7 @@ a.chc-tag {
 	.woocommerce ul.products li.product.ll-card {
 		grid-template-columns: 1fr; gap: 1.25rem;
 	}
-	.ll-card__photo img { height: 280px; }
+	.ll-card__photo img, .ll-card__photo .ll-card__img { height: 100%; }
 	.ll-card__info { max-width: none; }
 }
 /* ===== end catalog lookbook ===== */
