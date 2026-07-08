@@ -1556,6 +1556,19 @@ add_action('wp_enqueue_scripts', function () {
     }
 });
 
+// === Управление видимостью цены вариации (visibility, резерв высоты сохраняется) ===
+add_action('wp_enqueue_scripts', function () {
+    if (!function_exists('is_product') || !is_product()) return;
+    $f = get_stylesheet_directory() . '/assets/js/ll-variation-price.js';
+    wp_enqueue_script(
+        'll-variation-price',
+        get_stylesheet_directory_uri() . '/assets/js/ll-variation-price.js',
+        ['jquery', 'wc-add-to-cart-variation'],
+        file_exists($f) ? filemtime($f) : '1.0.0',
+        true
+    );
+});
+
 function loraleya_get_default_color_faq_json() {
     return wp_json_encode([
         [
