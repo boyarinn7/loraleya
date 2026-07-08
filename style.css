@@ -4644,12 +4644,12 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     color: var(--cream, #e8e0d0);
 }
 
-/* ===== LoraLeya: резерв высоты под цену вариации — убираем скачок кнопки ===== */
-/* .single_variation скрывается WC через display:none инлайном (wc-add-to-cart-variation.js).
-   Поэтому min-height вешаем на .single_variation_wrap — он в потоке всегда.
-   Запас на 2 строки: у товаров со скидкой цена = старая зачёркнутая + новая. */
+/* ===== LoraLeya: резерв высоты под цену вариации — убираем скачок кнопки =====
+   Факт (замер): .single_variation прячется WC (display:none, 0px), при выборе
+   разворачивается до 46px; .single_variation_wrap: 54px до -> 98px после.
+   Резервируем раскрытую высоту обёртки заранее — при выборе ничего не двигается. */
 .single-product div.product .single_variation_wrap {
-    min-height: 3.4em;
+    min-height: 98px;
 }
 
 .single-product div.product .woocommerce-variation-price {
