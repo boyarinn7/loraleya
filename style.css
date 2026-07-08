@@ -4679,3 +4679,14 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     .single-product div.product .summary .ll-price-teaser { margin-top: 10px; margin-bottom: 16px; }
     .single-product div.product .summary .product_meta { margin-top: 20px; }
 }
+
+/* ===== LoraLeya: убрать зазор между строкой «Размер» и ценой вариации =====
+   Замер: 24px пустого воздуха между низом .variations и обёрткой цены.
+   Убираем — цена и кнопка «В корзину» поднимаются в первый экран. */
+.single-product div.product .variations_form .variations {
+    margin-bottom: 0.4vh;
+}
+.single-product div.product .variations_form .variations tr:last-child td,
+.single-product div.product .variations_form .variations tr:last-child th {
+    padding-bottom: 0.4vh;
+}
