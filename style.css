@@ -4692,3 +4692,26 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 .single-product div.product .variations_form .variations tr:last-child th {
     padding-bottom: 0.4vh;
 }
+
+/* ===== LoraLeya: каталог — каждая позиция на экран (воздушный лукбук) ===== */
+.woocommerce ul.products li.product.ll-card {
+    min-height: 88vh;
+    align-items: center;
+    align-content: center;
+    padding-top: 4vh;
+    padding-bottom: 4vh;
+}
+.woocommerce ul.products li.product.ll-card:first-of-type {
+    padding-top: 4vh;
+}
+
+@media (max-width: 768px) {
+    .woocommerce ul.products li.product.ll-card {
+        min-height: 0;
+        padding-top: 3vh;
+        padding-bottom: 3vh;
+    }
+    .woocommerce ul.products li.product.ll-card:first-of-type {
+        padding-top: 3vh;
+    }
+}
