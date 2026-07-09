@@ -1556,6 +1556,19 @@ add_action('wp_enqueue_scripts', function () {
     }
 });
 
+// === Управление видимостью цены вариации (visibility, резерв высоты сохраняется) ===
+add_action('wp_enqueue_scripts', function () {
+    if (!function_exists('is_product') || !is_product()) return;
+    $f = get_stylesheet_directory() . '/assets/js/ll-variation-price.js';
+    wp_enqueue_script(
+        'll-variation-price',
+        get_stylesheet_directory_uri() . '/assets/js/ll-variation-price.js',
+        ['jquery', 'wc-add-to-cart-variation'],
+        file_exists($f) ? filemtime($f) : '1.0.0',
+        true
+    );
+});
+
 function loraleya_get_default_color_faq_json() {
     return wp_json_encode([
         [
@@ -1572,3 +1585,112 @@ function loraleya_get_default_color_faq_json() {
         ],
     ], JSON_UNESCAPED_UNICODE);
 }
+
+// Каталог: убрать дефолтный заголовок «Магазин», крошки и вывести кастомный заголовок
+add_action( 'init', function () {
+	remove_action( 'woocommerce_before_main_content', 'woocommerce_breadcrumb', 20 );
+	add_filter( 'woocommerce_show_page_title', '__return_false' );
+} );
+
+// Вывести кастомный заголовок «Коллекция LoraLeya / Каталог» перед циклом товаров
+add_action( 'woocommerce_before_shop_loop', function () {
+	echo '<header class="ll-catalog-head">'
+	   . '<p class="ll-catalog-eyebrow">Коллекция LoraLeya</p>'
+	   . '<h1 class="ll-catalog-title">Каталог</h1>'
+	   . '</header>';
+}, 5 );
+
+// Каталог: убрать счётчик результатов и выпадашку сортировки
+add_action( 'init', function () {
+	remove_action( 'woocommerce_before_shop_loop', 'woocommerce_result_count', 20 );
+	remove_action( 'woocommerce_before_shop_loop', 'woocommerce_catalog_ordering', 30 );
+} );
+
+/* ===================================================================
+   LoraLeya — трёхуровневые тексты товара
+   Длинный  -> «Описание товара» (post_content)  -> вкладка «Описание»
+   Средний  -> «Краткое описание» (post_excerpt) -> каталог
+   Коротыш  -> мета _ll_price_teaser             -> карточка, под ценой
+   =================================================================== */
+
+/* 1. Поле «Коротыш под ценой» на экране редактирования товара */
+add_action('add_meta_boxes_product', function () {
+    add_meta_box(
+        'll_price_teaser',
+        'Коротыш под ценой (карточка товара)',
+        function ($post) {
+            wp_nonce_field('ll_price_teaser_save', 'll_price_teaser_nonce');
+            $val = get_post_meta($post->ID, '_ll_price_teaser', true);
+            echo '<p style="margin:0 0 6px;color:#666">Короткая фраза-крючок под ценой на странице товара. '
+               . 'В каталоге показывается «Краткое описание», в блоке «Описание» ниже — «Описание товара».</p>';
+            echo '<textarea name="ll_price_teaser" style="width:100%;min-height:70px" '
+               . 'placeholder="Напр.: Готовая сервировка на 2, 4 или 6 персон">'
+               . esc_textarea($val) . '</textarea>';
+        },
+        'product', 'normal', 'high'
+    );
+});
+
+/* 2. Сохранение поля */
+add_action('save_post_product', function ($post_id) {
+    if (!isset($_POST['ll_price_teaser_nonce']) ||
+        !wp_verify_nonce($_POST['ll_price_teaser_nonce'], 'll_price_teaser_save')) return;
+    if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) return;
+    if (!current_user_can('edit_post', $post_id)) return;
+    if (isset($_POST['ll_price_teaser'])) {
+        update_post_meta($post_id, '_ll_price_teaser',
+            sanitize_textarea_field(wp_unslash($_POST['ll_price_teaser'])));
+    }
+});
+
+/* 3. Вывод: убрать штатное краткое из шапки, поставить коротыш под ценой */
+add_action('init', function () {
+    remove_action('woocommerce_single_product_summary', 'woocommerce_template_single_excerpt', 20);
+    add_action('woocommerce_single_product_summary', function () {
+        global $post;
+        $teaser = trim((string) get_post_meta($post->ID, '_ll_price_teaser', true));
+        if ($teaser !== '') {
+            echo '<div class="woocommerce-product-details__short-description ll-price-teaser">'
+               . wp_kses_post(wpautop($teaser)) . '</div>';
+        }
+    }, 20);
+});
+
+/* ===================================================================
+   LoraLeya — селекты вариаций: подпись «Выбрать» + расшифровка опций
+   Вывод, не данные: термины в БД не трогаем. В корзине/заказе/5Post
+   остаются короткие коды — меняется только текст в выпадашке.
+   =================================================================== */
+
+/* Русское склонение слова «персона» по числу */
+if (!function_exists('ll_persons_word')) {
+    function ll_persons_word($n) {
+        $n = abs((int)$n) % 100;
+        if ($n >= 11 && $n <= 14) return 'персон';
+        $d = $n % 10;
+        if ($d === 1) return 'персона';
+        if ($d >= 2 && $d <= 4) return 'персоны';
+        return 'персон';
+    }
+}
+
+/* 1. Плейсхолдер селекта: «Выбрать опцию» -> «Выбрать» */
+add_filter('woocommerce_dropdown_variation_attribute_options_args', function ($args) {
+    $args['show_option_none'] = 'Выбрать';
+    return $args;
+});
+
+/* 2. Расшифровка подписей опций в выпадашке */
+add_filter('woocommerce_variation_option_name', function ($name) {
+    $n = trim(wp_strip_all_tags((string)$name));
+
+    // Набор: "2п/140" или "6п-300" -> "на 6 персон, дорожка 300 см"
+    if (preg_match('~^(\d+)\s*п\s*[/\-]\s*(\d+)\s*$~u', $n, $m)) {
+        return 'на ' . (int)$m[1] . ' ' . ll_persons_word($m[1]) . ', дорожка ' . (int)$m[2] . ' см';
+    }
+    // Дорожка и Скатерть: чистое число "140" -> "140 см"
+    if (preg_match('~^\d+$~', $n)) {
+        return $n . ' см';
+    }
+    return $name;
+}, 10, 1);

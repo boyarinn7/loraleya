@@ -2177,7 +2177,7 @@ a.chc-tag {
     font-size: 0.8rem;
 }
 
-/* Products grid */
+/* Products grid — переопределено каталогом-лукбуком ниже */
 .products {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
@@ -2735,6 +2735,129 @@ a.chc-tag {
 #scenarios {
     scroll-margin-top: 5rem;
 }
+
+/* ===== LoraLeya catalog lookbook ===== */
+
+/* контейнер каталога: воздух по бокам + верхний отступ под шапку */
+.woocommerce.archive .site-main,
+.woocommerce-page.archive .site-main {
+	padding-top: 3rem;
+}
+.woocommerce ul.products,
+.ll-catalog-head {
+	max-width: 1200px;
+	margin-left: auto;
+	margin-right: auto;
+	padding-left: 2rem;
+	padding-right: 2rem;
+	box-sizing: border-box;
+}
+
+/* заголовок каталога */
+.ll-catalog-head {
+	margin-bottom: 1.5rem;
+	padding-bottom: 1.5rem;
+	border-bottom: 1px solid rgba(197,165,90,.25);
+}
+.ll-catalog-eyebrow {
+	font-family: 'Raleway', sans-serif;
+	font-size: 12px; letter-spacing: .28em; text-transform: uppercase;
+	color: var(--gold, #c5a55a);
+	margin: 0 0 .75rem; font-weight: 500;
+}
+.ll-catalog-title {
+	font-family: 'Cormorant Garamond', Georgia, serif;
+	font-weight: 400;
+	font-size: clamp(2rem, 5vw, 3rem);
+	line-height: 1.05;
+	color: var(--cream, #e8e0d0);
+	margin: 0;
+}
+
+/* сброс прежнего auto-fill grid (причина прыгающей сетки) */
+.woocommerce ul.products.columns-4,
+.woocommerce ul.products {
+	display: block !important;
+	grid-template-columns: none !important;
+}
+
+/* карточка-разворот */
+.woocommerce ul.products li.product.ll-card {
+	width: 100% !important;
+	float: none !important;
+	margin: 0 !important;
+	display: grid;
+	grid-template-columns: minmax(0, 300px) minmax(0, 1fr);
+	gap: 15rem;
+	align-items: start;
+	padding: 2.5rem 0;
+	border-bottom: 1px solid rgba(197, 165, 90, .15);
+}
+.woocommerce ul.products li.product.ll-card:first-of-type {
+	padding-top: 0;
+}
+
+/* фото — пропорция 3:4, фото целиком (contain), источник scenario-card 600×800 */
+.ll-card__photo {
+	display: block; position: relative; overflow: hidden; border-radius: 2px;
+	aspect-ratio: 3 / 4;
+}
+.ll-card__photo img,
+.ll-card__photo .ll-card__img {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+	object-position: center;
+	margin: 0;
+}
+.ll-card__photo .onsale {
+	position: absolute; top: .75rem; left: .75rem;
+	background: var(--gold, #c5a55a); color: var(--bg, #0e0e0c);
+	font-family: 'Raleway', sans-serif; font-size: 11px;
+	letter-spacing: .1em; text-transform: uppercase;
+	padding: .35rem .75rem;
+}
+
+/* инфо-зона */
+.ll-card__info { min-width: 0; max-width: 46ch; }
+.ll-card__title {
+	font-family: 'Cormorant Garamond', Georgia, serif; font-weight: 400;
+	font-size: clamp(1.7rem, 3vw, 2.2rem); line-height: 1.1;
+	color: var(--cream, #e8e0d0); margin: 0 0 .75rem;
+}
+.ll-card__excerpt {
+	font-family: 'Raleway', sans-serif; font-size: 14px; line-height: 1.75;
+	color: rgba(232, 224, 208, .7); margin: 0 0 1.25rem;
+}
+.ll-card__excerpt p { margin: 0; }
+.ll-card__price {
+	font-family: 'Cormorant Garamond', Georgia, serif; font-size: 1.5rem;
+	color: var(--gold, #c5a55a); margin: 0 0 1.5rem;
+}
+.ll-card__btn {
+	display: inline-block; font-family: 'Raleway', sans-serif;
+	font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+	color: var(--cream, #e8e0d0); text-decoration: none;
+	border: 1px solid rgba(197, 165, 90, .5); padding: .9rem 2.25rem;
+	transition: all .3s ease;
+}
+.ll-card__btn:hover {
+	background: var(--gold, #c5a55a); color: var(--bg, #0e0e0c);
+	border-color: var(--gold, #c5a55a);
+}
+
+/* мобильный — фото над инфо */
+@media (max-width: 620px) {
+	.woocommerce ul.products,
+	.ll-catalog-head { padding-left: 1.25rem; padding-right: 1.25rem; }
+	.woocommerce ul.products li.product.ll-card {
+		grid-template-columns: 1fr; gap: 1.25rem;
+	}
+	.ll-card__photo img, .ll-card__photo .ll-card__img { height: 100%; }
+	.ll-card__info { max-width: none; }
+}
+/* ===== end catalog lookbook ===== */
 
 #palette {
     scroll-margin-top: 5rem;
@@ -4436,3 +4559,166 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     }
 }
 
+
+/* ===== LoraLeya: селект вариаций в стиле кнопки каталога ===== */
+.single-product form.cart .variations td.value select,
+.single-product form.cart .variations select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    font-family: 'Raleway', sans-serif;
+    font-size: 13px;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    color: var(--cream, #e8e0d0);
+    background-color: transparent;
+    border: 1px solid rgba(197,165,90,.55);
+    border-radius: 0;
+    padding: 14px 46px 14px 18px;
+    min-width: 260px;
+    max-width: 100%;
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%23c5a55a' stroke-width='1.4'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    background-size: 12px;
+    transition: border-color .2s ease;
+}
+.single-product form.cart .variations select:hover,
+.single-product form.cart .variations select:focus-visible {
+    border-color: var(--gold, #c5a55a);
+    outline: none;
+}
+.single-product form.cart .variations select option {
+    font-family: 'Raleway', sans-serif;
+    color: #1a1a1a;
+    background: #fff;
+}
+@media (pointer: coarse) {
+    .single-product form.cart .variations select { min-width: 100%; }
+}
+
+/* ===== LoraLeya: фото товара вписываем по высоте экрана ===== */
+.single-product div.product .woocommerce-product-gallery {
+    margin-top: 3vh;
+    margin-bottom: 4vh;
+}
+
+.single-product div.product .woocommerce-product-gallery__wrapper,
+.single-product div.product .woocommerce-product-gallery__image {
+    max-height: calc(100vh - 64px - 10vh);
+}
+
+.single-product div.product .woocommerce-product-gallery__image img {
+    max-height: calc(100vh - 64px - 10vh);
+    width: auto;
+    max-width: 100%;
+    height: auto;
+    object-fit: contain;
+    object-position: top center;
+    margin: 0 auto;
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .single-product div.product .woocommerce-product-gallery,
+    .single-product div.product .woocommerce-product-gallery__wrapper,
+    .single-product div.product .woocommerce-product-gallery__image,
+    .single-product div.product .woocommerce-product-gallery__image img {
+        max-height: none;
+        margin-top: 0;
+        margin-bottom: 2vh;
+    }
+}
+
+/* ===== LoraLeya: резерв высоты под название цвета — убираем скачок раскладки ===== */
+/* .ll-sw-name — кастомный div темы (product-swatches.js), существует всегда.
+   При выборе JS пишет в него название цвета через .text(), при сбросе очищает.
+   Фиксируем высоту заранее — размер блока не меняется, колонка не прыгает. */
+.single-product .ll-sw-name {
+    display: block;
+    min-height: 1.5em;
+    line-height: 1.5em;
+    margin: 0 0 6px;
+    font-family: 'Raleway', sans-serif;
+    font-size: 13px;
+    letter-spacing: .06em;
+    color: var(--cream, #e8e0d0);
+}
+
+/* ===== LoraLeya: резерв под цену вариации (правильный таргет) =====
+   .single_variation — соседний блок кнопки внутри .single_variation_wrap.
+   WC прячет его inline display:none (h=0), при выборе разворачивается до 46px
+   и толкает кнопку. Держим блок в потоке всегда (перебиваем inline !important),
+   фиксируем высоту цены — кнопка «В корзину» не двигается. */
+.single-product div.product .single_variation_wrap .single_variation {
+    display: block !important;
+    min-height: 46px;
+}
+
+.single-product div.product .woocommerce-variation-price {
+    font-family: 'Cormorant Garamond', serif;
+}
+
+/* ===== LoraLeya: компактная правая колонка товара — кнопка влезает в экран =====
+   Режем только вертикальные отступы, в vh. Кружки/шрифты не трогаем. */
+
+.single-product div.product .summary .product_title {
+    margin-bottom: 1.2vh;
+}
+
+.single-product div.product .summary .ll-price-teaser {
+    margin-top: 1vh;
+    margin-bottom: 1.4vh;
+}
+
+.single-product div.product .summary .product_meta {
+    margin-top: 1.4vh;
+}
+
+@media (max-width: 768px) {
+    .single-product div.product .summary .product_title { margin-bottom: 12px; }
+    .single-product div.product .summary .ll-price-teaser { margin-top: 10px; margin-bottom: 16px; }
+    .single-product div.product .summary .product_meta { margin-top: 20px; }
+}
+
+/* ===== LoraLeya: убрать зазор между строкой «Размер» и ценой вариации =====
+   Замер: 24px пустого воздуха между низом .variations и обёрткой цены.
+   Убираем — цена и кнопка «В корзину» поднимаются в первый экран. */
+.single-product div.product .variations_form .variations {
+    margin-bottom: 0.4vh;
+}
+.single-product div.product .variations_form .variations tr:last-child td,
+.single-product div.product .variations_form .variations tr:last-child th {
+    padding-bottom: 0.4vh;
+}
+
+/* ===== LoraLeya: каталог — каждая позиция на экран (воздушный лукбук) ===== */
+.woocommerce ul.products li.product.ll-card {
+    min-height: 74vh;
+    align-items: center;
+    align-content: center;
+    padding-top: 4vh;
+    padding-bottom: 4vh;
+}
+.woocommerce ul.products li.product.ll-card:first-of-type {
+    padding-top: 4vh;
+}
+
+@media (max-width: 768px) {
+    .woocommerce ul.products li.product.ll-card {
+        min-height: 0;
+        padding-top: 3vh;
+        padding-bottom: 3vh;
+    }
+    .woocommerce ul.products li.product.ll-card:first-of-type {
+        padding-top: 3vh;
+    }
+}
+
+/* ===== LoraLeya: каталог — подтянуть заголовок к шапке =====
+   Только на странице каталога, .site-main глобально не трогаем. */
+.post-type-archive-product .site-main,
+.woocommerce-shop .site-main {
+    padding-top: 24px;
+}
