@@ -1694,3 +1694,57 @@ add_filter('woocommerce_variation_option_name', function ($name) {
     }
     return $name;
 }, 10, 1);
+
+/* ===================================================================
+   LoraLeya — расшифровка кодов вариаций ДЛЯ КЛИЕНТА
+   Данные в БД не меняются (заказы/чек/ЧЗ/5Post работают на кодах).
+   Расшифровка только в клиентском выводе: корзина, чекаут, ЛК, «Заказ принят».
+   Админка и письма — оставляем коды (техдокументация).
+   =================================================================== */
+
+if (!function_exists('ll_decode_size_code')) {
+    function ll_decode_size_code($value) {
+        $n = trim(wp_strip_all_tags((string)$value));
+        if ($n === '') return $value;
+        if (preg_match('~^(\d+)\s*п\s*[/\-]\s*(\d+)\s*$~u', $n, $m)) {
+            return 'на ' . (int)$m[1] . ' ' . ll_persons_word($m[1]) . ', дорожка ' . (int)$m[2] . ' см';
+        }
+        if (preg_match('~^\d+$~', $n)) {
+            return $n . ' см';
+        }
+        return $value;
+    }
+}
+
+if (!function_exists('ll_is_customer_view')) {
+    function ll_is_customer_view() {
+        if (is_admin() && !wp_doing_ajax()) return false;
+        return true;
+    }
+}
+
+add_filter('woocommerce_cart_item_data', function ($item_data, $cart_item) {
+    if (!ll_is_customer_view()) return $item_data;
+    foreach ($item_data as $i => $row) {
+        if (isset($row['value'])) {
+            $item_data[$i]['value'] = ll_decode_size_code($row['value']);
+        }
+    }
+    return $item_data;
+}, 10, 2);
+
+add_filter('woocommerce_get_item_data', function ($item_data, $cart_item) {
+    if (!ll_is_customer_view()) return $item_data;
+    foreach ($item_data as $i => $row) {
+        if (isset($row['value'])) {
+            $item_data[$i]['value'] = ll_decode_size_code($row['value']);
+        }
+    }
+    return $item_data;
+}, 10, 2);
+
+add_filter('woocommerce_order_item_display_meta_value', function ($value, $meta = null, $item = null) {
+    if (!ll_is_customer_view()) return $value;
+    if (did_action('woocommerce_email_header')) return $value;
+    return ll_decode_size_code($value);
+}, 10, 3);
