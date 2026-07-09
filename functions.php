@@ -702,6 +702,7 @@ function loraleya_get_scenario_defaults($scenario_slug) {
         'semejnyj-obed'        => ['color' => 'zelenyj',         'persons' => 4],
         'prazdnichnyj-stol'    => ['color' => 'melanzh-zoloto',  'persons' => 6],
         'kazhdyj-den'          => ['color' => 'melanzh-serebro', 'persons' => 4],
+        'den-rozhdenija'       => ['color' => 'biryuza',         'persons' => 6],
     ];
 
     $fallback = ['color' => 'bezhevyj', 'persons' => 4];
