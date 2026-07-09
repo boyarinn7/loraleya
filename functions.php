@@ -530,7 +530,10 @@ function loraleya_ajax_get_cart() {
                 // Декодируем slug если он URL-encoded ('4%d0%bf-140' → '4п-140')
                 $term_slug = urldecode($attr_value);
                 $term = get_term_by('slug', $term_slug, $taxonomy);
-                $variation_labels[] = $term ? $term->name : $attr_value;
+                $raw_label = $term ? $term->name : $attr_value;
+                $variation_labels[] = function_exists('ll_decode_size_code')
+                    ? ll_decode_size_code($raw_label)
+                    : $raw_label;
             }
         }
 
