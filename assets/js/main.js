@@ -295,18 +295,49 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
-    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-        anchor.addEventListener('click', function(e) {
-            var href = this.getAttribute('href');
-            if (!href || href === '#' || href.length < 2) return;
-            const target = document.querySelector(href);
-            if (target) {
-                e.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    // ===== SMOOTH SCROLL FOR ANCHOR LINKS (со смещением под фикс-шапку и админ-бар) =====
+    (function () {
+        function fixedOffset() {
+            var off = 0;
+            var bar = document.getElementById('wpadminbar');
+            if (bar && getComputedStyle(bar).position === 'fixed') {
+                off += bar.getBoundingClientRect().height;
             }
+            var hdr = document.getElementById('siteHeader');
+            if (hdr) {
+                var pos = getComputedStyle(hdr).position;
+                if (pos === 'fixed' || pos === 'sticky') {
+                    off += hdr.getBoundingClientRect().height;
+                }
+            }
+            return off;
+        }
+
+        function targetY(target) {
+            return Math.max(0, target.getBoundingClientRect().top + window.pageYOffset - fixedOffset());
+        }
+
+        function scrollToTarget(target) {
+            window.scrollTo({ top: targetY(target), behavior: 'smooth' });
+            setTimeout(function () {
+                var y2 = targetY(target);
+                if (Math.abs(window.pageYOffset - y2) > 2) {
+                    window.scrollTo({ top: y2, behavior: 'smooth' });
+                }
+            }, 450);
+        }
+
+        document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
+            anchor.addEventListener('click', function (e) {
+                var href = this.getAttribute('href');
+                if (!href || href === '#' || href.length < 2) return;
+                var target = document.querySelector(href);
+                if (!target) return;
+                e.preventDefault();
+                scrollToTarget(target);
+            });
         });
-    });
+    })();
 
     // ===== FADE IN ON SCROLL =====
     const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
