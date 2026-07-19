@@ -118,6 +118,7 @@ $all_color_slugs = [
     'blek-zoloto','goluboj','zelenyj','melanzh-zoloto','melanzh-serebro',
     'melanzh-seryj','melanzh-chernyj','platina','serebro','tyomno-biryuzovyj',
 ];
+$gallery_photo_map_full = [];
 foreach ($all_color_slugs as $cs) {
     $gallery_photo_map[$cs] = [
         'napkin'      => loraleya_get_color_photo_url($cs, 'salfetka-tsvetok'),
@@ -126,6 +127,14 @@ foreach ($all_color_slugs as $cs) {
         'nabor-4-140' => loraleya_get_color_photo_url($cs, 'nabor-4-140'),
         'nabor-4-175' => loraleya_get_color_photo_url($cs, 'nabor-4-175'),
         'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300'),
+    ];
+    $gallery_photo_map_full[$cs] = [
+        'napkin'      => loraleya_get_color_photo_url($cs, 'salfetka-tsvetok', 'full'),
+        'kuvert'      => loraleya_get_color_photo_url($cs, 'kuvert', 'full'),
+        'faktura'     => loraleya_get_color_photo_url($cs, 'macro-faktura', 'full'),
+        'nabor-4-140' => loraleya_get_color_photo_url($cs, 'nabor-4-140', 'full'),
+        'nabor-4-175' => loraleya_get_color_photo_url($cs, 'nabor-4-175', 'full'),
+        'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300', 'full'),
     ];
 }
 $item_prices = loraleya_get_item_prices($default_color);
@@ -525,6 +534,7 @@ if (is_array($sc_faq_data) && !empty($sc_faq_data)) :
 
 <script>
 window.LORALEYA_GALLERY_PHOTOS = <?php echo wp_json_encode($gallery_photo_map); ?>;
+window.LORALEYA_GALLERY_PHOTOS_FULL = <?php echo wp_json_encode($gallery_photo_map_full); ?>;
 </script>
 
 <?php

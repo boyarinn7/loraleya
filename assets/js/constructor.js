@@ -355,27 +355,32 @@ document.addEventListener('DOMContentLoaded', function() {
         var colorPhotos = photos[colorSlug];
         if (!colorPhotos) return;
 
+        var photosFull      = window.LORALEYA_GALLERY_PHOTOS_FULL || {};
+        var colorPhotosFull = photosFull[colorSlug] || {};
+
         var naborKey = persons === 2 ? 'nabor-4-140'
                      : persons === 4 ? 'nabor-4-175'
                      : 'nabor-6-300';
-        applySlot('overall', colorPhotos[naborKey]);
-        applySlot('napkin',  colorPhotos['napkin']);
-        applySlot('kuvert',  colorPhotos['kuvert']);
-        applySlot('faktura', colorPhotos['faktura']);
+        applySlot('overall', colorPhotos[naborKey], colorPhotosFull[naborKey]);
+        applySlot('napkin',  colorPhotos['napkin'],  colorPhotosFull['napkin']);
+        applySlot('kuvert',  colorPhotos['kuvert'],  colorPhotosFull['kuvert']);
+        applySlot('faktura', colorPhotos['faktura'], colorPhotosFull['faktura']);
 
         gallery.dataset.color   = colorSlug;
         gallery.dataset.persons = persons;
     }
 
-    function applySlot(slotName, url) {
+    function applySlot(slotName, url, fullUrl) {
         var slot = document.querySelector('.sc-gallery-item[data-slot="' + slotName + '"]');
         if (!slot) return;
         if (url) {
             slot.style.backgroundImage = "url('" + url + "')";
+            slot.setAttribute('data-full', fullUrl || url);
             var ph = slot.querySelector('.sc-gallery-ph');
             if (ph) ph.style.display = 'none';
         } else {
             slot.style.backgroundImage = '';
+            slot.removeAttribute('data-full');
             var ph2 = slot.querySelector('.sc-gallery-ph');
             if (ph2) ph2.style.display = '';
         }
