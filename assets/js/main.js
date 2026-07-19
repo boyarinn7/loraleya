@@ -302,8 +302,14 @@ document.addEventListener('DOMContentLoaded', function() {
             return (bar && getComputedStyle(bar).position === 'fixed')
                 ? bar.getBoundingClientRect().height : 0;
         }
+        function fixedHeaderOffset() {
+            var hdr = document.getElementById('siteHeader');
+            if (!hdr) return 0;
+            var pos = getComputedStyle(hdr).position;
+            return (pos === 'fixed' || pos === 'sticky') ? hdr.getBoundingClientRect().height : 0;
+        }
 
-        // #scenarios: нижняя граница ФОНА hero к нижней кромке админ-бара.
+        // #scenarios: нижняя граница ФОНА hero к нижней кромке админ-бара. НЕ МЕНЯТЬ — принято.
         function scrollHeroBottom() {
             var hero = document.querySelector('.hero');
             var el = hero || document.getElementById('scenarios');
@@ -314,9 +320,16 @@ document.addEventListener('DOMContentLoaded', function() {
             window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
-        // Прочие секции (#palette и т.п.): верхняя граница фона секции к нижней кромке админ-бара.
+        // Воздух над заголовком секции при переходе (px). Единственная настраиваемая величина.
+        var KEEP = 32;
+
+        // Прочие секции (#palette и т.п.): целимся в КОНТЕНТ (.container), а не в край секции —
+        // иначе собственный padding-top секции даёт пустой провал над заголовком.
+        // Ставим контент под шапку + админ-бар с воздухом KEEP.
         function scrollToSectionTop(target) {
-            var y = target.getBoundingClientRect().top + window.pageYOffset - adminBarOffset();
+            var content = target.querySelector('.container') || target;
+            var y = content.getBoundingClientRect().top + window.pageYOffset
+                    - adminBarOffset() - fixedHeaderOffset() - KEEP;
             window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
@@ -336,9 +349,7 @@ document.addEventListener('DOMContentLoaded', function() {
             return p1 === p2;
         }
 
-        // Делегирование: ловим ЛЮБУЮ ссылку на якорь текущей страницы, как бы ни был
-        // записан href — "#palette", "/test/#palette", "https://loraleya.ru/test/#palette".
-        // Старый селектор a[href^="#"] не ловил пункты меню WP с абсолютным URL.
+        // Делегирование: ловим любую ссылку на якорь текущей страницы (любая форма href).
         document.addEventListener('click', function (e) {
             var a = (e.target && e.target.closest) ? e.target.closest('a[href]') : null;
             if (!a) return;
@@ -350,7 +361,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Прямой заход/перезагрузка по ссылке с #hash: поправляем позицию после загрузки.
+        // Прямой заход/перезагрузка по ссылке с #hash: после загрузки поправляем позицию.
         window.addEventListener('load', function () {
             if (location.hash && location.hash.length > 1) {
                 setTimeout(function () { scrollToHash(location.hash); }, 60);
