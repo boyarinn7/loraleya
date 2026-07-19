@@ -295,36 +295,41 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // ===== SMOOTH SCROLL FOR ANCHOR LINKS (со смещением под фикс-шапку и админ-бар) =====
+    // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
     (function () {
-        function fixedOffset() {
-            var off = 0;
+        function adminBarOffset() {
             var bar = document.getElementById('wpadminbar');
-            if (bar && getComputedStyle(bar).position === 'fixed') {
-                off += bar.getBoundingClientRect().height;
-            }
+            return (bar && getComputedStyle(bar).position === 'fixed')
+                ? bar.getBoundingClientRect().height : 0;
+        }
+        function fixedHeaderOffset() {
             var hdr = document.getElementById('siteHeader');
-            if (hdr) {
-                var pos = getComputedStyle(hdr).position;
-                if (pos === 'fixed' || pos === 'sticky') {
-                    off += hdr.getBoundingClientRect().height;
-                }
+            if (!hdr) return 0;
+            var pos = getComputedStyle(hdr).position;
+            return (pos === 'fixed' || pos === 'sticky') ? hdr.getBoundingClientRect().height : 0;
+        }
+
+        // #scenarios: ловим нижнюю границу .hero, компенсируем только админ-бар.
+        // Шапку НЕ вычитаем — иначе hero просветит полоской сквозь прозрачную шапку.
+        function scrollHeroBottom() {
+            var hero = document.querySelector('.hero');
+            if (hero) {
+                var y = hero.getBoundingClientRect().bottom + window.pageYOffset - adminBarOffset();
+                window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+                return;
             }
-            return off;
+            var sc = document.getElementById('scenarios');
+            if (sc) {
+                var y2 = sc.getBoundingClientRect().top + window.pageYOffset - adminBarOffset();
+                window.scrollTo({ top: Math.max(0, y2), behavior: 'smooth' });
+            }
         }
 
-        function targetY(target) {
-            return Math.max(0, target.getBoundingClientRect().top + window.pageYOffset - fixedOffset());
-        }
-
-        function scrollToTarget(target) {
-            window.scrollTo({ top: targetY(target), behavior: 'smooth' });
-            setTimeout(function () {
-                var y2 = targetY(target);
-                if (Math.abs(window.pageYOffset - y2) > 2) {
-                    window.scrollTo({ top: y2, behavior: 'smooth' });
-                }
-            }, 450);
+        // Обычные якоря (#palette и т.п.): под админ-бар + шапку.
+        function scrollToSection(target) {
+            var y = target.getBoundingClientRect().top + window.pageYOffset
+                    - adminBarOffset() - fixedHeaderOffset();
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
         document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
@@ -334,7 +339,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 var target = document.querySelector(href);
                 if (!target) return;
                 e.preventDefault();
-                scrollToTarget(target);
+                if (href === '#scenarios') {
+                    scrollHeroBottom();
+                } else {
+                    scrollToSection(target);
+                }
             });
         });
     })();
