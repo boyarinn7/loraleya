@@ -297,7 +297,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
     (function () {
-        // Админ-бар WP: стабильная высота; на боевом у гостей его нет.
         function adminBarOffset() {
             var bar = document.getElementById('wpadminbar');
             return (bar && getComputedStyle(bar).position === 'fixed')
@@ -309,33 +308,53 @@ document.addEventListener('DOMContentLoaded', function() {
             var hero = document.querySelector('.hero');
             var el = hero || document.getElementById('scenarios');
             if (!el) return;
-            var base = hero
-                ? hero.getBoundingClientRect().bottom
-                : el.getBoundingClientRect().top;
+            var base = hero ? hero.getBoundingClientRect().bottom
+                            : el.getBoundingClientRect().top;
             var y = base + window.pageYOffset - adminBarOffset();
             window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
-        // Прочие секции (#palette и т.п.): верхняя граница фона секции к нижней кромке
-        // админ-бара. Шапку НЕ вычитаем — остаток верхнего блока и цветовой шов уходят вверх.
+        // Прочие секции (#palette и т.п.): верхняя граница фона секции к нижней кромке админ-бара.
         function scrollToSectionTop(target) {
             var y = target.getBoundingClientRect().top + window.pageYOffset - adminBarOffset();
             window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
-        document.querySelectorAll('a[href^="#"]').forEach(function (anchor) {
-            anchor.addEventListener('click', function (e) {
-                var href = this.getAttribute('href');
-                if (!href || href === '#' || href.length < 2) return;
-                var target = document.querySelector(href);
-                if (!target) return;
+        function scrollToHash(hash) {
+            var target = hash ? document.querySelector(hash) : null;
+            if (!target) return false;
+            if (hash === '#scenarios') scrollHeroBottom();
+            else scrollToSectionTop(target);
+            return true;
+        }
+
+        // Та же страница? (host совпадает, путь совпадает без хвостового слэша)
+        function isSamePage(a) {
+            if (a.host && a.host !== location.host) return false;
+            var p1 = (a.pathname || '').replace(/\/+$/, '');
+            var p2 = (location.pathname || '').replace(/\/+$/, '');
+            return p1 === p2;
+        }
+
+        // Делегирование: ловим ЛЮБУЮ ссылку на якорь текущей страницы, как бы ни был
+        // записан href — "#palette", "/test/#palette", "https://loraleya.ru/test/#palette".
+        // Старый селектор a[href^="#"] не ловил пункты меню WP с абсолютным URL.
+        document.addEventListener('click', function (e) {
+            var a = (e.target && e.target.closest) ? e.target.closest('a[href]') : null;
+            if (!a) return;
+            var hash = a.hash;
+            if (!hash || hash.length < 2) return;
+            if (!isSamePage(a)) return;
+            if (scrollToHash(hash)) {
                 e.preventDefault();
-                if (href === '#scenarios') {
-                    scrollHeroBottom();
-                } else {
-                    scrollToSectionTop(target);
-                }
-            });
+            }
+        });
+
+        // Прямой заход/перезагрузка по ссылке с #hash: поправляем позицию после загрузки.
+        window.addEventListener('load', function () {
+            if (location.hash && location.hash.length > 1) {
+                setTimeout(function () { scrollToHash(location.hash); }, 60);
+            }
         });
     })();
 
