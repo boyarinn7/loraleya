@@ -47,5 +47,25 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape' && overlay.classList.contains('is-open')) closeLb();
     });
+
+    // --- Читать дальше ---
+    var moreBtn = document.querySelector('.sc-more-btn');
+    var moreBlock = document.querySelector('.sc-more');
+    if (moreBtn && moreBlock) {
+      moreBtn.addEventListener('click', function () {
+        moreBlock.hidden = false;
+        moreBlock.style.maxHeight = '0px';
+        moreBlock.style.overflow = 'hidden';
+        moreBlock.style.transition = 'max-height .4s ease';
+        requestAnimationFrame(function () {
+          moreBlock.style.maxHeight = moreBlock.scrollHeight + 'px';
+        });
+        setTimeout(function () {
+          moreBlock.style.maxHeight = 'none';
+          moreBlock.style.overflow = '';
+        }, 450);
+        moreBtn.style.display = 'none';
+      });
+    }
   });
 })();

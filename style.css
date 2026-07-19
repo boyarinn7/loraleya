@@ -4783,3 +4783,32 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     }
     .ll-lightbox__img { max-width: 96vw; max-height: 85vh; }
 }
+
+/* ===== Читать дальше (сценарий) ===== */
+.sc-more-btn {
+    display: inline-block;
+    margin: 1.5rem 0 0;
+    padding: 0.85rem 2rem;
+    font-family: 'Raleway', sans-serif;
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold, #c5a55a);
+    background: transparent;
+    border: 1px solid rgba(197,165,90,.55);
+    border-radius: 0;
+    cursor: pointer;
+    transition: border-color .2s ease, color .2s ease;
+}
+.sc-more-btn:hover {
+    border-color: var(--gold, #c5a55a);
+    color: var(--cream, #f0ece4);
+}
+@media (max-width: 640px) {
+    .sc-more-btn {
+        display: block;
+        width: 100%;
+        padding: 1rem;
+        text-align: center;
+    }
+}

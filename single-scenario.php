@@ -165,13 +165,21 @@ $ip_fmt = function($key, $suffix = ' / шт') use ($item_prices) {
 
 <!-- ОСНОВНОЙ ТЕКСТ СЦЕНАРИЯ -->
 <?php
-$sc_content = get_the_content();
-if (!empty(trim(strip_tags($sc_content)))) :
+// get_the_content() сам режет по <!--more-->, поэтому берём сырой post_content
+$sc_raw   = get_post_field('post_content', get_the_ID());
+$sc_parts = explode('<!--more-->', $sc_raw, 2);
+$sc_visible = apply_filters('the_content', $sc_parts[0]);
+$sc_hidden  = !empty($sc_parts[1]) ? apply_filters('the_content', $sc_parts[1]) : '';
+if (!empty(trim(strip_tags($sc_visible)))) :
 ?>
 <section class="scenario-content-section">
     <div class="container">
         <div class="scenario-content-section__inner">
-            <?php echo apply_filters('the_content', $sc_content); ?>
+            <div class="sc-content-visible"><?php echo $sc_visible; ?></div>
+            <?php if ($sc_hidden) : ?>
+                <div class="sc-more" hidden><?php echo $sc_hidden; ?></div>
+                <button type="button" class="sc-more-btn">Читать дальше</button>
+            <?php endif; ?>
         </div>
     </div>
 </section>
