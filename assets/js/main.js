@@ -297,38 +297,29 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
     (function () {
+        // Админ-бар WP: стабильная высота; на боевом у гостей его нет.
         function adminBarOffset() {
             var bar = document.getElementById('wpadminbar');
             return (bar && getComputedStyle(bar).position === 'fixed')
                 ? bar.getBoundingClientRect().height : 0;
         }
-        function fixedHeaderOffset() {
-            var hdr = document.getElementById('siteHeader');
-            if (!hdr) return 0;
-            var pos = getComputedStyle(hdr).position;
-            return (pos === 'fixed' || pos === 'sticky') ? hdr.getBoundingClientRect().height : 0;
-        }
 
-        // #scenarios: ловим нижнюю границу .hero, компенсируем только админ-бар.
-        // Шапку НЕ вычитаем — иначе hero просветит полоской сквозь прозрачную шапку.
+        // #scenarios: нижняя граница ФОНА hero к нижней кромке админ-бара.
         function scrollHeroBottom() {
             var hero = document.querySelector('.hero');
-            if (hero) {
-                var y = hero.getBoundingClientRect().bottom + window.pageYOffset - adminBarOffset();
-                window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
-                return;
-            }
-            var sc = document.getElementById('scenarios');
-            if (sc) {
-                var y2 = sc.getBoundingClientRect().top + window.pageYOffset - adminBarOffset();
-                window.scrollTo({ top: Math.max(0, y2), behavior: 'smooth' });
-            }
+            var el = hero || document.getElementById('scenarios');
+            if (!el) return;
+            var base = hero
+                ? hero.getBoundingClientRect().bottom
+                : el.getBoundingClientRect().top;
+            var y = base + window.pageYOffset - adminBarOffset();
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
-        // Обычные якоря (#palette и т.п.): под админ-бар + шапку.
-        function scrollToSection(target) {
-            var y = target.getBoundingClientRect().top + window.pageYOffset
-                    - adminBarOffset() - fixedHeaderOffset();
+        // Прочие секции (#palette и т.п.): верхняя граница фона секции к нижней кромке
+        // админ-бара. Шапку НЕ вычитаем — остаток верхнего блока и цветовой шов уходят вверх.
+        function scrollToSectionTop(target) {
+            var y = target.getBoundingClientRect().top + window.pageYOffset - adminBarOffset();
             window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
         }
 
@@ -342,7 +333,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 if (href === '#scenarios') {
                     scrollHeroBottom();
                 } else {
-                    scrollToSection(target);
+                    scrollToSectionTop(target);
                 }
             });
         });
