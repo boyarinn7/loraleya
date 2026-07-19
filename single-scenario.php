@@ -191,6 +191,11 @@ $slot_overall = loraleya_get_color_photo_url($default_color, $default_nabor_type
 $slot_napkin  = loraleya_get_color_photo_url($default_color, 'salfetka-tsvetok');
 $slot_kuvert  = loraleya_get_color_photo_url($default_color, 'kuvert');
 $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
+
+$slot_overall_full = loraleya_get_color_photo_url($default_color, $default_nabor_type, 'full');
+$slot_napkin_full  = loraleya_get_color_photo_url($default_color, 'salfetka-tsvetok', 'full');
+$slot_kuvert_full  = loraleya_get_color_photo_url($default_color, 'kuvert', 'full');
+$slot_faktura_full = loraleya_get_color_photo_url($default_color, 'macro-faktura', 'full');
 ?>
 <section class="section" id="gallery">
     <div class="container">
@@ -202,6 +207,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
              data-persons="<?php echo esc_attr($default_persons_int); ?>">
 
             <div class="sc-gallery-item" data-slot="overall"
+                 data-full="<?php echo esc_url($slot_overall_full ?: $slot_overall); ?>"
                  style="<?php echo $slot_overall ? 'background-image:url(' . esc_url($slot_overall) . ')' : ''; ?>">
                 <?php if (!$slot_overall): ?>
                     <div class="sc-gallery-ph">Фото · общий план стола</div>
@@ -209,6 +215,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             </div>
 
             <div class="sc-gallery-item" data-slot="napkin"
+                 data-full="<?php echo esc_url($slot_napkin_full ?: $slot_napkin); ?>"
                  style="<?php echo $slot_napkin ? 'background-image:url(' . esc_url($slot_napkin) . ')' : ''; ?>">
                 <?php if (!$slot_napkin): ?>
                     <div class="sc-gallery-ph">Детали · салфетка</div>
@@ -216,6 +223,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             </div>
 
             <div class="sc-gallery-item" data-slot="kuvert"
+                 data-full="<?php echo esc_url($slot_kuvert_full ?: $slot_kuvert); ?>"
                  style="<?php echo $slot_kuvert ? 'background-image:url(' . esc_url($slot_kuvert) . ')' : ''; ?>">
                 <?php if (!$slot_kuvert): ?>
                     <div class="sc-gallery-ph">Детали · куверт</div>
@@ -223,6 +231,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             </div>
 
             <div class="sc-gallery-item" data-slot="faktura"
+                 data-full="<?php echo esc_url($slot_faktura_full ?: $slot_faktura); ?>"
                  style="<?php echo $slot_faktura ? 'background-image:url(' . esc_url($slot_faktura) . ')' : ''; ?>">
                 <?php if (!$slot_faktura): ?>
                     <div class="sc-gallery-ph">Макро · фактура ткани</div>

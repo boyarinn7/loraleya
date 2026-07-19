@@ -57,6 +57,12 @@ function loraleya_scripts() {
     $constructor_js = get_template_directory() . '/assets/js/constructor.js';
     wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], file_exists($constructor_js) ? filemtime($constructor_js) : '1.0', true);
 
+    // Лайтбокс галереи сценария — только на странице сценария
+    if (is_singular('scenario')) {
+        $scenario_js = get_stylesheet_directory() . '/assets/js/ll-scenario.js';
+        wp_enqueue_script('ll-scenario', get_stylesheet_directory_uri() . '/assets/js/ll-scenario.js', [], file_exists($scenario_js) ? filemtime($scenario_js) : '1.0.0', true);
+    }
+
     // Pass data to JS
     wp_localize_script('loraleya-main', 'loraleya', [
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -894,9 +900,9 @@ function loraleya_send_telegram($token, $chat_id, $text) {
  *                           'nabor-4-140', 'nabor-4-175', 'nabor-6-300' и т.д.
  * @return string URL или пустая строка
  */
-function loraleya_get_color_photo_url($color_slug, $type) {
+function loraleya_get_color_photo_url($color_slug, $type, $size = 'large') {
     static $cache = [];
-    $cache_key = $color_slug . '|' . $type;
+    $cache_key = $color_slug . '|' . $type . '|' . $size;
     if (isset($cache[$cache_key])) {
         return $cache[$cache_key];
     }
@@ -940,7 +946,7 @@ function loraleya_get_color_photo_url($color_slug, $type) {
     ]);
 
     if (!empty($attachments)) {
-        $url = wp_get_attachment_image_url($attachments[0]->ID, 'large');
+        $url = wp_get_attachment_image_url($attachments[0]->ID, $size);
         $cache[$cache_key] = $url ?: '';
         return $cache[$cache_key];
     }
@@ -954,7 +960,7 @@ function loraleya_get_color_photo_url($color_slug, $type) {
     ]);
 
     if (!empty($attachments)) {
-        $url = wp_get_attachment_image_url($attachments[0]->ID, 'large');
+        $url = wp_get_attachment_image_url($attachments[0]->ID, $size);
         $cache[$cache_key] = $url ?: '';
         return $cache[$cache_key];
     }
