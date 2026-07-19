@@ -165,11 +165,14 @@ $ip_fmt = function($key, $suffix = ' / шт') use ($item_prices) {
 
 <!-- ОСНОВНОЙ ТЕКСТ СЦЕНАРИЯ -->
 <?php
-// get_the_content() сам режет по <!--more-->, поэтому берём сырой post_content
+// CPT scenario не сохраняет <!--more-->, режем по маркеру [readmore]
 $sc_raw   = get_post_field('post_content', get_the_ID());
-$sc_parts = explode('<!--more-->', $sc_raw, 2);
-$sc_visible = apply_filters('the_content', $sc_parts[0]);
-$sc_hidden  = !empty($sc_parts[1]) ? apply_filters('the_content', $sc_parts[1]) : '';
+$sc_parts = preg_split('/\[\s*readmore\s*\]/i', $sc_raw, 2);
+$sc_visible_raw = $sc_parts[0];
+$sc_hidden_raw  = (count($sc_parts) > 1) ? $sc_parts[1] : '';
+$sc_visible_raw = preg_replace('/\[\s*readmore\s*\]/i', '', $sc_visible_raw);
+$sc_visible = apply_filters('the_content', $sc_visible_raw);
+$sc_hidden  = trim($sc_hidden_raw) !== '' ? apply_filters('the_content', $sc_hidden_raw) : '';
 if (!empty(trim(strip_tags($sc_visible)))) :
 ?>
 <section class="scenario-content-section">
