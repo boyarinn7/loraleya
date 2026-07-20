@@ -127,6 +127,8 @@ foreach ($all_color_slugs as $cs) {
         'nabor-4-140' => loraleya_get_color_photo_url($cs, 'nabor-4-140'),
         'nabor-4-175' => loraleya_get_color_photo_url($cs, 'nabor-4-175'),
         'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300'),
+        'nabor-2-140' => loraleya_get_color_photo_url($cs, 'nabor-2-140'),
+        'nabor-6-240' => loraleya_get_color_photo_url($cs, 'nabor-6-240'),
     ];
     $gallery_photo_map_full[$cs] = [
         'napkin'      => loraleya_get_color_photo_url($cs, 'salfetka-tsvetok', 'full'),
@@ -135,6 +137,8 @@ foreach ($all_color_slugs as $cs) {
         'nabor-4-140' => loraleya_get_color_photo_url($cs, 'nabor-4-140', 'full'),
         'nabor-4-175' => loraleya_get_color_photo_url($cs, 'nabor-4-175', 'full'),
         'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300', 'full'),
+        'nabor-2-140' => loraleya_get_color_photo_url($cs, 'nabor-2-140', 'full'),
+        'nabor-6-240' => loraleya_get_color_photo_url($cs, 'nabor-6-240', 'full'),
     ];
 }
 $item_prices = loraleya_get_item_prices($default_color);
@@ -206,13 +210,14 @@ $nabor_suffix_by_persons = [
 ];
 $default_persons_int = (int) $data['default_persons'];
 $default_nabor_type  = $nabor_suffix_by_persons[$default_persons_int] ?? 'nabor-4-175';
+$hero_nabor          = $scenario_defaults['hero_nabor'] ?? $default_nabor_type;
 
-$slot_overall = loraleya_get_color_photo_url($default_color, $default_nabor_type);
+$slot_overall = loraleya_get_color_photo_url($default_color, $hero_nabor);
 $slot_napkin  = loraleya_get_color_photo_url($default_color, 'salfetka-tsvetok');
 $slot_kuvert  = loraleya_get_color_photo_url($default_color, 'kuvert');
 $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
 
-$slot_overall_full = loraleya_get_color_photo_url($default_color, $default_nabor_type, 'full');
+$slot_overall_full = loraleya_get_color_photo_url($default_color, $hero_nabor, 'full');
 $slot_napkin_full  = loraleya_get_color_photo_url($default_color, 'salfetka-tsvetok', 'full');
 $slot_kuvert_full  = loraleya_get_color_photo_url($default_color, 'kuvert', 'full');
 $slot_faktura_full = loraleya_get_color_photo_url($default_color, 'macro-faktura', 'full');
@@ -535,6 +540,7 @@ if (is_array($sc_faq_data) && !empty($sc_faq_data)) :
 <script>
 window.LORALEYA_GALLERY_PHOTOS = <?php echo wp_json_encode($gallery_photo_map); ?>;
 window.LORALEYA_GALLERY_PHOTOS_FULL = <?php echo wp_json_encode($gallery_photo_map_full); ?>;
+window.LORALEYA_HERO_NABOR = '<?php echo esc_js($hero_nabor); ?>';
 </script>
 
 <?php

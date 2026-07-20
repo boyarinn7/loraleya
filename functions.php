@@ -704,14 +704,14 @@ function loraleya_color_swatch_url($slug, $size = 'thumbnail') {
  */
 function loraleya_get_scenario_defaults($scenario_slug) {
     $defaults = [
-        'romanticheskij-uzhin' => ['color' => 'fioletovyj',      'persons' => 4],
-        'semejnyj-obed'        => ['color' => 'zelenyj',         'persons' => 4],
-        'prazdnichnyj-stol'    => ['color' => 'melanzh-zoloto',  'persons' => 6],
-        'kazhdyj-den'          => ['color' => 'melanzh-serebro', 'persons' => 4],
-        'den-rozhdenija'       => ['color' => 'biryuza',         'persons' => 6],
+        'romanticheskij-uzhin' => ['color' => 'fioletovyj',      'persons' => 4, 'hero_nabor' => 'nabor-2-140'],
+        'semejnyj-obed'        => ['color' => 'zelenyj',         'persons' => 4, 'hero_nabor' => 'nabor-6-240'],
+        'prazdnichnyj-stol'    => ['color' => 'melanzh-zoloto',  'persons' => 6, 'hero_nabor' => 'nabor-6-300'],
+        'kazhdyj-den'          => ['color' => 'melanzh-serebro', 'persons' => 4, 'hero_nabor' => 'nabor-4-175'],
+        'den-rozhdenija'       => ['color' => 'biryuza',         'persons' => 6, 'hero_nabor' => 'nabor-6-300'],
     ];
 
-    $fallback = ['color' => 'bezhevyj', 'persons' => 4];
+    $fallback = ['color' => 'bezhevyj', 'persons' => 4, 'hero_nabor' => 'nabor-4-175'];
 
     return $defaults[$scenario_slug] ?? $fallback;
 }

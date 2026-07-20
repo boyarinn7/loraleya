@@ -358,10 +358,11 @@ document.addEventListener('DOMContentLoaded', function() {
         var photosFull      = window.LORALEYA_GALLERY_PHOTOS_FULL || {};
         var colorPhotosFull = photosFull[colorSlug] || {};
 
-        var naborKey = persons === 2 ? 'nabor-4-140'
+        var heroKey = window.LORALEYA_HERO_NABOR
+                   || (persons === 2 ? 'nabor-4-140'
                      : persons === 4 ? 'nabor-4-175'
-                     : 'nabor-6-300';
-        applySlot('overall', colorPhotos[naborKey], colorPhotosFull[naborKey]);
+                     : 'nabor-6-300');
+        applySlot('overall', colorPhotos[heroKey], colorPhotosFull[heroKey]);
         applySlot('napkin',  colorPhotos['napkin'],  colorPhotosFull['napkin']);
         applySlot('kuvert',  colorPhotos['kuvert'],  colorPhotosFull['kuvert']);
         applySlot('faktura', colorPhotos['faktura'], colorPhotosFull['faktura']);
