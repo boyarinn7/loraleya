@@ -1199,10 +1199,7 @@ function loraleya_get_seo_field( $field ) {
     return '';
 }
 
-if ( class_exists( 'RankMath' ) ) {
-    // Rank Math активен — интеграция через его фильтры, прямого вывода нет.
-    require_once get_template_directory() . '/rank-math.php';
-} else {
+if ( ! class_exists( 'RankMath' ) ) {
     // Резервный режим: Rank Math не активен.
     // Тема сама выводит title и один <meta name="description">.
 

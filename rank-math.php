@@ -2,8 +2,8 @@
 /**
  * LoraLeya — интеграция с Rank Math SEO.
  *
- * Подключается из functions.php только при активном Rank Math
- * (class_exists('RankMath')).
+ * Автоматически подключается плагином Rank Math,
+ * когда файл находится в корне активной темы.
  * Передаёт seo_title и seo_description из meta-полей темы
  * в pipeline Rank Math: title, description, OG Facebook, Twitter.
  *
