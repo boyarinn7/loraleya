@@ -118,6 +118,7 @@ $all_color_slugs = [
     'blek-zoloto','goluboj','zelenyj','melanzh-zoloto','melanzh-serebro',
     'melanzh-seryj','melanzh-chernyj','platina','serebro','tyomno-biryuzovyj',
 ];
+$gallery_photo_map_full = [];
 foreach ($all_color_slugs as $cs) {
     $gallery_photo_map[$cs] = [
         'napkin'      => loraleya_get_color_photo_url($cs, 'salfetka-tsvetok'),
@@ -126,6 +127,18 @@ foreach ($all_color_slugs as $cs) {
         'nabor-4-140' => loraleya_get_color_photo_url($cs, 'nabor-4-140'),
         'nabor-4-175' => loraleya_get_color_photo_url($cs, 'nabor-4-175'),
         'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300'),
+        'nabor-2-140' => loraleya_get_color_photo_url($cs, 'nabor-2-140'),
+        'nabor-6-240' => loraleya_get_color_photo_url($cs, 'nabor-6-240'),
+    ];
+    $gallery_photo_map_full[$cs] = [
+        'napkin'      => loraleya_get_color_photo_url($cs, 'salfetka-tsvetok', 'full'),
+        'kuvert'      => loraleya_get_color_photo_url($cs, 'kuvert', 'full'),
+        'faktura'     => loraleya_get_color_photo_url($cs, 'macro-faktura', 'full'),
+        'nabor-4-140' => loraleya_get_color_photo_url($cs, 'nabor-4-140', 'full'),
+        'nabor-4-175' => loraleya_get_color_photo_url($cs, 'nabor-4-175', 'full'),
+        'nabor-6-300' => loraleya_get_color_photo_url($cs, 'nabor-6-300', 'full'),
+        'nabor-2-140' => loraleya_get_color_photo_url($cs, 'nabor-2-140', 'full'),
+        'nabor-6-240' => loraleya_get_color_photo_url($cs, 'nabor-6-240', 'full'),
     ];
 }
 $item_prices = loraleya_get_item_prices($default_color);
@@ -165,13 +178,24 @@ $ip_fmt = function($key, $suffix = ' / шт') use ($item_prices) {
 
 <!-- ОСНОВНОЙ ТЕКСТ СЦЕНАРИЯ -->
 <?php
-$sc_content = get_the_content();
-if (!empty(trim(strip_tags($sc_content)))) :
+// CPT scenario не сохраняет <!--more-->, режем по маркеру [readmore]
+$sc_raw   = get_post_field('post_content', get_the_ID());
+$sc_parts = preg_split('/\[\s*readmore\s*\]/i', $sc_raw, 2);
+$sc_visible_raw = $sc_parts[0];
+$sc_hidden_raw  = (count($sc_parts) > 1) ? $sc_parts[1] : '';
+$sc_visible_raw = preg_replace('/\[\s*readmore\s*\]/i', '', $sc_visible_raw);
+$sc_visible = apply_filters('the_content', $sc_visible_raw);
+$sc_hidden  = trim($sc_hidden_raw) !== '' ? apply_filters('the_content', $sc_hidden_raw) : '';
+if (!empty(trim(strip_tags($sc_visible)))) :
 ?>
 <section class="scenario-content-section">
     <div class="container">
         <div class="scenario-content-section__inner">
-            <?php echo apply_filters('the_content', $sc_content); ?>
+            <div class="sc-content-visible"><?php echo $sc_visible; ?></div>
+            <?php if ($sc_hidden) : ?>
+                <div class="sc-more" hidden><?php echo $sc_hidden; ?></div>
+                <button type="button" class="sc-more-btn">Читать дальше</button>
+            <?php endif; ?>
         </div>
     </div>
 </section>
@@ -186,11 +210,17 @@ $nabor_suffix_by_persons = [
 ];
 $default_persons_int = (int) $data['default_persons'];
 $default_nabor_type  = $nabor_suffix_by_persons[$default_persons_int] ?? 'nabor-4-175';
+$hero_nabor          = $scenario_defaults['hero_nabor'] ?? $default_nabor_type;
 
-$slot_overall = loraleya_get_color_photo_url($default_color, $default_nabor_type);
+$slot_overall = loraleya_get_color_photo_url($default_color, $hero_nabor);
 $slot_napkin  = loraleya_get_color_photo_url($default_color, 'salfetka-tsvetok');
 $slot_kuvert  = loraleya_get_color_photo_url($default_color, 'kuvert');
 $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
+
+$slot_overall_full = loraleya_get_color_photo_url($default_color, $hero_nabor, 'full');
+$slot_napkin_full  = loraleya_get_color_photo_url($default_color, 'salfetka-tsvetok', 'full');
+$slot_kuvert_full  = loraleya_get_color_photo_url($default_color, 'kuvert', 'full');
+$slot_faktura_full = loraleya_get_color_photo_url($default_color, 'macro-faktura', 'full');
 ?>
 <section class="section" id="gallery">
     <div class="container">
@@ -202,6 +232,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
              data-persons="<?php echo esc_attr($default_persons_int); ?>">
 
             <div class="sc-gallery-item" data-slot="overall"
+                 data-full="<?php echo esc_url($slot_overall_full ?: $slot_overall); ?>"
                  style="<?php echo $slot_overall ? 'background-image:url(' . esc_url($slot_overall) . ')' : ''; ?>">
                 <?php if (!$slot_overall): ?>
                     <div class="sc-gallery-ph">Фото · общий план стола</div>
@@ -209,6 +240,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             </div>
 
             <div class="sc-gallery-item" data-slot="napkin"
+                 data-full="<?php echo esc_url($slot_napkin_full ?: $slot_napkin); ?>"
                  style="<?php echo $slot_napkin ? 'background-image:url(' . esc_url($slot_napkin) . ')' : ''; ?>">
                 <?php if (!$slot_napkin): ?>
                     <div class="sc-gallery-ph">Детали · салфетка</div>
@@ -216,6 +248,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             </div>
 
             <div class="sc-gallery-item" data-slot="kuvert"
+                 data-full="<?php echo esc_url($slot_kuvert_full ?: $slot_kuvert); ?>"
                  style="<?php echo $slot_kuvert ? 'background-image:url(' . esc_url($slot_kuvert) . ')' : ''; ?>">
                 <?php if (!$slot_kuvert): ?>
                     <div class="sc-gallery-ph">Детали · куверт</div>
@@ -223,6 +256,7 @@ $slot_faktura = loraleya_get_color_photo_url($default_color, 'macro-faktura');
             </div>
 
             <div class="sc-gallery-item" data-slot="faktura"
+                 data-full="<?php echo esc_url($slot_faktura_full ?: $slot_faktura); ?>"
                  style="<?php echo $slot_faktura ? 'background-image:url(' . esc_url($slot_faktura) . ')' : ''; ?>">
                 <?php if (!$slot_faktura): ?>
                     <div class="sc-gallery-ph">Макро · фактура ткани</div>
@@ -505,6 +539,8 @@ if (is_array($sc_faq_data) && !empty($sc_faq_data)) :
 
 <script>
 window.LORALEYA_GALLERY_PHOTOS = <?php echo wp_json_encode($gallery_photo_map); ?>;
+window.LORALEYA_GALLERY_PHOTOS_FULL = <?php echo wp_json_encode($gallery_photo_map_full); ?>;
+window.LORALEYA_HERO_NABOR = '<?php echo esc_js($hero_nabor); ?>';
 </script>
 
 <?php

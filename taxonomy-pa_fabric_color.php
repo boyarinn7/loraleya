@@ -387,7 +387,7 @@ get_header();
                     <?php
                     $hero_detail_img = loraleya_color_img($photo_prefix, 'hero-detail', 'medium_large', [
                         'alt'   => 'Детали · салфетка ' . esc_attr($color['name']),
-                        'sizes' => '(max-width: 700px) 45vw, 200px',
+                        'sizes' => '(max-width: 700px) 45vw, 320px',
                     ]);
                     if ($hero_detail_img) : echo $hero_detail_img; else : ?>
                         <span class="chc-ph">Детали · салфетка</span>
@@ -397,7 +397,7 @@ get_header();
                     <?php
                     $hero_kuvert_img = loraleya_color_img($photo_prefix, 'kuvert', 'medium_large', [
                         'alt'   => 'Куверт ' . esc_attr($color['name']),
-                        'sizes' => '(max-width: 700px) 45vw, 200px',
+                        'sizes' => '(max-width: 700px) 45vw, 320px',
                     ]);
                     if ($hero_kuvert_img) : echo $hero_kuvert_img; else : ?>
                         <span class="chc-ph">Куверт · веер</span>

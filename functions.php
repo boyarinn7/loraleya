@@ -57,6 +57,12 @@ function loraleya_scripts() {
     $constructor_js = get_template_directory() . '/assets/js/constructor.js';
     wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], file_exists($constructor_js) ? filemtime($constructor_js) : '1.0', true);
 
+    // Лайтбокс галереи сценария — только на странице сценария
+    if (is_singular('scenario')) {
+        $scenario_js = get_stylesheet_directory() . '/assets/js/ll-scenario.js';
+        wp_enqueue_script('ll-scenario', get_stylesheet_directory_uri() . '/assets/js/ll-scenario.js', [], file_exists($scenario_js) ? filemtime($scenario_js) : '1.0.0', true);
+    }
+
     // Pass data to JS
     wp_localize_script('loraleya-main', 'loraleya', [
         'ajax_url' => admin_url('admin-ajax.php'),
@@ -530,7 +536,10 @@ function loraleya_ajax_get_cart() {
                 // Декодируем slug если он URL-encoded ('4%d0%bf-140' → '4п-140')
                 $term_slug = urldecode($attr_value);
                 $term = get_term_by('slug', $term_slug, $taxonomy);
-                $variation_labels[] = $term ? $term->name : $attr_value;
+                $raw_label = $term ? $term->name : $attr_value;
+                $variation_labels[] = function_exists('ll_decode_size_code')
+                    ? ll_decode_size_code($raw_label)
+                    : $raw_label;
             }
         }
 
@@ -695,13 +704,14 @@ function loraleya_color_swatch_url($slug, $size = 'thumbnail') {
  */
 function loraleya_get_scenario_defaults($scenario_slug) {
     $defaults = [
-        'romanticheskij-uzhin' => ['color' => 'fioletovyj',      'persons' => 4],
-        'semejnyj-obed'        => ['color' => 'zelenyj',         'persons' => 4],
-        'prazdnichnyj-stol'    => ['color' => 'melanzh-zoloto',  'persons' => 6],
-        'kazhdyj-den'          => ['color' => 'melanzh-serebro', 'persons' => 4],
+        'romanticheskij-uzhin' => ['color' => 'fioletovyj',      'persons' => 4, 'hero_nabor' => 'nabor-2-140'],
+        'semejnyj-obed'        => ['color' => 'zelenyj',         'persons' => 4, 'hero_nabor' => 'nabor-6-240'],
+        'prazdnichnyj-stol'    => ['color' => 'melanzh-zoloto',  'persons' => 6, 'hero_nabor' => 'nabor-6-300'],
+        'kazhdyj-den'          => ['color' => 'melanzh-serebro', 'persons' => 4, 'hero_nabor' => 'nabor-4-175'],
+        'den-rozhdenija'       => ['color' => 'biryuza',         'persons' => 6, 'hero_nabor' => 'nabor-6-300'],
     ];
 
-    $fallback = ['color' => 'bezhevyj', 'persons' => 4];
+    $fallback = ['color' => 'bezhevyj', 'persons' => 4, 'hero_nabor' => 'nabor-4-175'];
 
     return $defaults[$scenario_slug] ?? $fallback;
 }
@@ -890,9 +900,9 @@ function loraleya_send_telegram($token, $chat_id, $text) {
  *                           'nabor-4-140', 'nabor-4-175', 'nabor-6-300' и т.д.
  * @return string URL или пустая строка
  */
-function loraleya_get_color_photo_url($color_slug, $type) {
+function loraleya_get_color_photo_url($color_slug, $type, $size = 'large') {
     static $cache = [];
-    $cache_key = $color_slug . '|' . $type;
+    $cache_key = $color_slug . '|' . $type . '|' . $size;
     if (isset($cache[$cache_key])) {
         return $cache[$cache_key];
     }
@@ -936,7 +946,7 @@ function loraleya_get_color_photo_url($color_slug, $type) {
     ]);
 
     if (!empty($attachments)) {
-        $url = wp_get_attachment_image_url($attachments[0]->ID, 'large');
+        $url = wp_get_attachment_image_url($attachments[0]->ID, $size);
         $cache[$cache_key] = $url ?: '';
         return $cache[$cache_key];
     }
@@ -950,7 +960,7 @@ function loraleya_get_color_photo_url($color_slug, $type) {
     ]);
 
     if (!empty($attachments)) {
-        $url = wp_get_attachment_image_url($attachments[0]->ID, 'large');
+        $url = wp_get_attachment_image_url($attachments[0]->ID, $size);
         $cache[$cache_key] = $url ?: '';
         return $cache[$cache_key];
     }
@@ -1694,3 +1704,57 @@ add_filter('woocommerce_variation_option_name', function ($name) {
     }
     return $name;
 }, 10, 1);
+
+/* ===================================================================
+   LoraLeya — расшифровка кодов вариаций ДЛЯ КЛИЕНТА
+   Данные в БД не меняются (заказы/чек/ЧЗ/5Post работают на кодах).
+   Расшифровка только в клиентском выводе: корзина, чекаут, ЛК, «Заказ принят».
+   Админка и письма — оставляем коды (техдокументация).
+   =================================================================== */
+
+if (!function_exists('ll_decode_size_code')) {
+    function ll_decode_size_code($value) {
+        $n = trim(wp_strip_all_tags((string)$value));
+        if ($n === '') return $value;
+        if (preg_match('~^(\d+)\s*п\s*[/\-]\s*(\d+)\s*$~u', $n, $m)) {
+            return 'на ' . (int)$m[1] . ' ' . ll_persons_word($m[1]) . ', дорожка ' . (int)$m[2] . ' см';
+        }
+        if (preg_match('~^\d+$~', $n)) {
+            return $n . ' см';
+        }
+        return $value;
+    }
+}
+
+if (!function_exists('ll_is_customer_view')) {
+    function ll_is_customer_view() {
+        if (is_admin() && !wp_doing_ajax()) return false;
+        return true;
+    }
+}
+
+add_filter('woocommerce_cart_item_data', function ($item_data, $cart_item) {
+    if (!ll_is_customer_view()) return $item_data;
+    foreach ($item_data as $i => $row) {
+        if (isset($row['value'])) {
+            $item_data[$i]['value'] = ll_decode_size_code($row['value']);
+        }
+    }
+    return $item_data;
+}, 10, 2);
+
+add_filter('woocommerce_get_item_data', function ($item_data, $cart_item) {
+    if (!ll_is_customer_view()) return $item_data;
+    foreach ($item_data as $i => $row) {
+        if (isset($row['value'])) {
+            $item_data[$i]['value'] = ll_decode_size_code($row['value']);
+        }
+    }
+    return $item_data;
+}, 10, 2);
+
+add_filter('woocommerce_order_item_display_meta_value', function ($value, $meta = null, $item = null) {
+    if (!ll_is_customer_view()) return $value;
+    if (did_action('woocommerce_email_header')) return $value;
+    return ll_decode_size_code($value);
+}, 10, 3);

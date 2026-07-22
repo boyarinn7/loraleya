@@ -296,17 +296,78 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // ===== SMOOTH SCROLL FOR ANCHOR LINKS =====
-    document.querySelectorAll('a[href^="#"]').forEach(function(anchor) {
-        anchor.addEventListener('click', function(e) {
-            var href = this.getAttribute('href');
-            if (!href || href === '#' || href.length < 2) return;
-            const target = document.querySelector(href);
-            if (target) {
+    (function () {
+        function adminBarOffset() {
+            var bar = document.getElementById('wpadminbar');
+            return (bar && getComputedStyle(bar).position === 'fixed')
+                ? bar.getBoundingClientRect().height : 0;
+        }
+        function fixedHeaderOffset() {
+            var hdr = document.getElementById('siteHeader');
+            if (!hdr) return 0;
+            var pos = getComputedStyle(hdr).position;
+            return (pos === 'fixed' || pos === 'sticky') ? hdr.getBoundingClientRect().height : 0;
+        }
+
+        // #scenarios: нижняя граница ФОНА hero к нижней кромке админ-бара. НЕ МЕНЯТЬ — принято.
+        function scrollHeroBottom() {
+            var hero = document.querySelector('.hero');
+            var el = hero || document.getElementById('scenarios');
+            if (!el) return;
+            var base = hero ? hero.getBoundingClientRect().bottom
+                            : el.getBoundingClientRect().top;
+            var y = base + window.pageYOffset - adminBarOffset();
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        }
+
+        // Воздух над заголовком секции при переходе (px). Единственная настраиваемая величина.
+        var KEEP = 1;
+
+        // Прочие секции (#palette и т.п.): целимся в КОНТЕНТ (.container), а не в край секции —
+        // иначе собственный padding-top секции даёт пустой провал над заголовком.
+        // Ставим контент под шапку + админ-бар с воздухом KEEP.
+        function scrollToSectionTop(target) {
+            var content = target.querySelector('.container') || target;
+            var y = content.getBoundingClientRect().top + window.pageYOffset
+                    - adminBarOffset() - fixedHeaderOffset() - KEEP;
+            window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+        }
+
+        function scrollToHash(hash) {
+            var target = hash ? document.querySelector(hash) : null;
+            if (!target) return false;
+            if (hash === '#scenarios') scrollHeroBottom();
+            else scrollToSectionTop(target);
+            return true;
+        }
+
+        // Та же страница? (host совпадает, путь совпадает без хвостового слэша)
+        function isSamePage(a) {
+            if (a.host && a.host !== location.host) return false;
+            var p1 = (a.pathname || '').replace(/\/+$/, '');
+            var p2 = (location.pathname || '').replace(/\/+$/, '');
+            return p1 === p2;
+        }
+
+        // Делегирование: ловим любую ссылку на якорь текущей страницы (любая форма href).
+        document.addEventListener('click', function (e) {
+            var a = (e.target && e.target.closest) ? e.target.closest('a[href]') : null;
+            if (!a) return;
+            var hash = a.hash;
+            if (!hash || hash.length < 2) return;
+            if (!isSamePage(a)) return;
+            if (scrollToHash(hash)) {
                 e.preventDefault();
-                target.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
-    });
+
+        // Прямой заход/перезагрузка по ссылке с #hash: после загрузки поправляем позицию.
+        window.addEventListener('load', function () {
+            if (location.hash && location.hash.length > 1) {
+                setTimeout(function () { scrollToHash(location.hash); }, 60);
+            }
+        });
+    })();
 
     // ===== FADE IN ON SCROLL =====
     const observerOptions = { threshold: 0.1, rootMargin: '0px 0px -50px 0px' };
