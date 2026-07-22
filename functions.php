@@ -1163,60 +1163,61 @@ add_action('save_post_scenario', function($post_id) {
 
 // === SEO: TITLE И META DESCRIPTION ===
 
-add_filter('pre_get_document_title', function($title) {
-    if (is_tax('pa_fabric_color')) {
+/**
+ * Читает seo_title или seo_description из meta темы для текущего объекта.
+ *
+ * Охват: pa_fabric_color, scenario, post (статья), category, front_page.
+ * is_home() (/blog/) — намеренно не включён, отдельная задача.
+ *
+ * Для singular-типов использует get_queried_object_id() вместо get_the_ID(),
+ * так как функция вызывается в том числе из фильтров Rank Math вне Loop.
+ */
+function loraleya_get_seo_field( $field ) {
+    if ( is_tax( 'pa_fabric_color' ) ) {
         $term = get_queried_object();
-        if ($term && !is_wp_error($term)) {
-            $custom = get_term_meta($term->term_id, 'seo_title', true);
-            if (!empty($custom)) return $custom;
+        if ( $term && ! is_wp_error( $term ) ) {
+            return (string) get_term_meta( $term->term_id, $field, true );
         }
     }
-    if (is_singular('scenario')) {
-        $custom = get_post_meta(get_the_ID(), 'seo_title', true);
-        if (!empty($custom)) return $custom;
+    if ( is_singular( 'scenario' ) || is_singular( 'post' ) ) {
+        return (string) get_post_meta( get_queried_object_id(), $field, true );
     }
-    if (is_singular('post')) {
-        $custom = get_post_meta(get_the_ID(), 'seo_title', true);
-        if (!empty($custom)) return $custom;
-    }
-    if (is_category()) {
+    if ( is_category() ) {
         $term = get_queried_object();
-        if ($term && !is_wp_error($term)) {
-            $custom = get_term_meta($term->term_id, 'seo_title', true);
-            if (!empty($custom)) return $custom;
+        if ( $term && ! is_wp_error( $term ) ) {
+            return (string) get_term_meta( $term->term_id, $field, true );
         }
     }
-    if (is_front_page()) {
-        return 'Красивая сервировка стола — наборы в 17 цветах | LoraLeya';
+    if ( is_front_page() ) {
+        if ( 'seo_title' === $field ) {
+            return 'Красивая сервировка стола — наборы в 17 цветах | LoraLeya';
+        }
+        if ( 'seo_description' === $field ) {
+            return 'Жаккардовая скатерть, дорожка, салфетки в 17 цветах. Готовые наборы и индивидуальный пошив. Бесплатная доставка от 100 000 ₽.';
+        }
     }
-    return $title;
-});
+    return '';
+}
 
-add_action('wp_head', function() {
-    $description = '';
+if ( class_exists( 'RankMath' ) ) {
+    // Rank Math активен — интеграция через его фильтры, прямого вывода нет.
+    require_once get_template_directory() . '/rank-math.php';
+} else {
+    // Резервный режим: Rank Math не активен.
+    // Тема сама выводит title и один <meta name="description">.
 
-    if (is_tax('pa_fabric_color')) {
-        $term = get_queried_object();
-        if ($term && !is_wp_error($term)) {
-            $description = get_term_meta($term->term_id, 'seo_description', true);
-        }
-    } elseif (is_singular('scenario')) {
-        $description = get_post_meta(get_the_ID(), 'seo_description', true);
-    } elseif (is_singular('post')) {
-        $description = get_post_meta(get_the_ID(), 'seo_description', true);
-    } elseif (is_category()) {
-        $term = get_queried_object();
-        if ($term && !is_wp_error($term)) {
-            $description = get_term_meta($term->term_id, 'seo_description', true);
-        }
-    } elseif (is_front_page()) {
-        $description = 'Жаккардовая скатерть, дорожка, салфетки в 17 цветах. Готовые наборы и индивидуальный пошив. Бесплатная доставка от 100 000 ₽.';
-    }
+    add_filter( 'pre_get_document_title', function( $title ) {
+        $custom = loraleya_get_seo_field( 'seo_title' );
+        return ! empty( $custom ) ? $custom : $title;
+    }, 10 );
 
-    if (!empty($description)) {
-        echo "\n" . '<meta name="description" content="' . esc_attr($description) . '">' . "\n";
-    }
-}, 5);
+    add_action( 'wp_head', function() {
+        $description = loraleya_get_seo_field( 'seo_description' );
+        if ( ! empty( $description ) ) {
+            echo "\n" . '<meta name="description" content="' . esc_attr( $description ) . '">' . "\n";
+        }
+    }, 5 );
+}
 
 // === JSON-LD FAQPage schema ===
 
