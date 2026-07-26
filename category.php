@@ -5,6 +5,12 @@
 get_header();
 $term     = get_queried_object();
 $seo_text = $term ? get_term_meta($term->term_id, 'seo_text', true) : '';
+
+if (function_exists('loraleya_is_category_hub') && loraleya_is_category_hub($term)) {
+    get_template_part('template-parts/category-hub');
+    get_footer();
+    return;
+}
 ?>
 
 <section class="blog-index-hero">
