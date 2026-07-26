@@ -1435,13 +1435,23 @@ add_action('category_edit_form_fields', function($term) {
 });
 
 $loraleya_cat_seo_save = function($term_id) {
+    if (!current_user_can('manage_categories')) {
+        return;
+    }
+    if (!isset($_POST['loraleya_category_hub_nonce']) ||
+        !wp_verify_nonce(
+            sanitize_text_field(wp_unslash($_POST['loraleya_category_hub_nonce'])),
+            'loraleya_category_hub_save'
+        )) {
+        return;
+    }
     foreach (['seo_title', 'seo_description'] as $field) {
         if (isset($_POST[$field])) {
-            update_term_meta($term_id, $field, sanitize_text_field($_POST[$field]));
+            update_term_meta($term_id, $field, sanitize_text_field(wp_unslash($_POST[$field])));
         }
     }
     if (isset($_POST['seo_text'])) {
-        update_term_meta($term_id, 'seo_text', wp_kses_post($_POST['seo_text']));
+        update_term_meta($term_id, 'seo_text', wp_kses_post(wp_unslash($_POST['seo_text'])));
     }
 };
 add_action('created_category', $loraleya_cat_seo_save);
@@ -1756,3 +1766,6 @@ add_filter('woocommerce_order_item_display_meta_value', function ($value, $meta 
     if (did_action('woocommerce_email_header')) return $value;
     return ll_decode_size_code($value);
 }, 10, 3);
+
+// Инфраструктура редакционных хабов рубрик.
+require_once get_template_directory() . '/inc/category-hub.php';
