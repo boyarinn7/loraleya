@@ -4818,21 +4818,28 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
    Everything is scoped to .ll-category-hub.
    ================================================================== */
 .ll-category-hub {
-    --ll-hub-ink: #24221f;
-    --ll-hub-muted: #6c665e;
-    --ll-hub-line: rgba(36, 34, 31, 0.16);
-    --ll-hub-paper: #f5f1e9;
-    --ll-hub-accent: var(--gold, #b89a59);
-    color: var(--ll-hub-ink);
-    background: #fff;
+    --ll-hub-ink: var(--cream, #e8e0d0);
+    --ll-hub-body: var(--text, #c8c0b4);
+    --ll-hub-muted: var(--text-muted, #8a847a);
+    --ll-hub-line: rgba(197, 165, 90, 0.12);
+    --ll-hub-line-soft: rgba(197, 165, 90, 0.08);
+    --ll-hub-accent: var(--gold, #c5a55a);
+    --ll-hub-accent-light: var(--gold-light, #d4bc7c);
+    --ll-hub-surface: linear-gradient(
+        145deg,
+        rgba(197, 165, 90, 0.055),
+        rgba(197, 165, 90, 0.018)
+    );
+    color: var(--ll-hub-body);
+    background: var(--bg, #0e0e0c);
 }
 
 .ll-category-hub__section {
-    padding: clamp(3.5rem, 7vw, 7rem) 0;
+    padding: clamp(4rem, 7vw, 5.5rem) 0;
 }
 
 .ll-category-hub__narrow {
-    max-width: 860px;
+    max-width: 760px;
 }
 
 .ll-category-hub__eyebrow {
@@ -4841,13 +4848,13 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     gap: 0.45rem;
     align-items: center;
     margin-bottom: 1rem;
-    font-family: 'Raleway', sans-serif;
-    font-size: 0.72rem;
-    font-weight: 600;
+    font-family: var(--sans, 'Raleway', sans-serif);
+    font-size: 0.62rem;
+    font-weight: 500;
     line-height: 1.4;
-    letter-spacing: 0.14em;
+    letter-spacing: 0.25em;
     text-transform: uppercase;
-    color: var(--ll-hub-muted);
+    color: var(--ll-hub-accent);
 }
 
 .ll-category-hub__eyebrow a {
@@ -4860,8 +4867,9 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__hero {
-    padding: clamp(3rem, 7vw, 7.5rem) 0;
-    background: var(--ll-hub-paper);
+    padding: clamp(5.5rem, 8vw, 8.5rem) 0 clamp(3rem, 5vw, 3.75rem);
+    background: var(--bg, #0e0e0c);
+    border-bottom: 1px solid var(--ll-hub-line-soft);
 }
 
 .ll-category-hub__hero-grid {
@@ -4872,19 +4880,22 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__hero h1 {
-    max-width: 760px;
+    max-width: 900px;
     margin: 0;
-    font-size: clamp(2.5rem, 5vw, 5.4rem);
-    line-height: 0.98;
-    letter-spacing: -0.035em;
+    font-size: clamp(2.7rem, 5.4vw, 4.6rem);
+    line-height: 1.04;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
 }
 
 .ll-category-hub__lead {
     max-width: 650px;
-    margin: 1.75rem 0 0;
-    font-size: clamp(1.05rem, 1.5vw, 1.3rem);
-    line-height: 1.7;
-    color: var(--ll-hub-muted);
+    margin: 1.55rem 0 0;
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: clamp(1.45rem, 2.5vw, 2rem);
+    line-height: 1.42;
+    letter-spacing: -0.01em;
+    color: var(--ll-hub-ink);
 }
 
 .ll-category-hub__hero-media {
@@ -4896,6 +4907,7 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     width: 100%;
     aspect-ratio: 16 / 10;
     object-fit: cover;
+    border: 1px solid var(--ll-hub-line-soft);
 }
 
 .ll-category-hub__hero-media figcaption {
@@ -4906,12 +4918,14 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__position {
-    border-bottom: 1px solid var(--ll-hub-line);
+    border-bottom: 1px solid var(--ll-hub-line-soft);
 }
 
 .ll-category-hub__prose {
-    font-size: clamp(1rem, 1.25vw, 1.15rem);
-    line-height: 1.85;
+    font-size: clamp(1rem, 1.15vw, 1.08rem);
+    line-height: 1.82;
+    font-weight: 300;
+    color: var(--ll-hub-body);
 }
 
 .ll-category-hub__prose > :first-child {
@@ -4925,27 +4939,32 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 .ll-category-hub__prose h2,
 .ll-category-hub__prose h3 {
     scroll-margin-top: 120px;
-    margin-top: 2.8em;
-    margin-bottom: 0.75em;
-    line-height: 1.15;
+    color: var(--ll-hub-ink);
+    letter-spacing: -0.018em;
+    text-wrap: balance;
 }
 
 .ll-category-hub__prose h2 {
-    font-size: clamp(1.9rem, 3.2vw, 3rem);
+    margin: 4.5rem 0 1.4rem;
+    font-size: clamp(2rem, 3.8vw, 3rem);
+    line-height: 1.12;
 }
 
 .ll-category-hub__prose h3 {
-    font-size: clamp(1.4rem, 2vw, 2rem);
+    margin: 3.5rem 0 1.2rem;
+    font-size: clamp(1.55rem, 2.6vw, 2.1rem);
+    line-height: 1.15;
 }
 
 .ll-category-hub__prose a {
-    color: inherit;
-    text-decoration-color: var(--ll-hub-accent);
-    text-underline-offset: 0.2em;
+    color: var(--ll-hub-accent-light);
+    text-decoration: underline;
+    text-decoration-color: rgba(212, 188, 124, 0.35);
+    text-underline-offset: 0.22em;
 }
 
 .ll-category-hub__featured {
-    background: #fff;
+    background: var(--bg, #0e0e0c);
 }
 
 .ll-category-hub__featured-card {
@@ -4953,7 +4972,8 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
     color: inherit;
     text-decoration: none;
-    background: var(--ll-hub-paper);
+    background: var(--ll-hub-surface);
+    border: 1px solid var(--ll-hub-line);
 }
 
 .ll-category-hub__featured-media {
@@ -4961,7 +4981,7 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     min-height: 440px;
     place-items: center;
     overflow: hidden;
-    background: #ded7ca;
+    background: var(--bg3, #252420);
 }
 
 .ll-category-hub__featured-image {
@@ -4990,32 +5010,37 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 
 .ll-category-hub__featured-copy time {
     margin-bottom: 1.25rem;
-    font-family: 'Raleway', sans-serif;
-    font-size: 0.72rem;
-    letter-spacing: 0.12em;
+    font-family: var(--sans, 'Raleway', sans-serif);
+    font-size: 0.66rem;
+    letter-spacing: 0.14em;
     text-transform: uppercase;
     color: var(--ll-hub-muted);
 }
 
 .ll-category-hub__featured-copy h2 {
     margin: 0;
-    font-size: clamp(2rem, 3.5vw, 3.5rem);
-    line-height: 1.08;
+    font-size: clamp(2rem, 3.8vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
 }
 
 .ll-category-hub__featured-copy p {
     margin: 1.4rem 0 0;
-    line-height: 1.75;
-    color: var(--ll-hub-muted);
+    font-size: clamp(1rem, 1.15vw, 1.08rem);
+    font-weight: 300;
+    line-height: 1.82;
+    color: var(--ll-hub-body);
 }
 
 .ll-category-hub__text-link {
     margin-top: 2rem;
-    font-family: 'Raleway', sans-serif;
+    font-family: var(--sans, 'Raleway', sans-serif);
     font-size: 0.76rem;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: 0.1em;
     text-transform: uppercase;
+    color: var(--ll-hub-accent-light);
 }
 
 .ll-category-hub__steps {
@@ -5047,11 +5072,11 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__steps-list a:hover {
-    background: var(--ll-hub-paper);
+    background: var(--ll-hub-surface);
 }
 
 .ll-category-hub__steps-list span {
-    font-family: 'Raleway', sans-serif;
+    font-family: var(--sans, 'Raleway', sans-serif);
     font-size: 0.7rem;
     color: var(--ll-hub-accent);
 }
@@ -5061,14 +5086,14 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__care {
-    background: var(--ll-hub-paper);
+    background: var(--bg, #0e0e0c);
 }
 
 .ll-category-hub__care-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    border-top: 1px solid var(--ll-hub-line);
-    border-bottom: 1px solid var(--ll-hub-line);
+    background: var(--ll-hub-surface);
+    border: 1px solid rgba(197, 165, 90, 0.18);
 }
 
 .ll-category-hub__care-card {
@@ -5083,17 +5108,23 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__care-card strong {
-    font-family: Georgia, serif;
-    font-size: clamp(2.5rem, 5vw, 5rem);
+    font-family: var(--serif, 'Cormorant Garamond', Georgia, serif);
+    font-size: clamp(2.25rem, 4vw, 3.25rem);
     font-weight: 400;
-    line-height: 1;
+    line-height: 1.1;
+    color: var(--ll-hub-ink);
 }
 
 .ll-category-hub__care-card span {
-    font-weight: 600;
+    font-size: 0.86rem;
+    line-height: 1.7;
+    font-weight: 400;
+    color: var(--ll-hub-body);
 }
 
 .ll-category-hub__care-card small {
+    font-size: 0.84rem;
+    line-height: 1.65;
     color: var(--ll-hub-muted);
 }
 
@@ -5126,12 +5157,16 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__faq {
-    background: var(--ll-hub-paper);
+    background: var(--bg, #0e0e0c);
+    border-top: 1px solid var(--ll-hub-line-soft);
 }
 
 .ll-category-hub__faq h2 {
     margin: 0 0 2rem;
-    font-size: clamp(2rem, 4vw, 3.6rem);
+    font-size: clamp(2rem, 3.8vw, 3rem);
+    line-height: 1.12;
+    letter-spacing: -0.018em;
+    text-wrap: balance;
 }
 
 .ll-category-hub__faq-list {
@@ -5143,11 +5178,17 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
 }
 
 .ll-category-hub__faq-list summary {
-    padding: 1.5rem 2.5rem 1.5rem 0;
-    font-size: clamp(1.05rem, 1.5vw, 1.25rem);
-    font-weight: 600;
-    line-height: 1.45;
+    padding: 1rem 2.5rem 1rem 0;
+    font-size: 0.88rem;
+    font-weight: 400;
+    line-height: 1.4;
+    color: var(--cream, #f0ece4);
     cursor: pointer;
+    transition: color 0.2s;
+}
+
+.ll-category-hub__faq-list summary:hover {
+    color: var(--gold, #c5a55a);
 }
 
 .ll-category-hub__faq-list details > div {
@@ -5199,11 +5240,23 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     }
 
     .ll-category-hub__hero {
-        padding: 2.75rem 0;
+        padding: 7rem 0 2.8rem;
     }
 
     .ll-category-hub__hero-grid {
         gap: 2.25rem;
+    }
+
+    .ll-category-hub__hero h1 {
+        font-size: clamp(2.25rem, 11vw, 3.35rem);
+    }
+
+    .ll-category-hub__lead {
+        font-size: 1.35rem;
+    }
+
+    .ll-category-hub__prose h2 {
+        margin-top: 3.5rem;
     }
 
     .ll-category-hub__featured-copy {
