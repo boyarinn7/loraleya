@@ -182,6 +182,26 @@
 }
 .woocommerce-checkout .ll-shipping-row-source { display: none; }
 
+/* WooCommerce automatically marks non-required fields as optional. */
+.woocommerce-checkout .optional { display: none !important; }
+
+/* Confirmation shown only after the 5Post map has returned a real point. */
+.woocommerce-checkout #billing_address_1_field.ll-fivepost-point-selected {
+  margin-top: 0.9rem;
+  padding: 0.85rem;
+  background: rgba(197, 165, 90, 0.06);
+  border-left: 2px solid var(--gold);
+}
+.woocommerce-checkout #billing_address_1_field.ll-fivepost-point-selected label {
+  color: var(--gold-light);
+}
+.woocommerce-checkout #billing_address_1_field.ll-fivepost-point-selected input[readonly] {
+  background: var(--bg2);
+  border-color: rgba(197, 165, 90, 0.42);
+  color: var(--cream);
+  cursor: default;
+}
+
 /* Вариант получения для СДЭК и Яндекс Доставки. */
 .woocommerce-checkout #billing_delivery_mode_field .woocommerce-input-wrapper {
   display: grid;
@@ -236,8 +256,8 @@
 
 /*
  * В балуне карты плагин выводит подряд срок и собственную расчётную цену.
- * Итоговая цена заказа уже задаётся темой: 0 ₽ для Москвы и области,
- * 250 ₽ для остальных регионов. Поэтому старую цену плагина скрываем.
+ * На этом шаге доставка не добавляется к сумме заказа, поэтому старую
+ * расчётную цену плагина скрываем.
  */
 body.woocommerce-checkout #post5-map-popup
   .point-total-wrapper + .point-total-wrapper {
