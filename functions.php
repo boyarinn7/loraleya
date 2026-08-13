@@ -144,6 +144,70 @@ add_filter( 'woocommerce_cart_no_shipping_available_html', 'loraleya_no_shipping
 function loraleya_no_shipping_text( $html ) {
     return '<p>В этом населённом пункте пока нет пунктов выдачи 5Post. Попробуйте ближайший крупный город или напишите нам на loraleya-tex@yandex.ru — подберём доставку.</p>';
 }
+/**
+ * Определяет, относится ли адрес доставки к Москве или Московской области.
+ * В российской форме WooCommerce поле региона является свободным текстом,
+ * поэтому проверяем регион, город и адрес с учётом русских и латинских вариантов.
+ */
+function loraleya_is_moscow_shipping_destination( $destination ) {
+    $parts = array(
+        $destination['state']     ?? '',
+        $destination['city']      ?? '',
+        $destination['address']   ?? '',
+        $destination['address_1'] ?? '',
+        $destination['address_2'] ?? '',
+    );
+
+    $location = implode( ' ', array_filter( array_map( 'strval', $parts ) ) );
+    $location = function_exists( 'mb_strtolower' )
+        ? mb_strtolower( $location, 'UTF-8' )
+        : strtolower( $location );
+    $location = str_replace( 'ё', 'е', $location );
+
+    return 1 === preg_match( '/(?:москв|московск|moscow|moskva|moskovsk)/u', $location );
+}
+
+/**
+ * Фиксированная стоимость 5Post:
+ * Москва и Московская область — бесплатно, остальные регионы — 250 ₽.
+ * Сам плагин 5Post продолжает подбирать доступные пункты и сроки доставки.
+ */
+add_filter( 'woocommerce_package_rates', 'loraleya_fixed_fivepost_shipping_rate', 100, 2 );
+function loraleya_fixed_fivepost_shipping_rate( $rates, $package ) {
+    if ( ! is_array( $rates ) ) {
+        return $rates;
+    }
+
+    $destination = isset( $package['destination'] ) && is_array( $package['destination'] )
+        ? $package['destination']
+        : array();
+    $is_moscow = loraleya_is_moscow_shipping_destination( $destination );
+    $cost      = $is_moscow ? 0 : 250;
+
+    foreach ( $rates as $rate ) {
+        if ( ! $rate instanceof WC_Shipping_Rate || 'fivepost_shipping_method' !== $rate->get_method_id() ) {
+            continue;
+        }
+
+        $rate->set_cost( $cost );
+        $rate->set_taxes( array() );
+        $rate->set_label( $is_moscow ? '5Post — бесплатно' : '5Post' );
+    }
+
+    return $rates;
+}
+
+/**
+ * Краткое пояснение правил рядом с итогом доставки на странице заказа.
+ */
+add_action( 'woocommerce_review_order_after_shipping', 'loraleya_checkout_shipping_rules' );
+function loraleya_checkout_shipping_rules() {
+    echo '<tr class="ll-shipping-rules"><td colspan="2">'
+        . '<small><strong>5Post:</strong> Москва и Московская область — бесплатно; другие регионы России — 250 ₽. '
+        . 'СДЭК и Яндекс Доставка — стоимость рассчитывается индивидуально менеджером.</small>'
+        . '</td></tr>';
+}
+
 
 // Remove default WooCommerce styles
 add_filter('woocommerce_enqueue_styles', '__return_empty_array');
