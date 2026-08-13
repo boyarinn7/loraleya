@@ -1833,3 +1833,9 @@ add_filter('woocommerce_order_item_display_meta_value', function ($value, $meta 
 
 // Инфраструктура редакционных хабов рубрик.
 require_once get_template_directory() . '/inc/category-hub.php';
+
+// Оформление заказа с обязательным подтверждением менеджером до оплаты.
+$loraleya_checkout_workflow_file = get_template_directory() . '/inc/checkout-workflow.php';
+if ( file_exists( $loraleya_checkout_workflow_file ) ) {
+    require_once $loraleya_checkout_workflow_file;
+}
