@@ -22,11 +22,28 @@ remove_action( 'wp_footer', 'loraleya_privacy_consent_links_script' );
  * Return a safely normalized POST value.
  */
 function loraleya_checkout_post_value( $key, $default = '' ) {
-    if ( ! isset( $_POST[ $key ] ) ) {
+    $value = null;
+
+    if ( isset( $_POST[ $key ] ) ) {
+        $value = wp_unslash( $_POST[ $key ] );
+    } elseif ( isset( $_POST['post_data'] ) && is_string( $_POST['post_data'] ) ) {
+        static $checkout_data = null;
+
+        if ( null === $checkout_data ) {
+            $checkout_data = array();
+            parse_str( wp_unslash( $_POST['post_data'] ), $checkout_data );
+        }
+
+        if ( array_key_exists( $key, $checkout_data ) ) {
+            $value = $checkout_data[ $key ];
+        }
+    }
+
+    if ( null === $value || is_array( $value ) ) {
         return $default;
     }
 
-    return sanitize_text_field( wp_unslash( $_POST[ $key ] ) );
+    return sanitize_text_field( $value );
 }
 
 /**
@@ -133,6 +150,15 @@ function loraleya_checkout_delivery_rates( $rates, $package ) {
     $destination = isset( $package['destination'] ) && is_array( $package['destination'] )
         ? $package['destination']
         : array();
+
+    // During update_order_review WooCommerce sends current checkout fields in
+    // the serialized post_data value. It can still expose an older destination
+    // in the package, so the region entered on the current screen wins.
+    $posted_state = loraleya_checkout_post_value( 'billing_state' );
+    if ( '' !== $posted_state ) {
+        $destination['state'] = $posted_state;
+    }
+
     $is_moscow  = loraleya_checkout_is_moscow_region( $destination );
     $five_cost  = $is_moscow ? 0 : 250;
     $five_rate  = null;
@@ -277,6 +303,29 @@ function loraleya_checkout_fields( $fields ) {
     return $fields;
 }
 add_filter( 'woocommerce_checkout_fields', 'loraleya_checkout_fields', 30 );
+
+/**
+ * The workflow uses one billing/delivery destination. Suppress WooCommerce's
+ * duplicate "ship to a different address" section and keep billing fields as
+ * the source for shipping calculations.
+ */
+function loraleya_checkout_needs_separate_shipping_address( $needs_address ) {
+    if ( function_exists( 'is_checkout' ) && is_checkout() ) {
+        return false;
+    }
+
+    return $needs_address;
+}
+add_filter( 'woocommerce_cart_needs_shipping_address', 'loraleya_checkout_needs_separate_shipping_address', 30 );
+
+function loraleya_checkout_separate_shipping_checked( $checked ) {
+    if ( function_exists( 'is_checkout' ) && is_checkout() ) {
+        return false;
+    }
+
+    return $checked;
+}
+add_filter( 'woocommerce_ship_to_different_address_checked', 'loraleya_checkout_separate_shipping_checked', 30 );
 
 /**
  * Mount point for moving the real WooCommerce shipping controls next to the
