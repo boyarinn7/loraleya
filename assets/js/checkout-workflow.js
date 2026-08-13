@@ -32,40 +32,6 @@
         return '';
     }
 
-    function normalizeRegion(value) {
-        return String(value || '')
-            .toLowerCase()
-            .replace(/ё/g, 'е')
-            .replace(/[^a-zа-я0-9]+/g, ' ')
-            .replace(/\s+/g, ' ')
-            .trim();
-    }
-
-    function isMoscowRegion(value) {
-        var region = normalizeRegion(value);
-        var exactValues = [
-            'mow',
-            'mos',
-            'москва',
-            'г москва',
-            'город москва',
-            'moscow',
-            'moskva',
-            'московская область',
-            'московская обл',
-            'московская обл р н',
-            'мо',
-            'moscow oblast',
-            'moskovskaya oblast'
-        ];
-
-        if (exactValues.indexOf(region) !== -1) {
-            return true;
-        }
-
-        return /^московская (?:область|обл)(?:\s|$)/.test(region);
-    }
-
     function moveDeliveryPanel() {
         var $panel = $('.ll-delivery-panel').first();
         var $regionField = $('#billing_state_field');
@@ -96,7 +62,7 @@
         } else if (!$host.find('input[name^="shipping_method"]').length) {
             $host
                 .addClass('ll-delivery-methods-empty')
-                .html('<p class="ll-delivery-loading">Введите регион и город, чтобы выбрать способ доставки.</p>');
+                .html('<p class="ll-delivery-loading">Загружаем способы доставки…</p>');
         }
     }
 
@@ -122,33 +88,54 @@
         }
     }
 
+    function setFieldLabel(fieldSelector, label) {
+        var $label = $(fieldSelector).find('label').first();
+
+        if (!$label.length) {
+            return;
+        }
+
+        $label.text(label);
+    }
+
+    function configureAddressField(service, pointSelected) {
+        var fivepost = service === 'fivepost';
+        var $field = $('#billing_address_1_field');
+        var $input = $('#billing_address_1');
+
+        setFieldLabel(
+            '#billing_address_1_field',
+            fivepost ? 'Адрес выбранного ПВЗ' : 'Адрес доставки'
+        );
+
+        $input
+            .prop('readonly', fivepost)
+            .attr(
+                'placeholder',
+                fivepost ? 'После выбора ПВЗ адрес появится здесь' : 'Улица, дом, корпус'
+            );
+
+        $field.toggleClass('ll-fivepost-point-selected', fivepost && pointSelected);
+    }
+
     function clearFivePostPoint() {
         $('input[name="fivepost_point_id"], input[name="fivepost_point_zone"]').val('');
     }
 
     function clearManagerDeliveryFields() {
         $('input[name="billing_delivery_mode"]').prop('checked', false);
-        $('#billing_pickup_address, #billing_address_2, #billing_postcode').val('');
+        $('#billing_pickup_address, #billing_address_1, #billing_address_2, #billing_postcode').val('');
     }
 
     function updateTariffMessage(service) {
         var $message = $('.ll-delivery-tariff').first();
-        var region = $('#billing_state').val();
         var text = '';
 
         if (!$message.length) {
             return;
         }
 
-        if (service === 'fivepost') {
-            if (!normalizeRegion(region)) {
-                text = 'Укажите регион: для Москвы и Московской области доставка 5Post бесплатная, для других регионов России — 250 ₽.';
-            } else if (isMoscowRegion(region)) {
-                text = '5Post: доставка по Москве и Московской области — бесплатно.';
-            } else {
-                text = '5Post: доставка в другие регионы России — 250 ₽.';
-            }
-        } else if (service === 'cdek') {
+        if (service === 'cdek') {
             text = 'СДЭК: стоимость и срок доставки рассчитает менеджер после проверки заказа.';
         } else if (service === 'yandex') {
             text = 'Яндекс Доставка: стоимость и срок доставки рассчитает менеджер после проверки заказа.';
@@ -163,6 +150,7 @@
         var mode = $('input[name="billing_delivery_mode"]:checked').val() || '';
         var pickup = managerDelivery && mode === 'pvz';
         var courier = managerDelivery && mode === 'courier';
+        var fivepostPointSelected;
 
         if (previousService === 'fivepost' && managerDelivery) {
             clearFivePostPoint();
@@ -174,12 +162,23 @@
             courier = false;
         }
 
+        fivepostPointSelected = service === 'fivepost'
+            && Boolean($.trim($('#fivepost_point_id').val() || ''))
+            && Boolean($.trim($('#billing_address_1').val() || ''));
+
         toggleField('.ll-manager-delivery-field', managerDelivery);
         toggleField('.ll-delivery-mode-field', managerDelivery);
+        toggleField('.ll-delivery-address-field', managerDelivery);
         toggleField('.ll-pickup-address-field', pickup);
-        toggleField('.ll-courier-address-field', courier);
+        toggleField('#billing_address_1_field', courier || fivepostPointSelected);
+        toggleField('#billing_address_2_field', courier);
+        toggleField('#billing_postcode_field', courier);
+
+        configureAddressField(service, fivepostPointSelected);
 
         setFieldRequired('#billing_delivery_mode_field', managerDelivery);
+        setFieldRequired('#billing_state_field', managerDelivery);
+        setFieldRequired('#billing_city_field', managerDelivery);
         setFieldRequired('#billing_pickup_address_field', pickup);
         setFieldRequired('#billing_address_1_field', courier);
         setFieldRequired('#billing_address_2_field', false);
@@ -269,6 +268,14 @@
             .on('input.llCheckoutWorkflow change.llCheckoutWorkflow', '#billing_state, #billing_city', function () {
                 updateTariffMessage(selectedDeliveryService());
                 requestCheckoutUpdate();
+            })
+            .on('input.llCheckoutWorkflow change.llCheckoutWorkflow', '#fivepost_point_id, #billing_address_1', function () {
+                refreshConditionalFields();
+            })
+            .on('click.llCheckoutWorkflow', '#post5-map-popup button', function () {
+                window.setTimeout(refreshConditionalFields, 100);
+                window.setTimeout(refreshConditionalFields, 500);
+                window.setTimeout(refreshConditionalFields, 1000);
             });
 
         $checkout.on('checkout_place_order.llCheckoutWorkflow', function () {
