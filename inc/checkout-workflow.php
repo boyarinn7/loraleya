@@ -140,28 +140,16 @@ function loraleya_checkout_is_moscow_region( $destination ) {
 
 /**
  * Keep 5Post as a pickup-point selector and add manager-calculated CDEK and
- * Yandex rates. The 5Post price is controlled by the store, not by the plugin.
+ * Yandex rates. All initial rates are zero because checkout creates an unpaid
+ * request. The 5Post 0/250 rule is displayed as a notice and stored for the
+ * manager, but is not added to the order total before confirmation.
  */
 function loraleya_checkout_delivery_rates( $rates, $package ) {
     if ( ! class_exists( 'WC_Shipping_Rate' ) ) {
         return $rates;
     }
 
-    $destination = isset( $package['destination'] ) && is_array( $package['destination'] )
-        ? $package['destination']
-        : array();
-
-    // During update_order_review WooCommerce sends current checkout fields in
-    // the serialized post_data value. It can still expose an older destination
-    // in the package, so the region entered on the current screen wins.
-    $posted_state = loraleya_checkout_post_value( 'billing_state' );
-    if ( '' !== $posted_state ) {
-        $destination['state'] = $posted_state;
-    }
-
-    $is_moscow  = loraleya_checkout_is_moscow_region( $destination );
-    $five_cost  = $is_moscow ? 0 : 250;
-    $five_rate  = null;
+    $five_rate = null;
 
     foreach ( (array) $rates as $rate ) {
         if ( $rate instanceof WC_Shipping_Rate && 'fivepost_shipping_method' === $rate->get_method_id() ) {
@@ -176,14 +164,14 @@ function loraleya_checkout_delivery_rates( $rates, $package ) {
         $five_rate = new WC_Shipping_Rate(
             'fivepost_shipping_method:pickup',
             '5Post',
-            $five_cost,
+            0,
             array(),
             'fivepost_shipping_method'
         );
     }
 
-    $five_rate->set_label( $is_moscow ? '5Post — бесплатно' : '5Post' );
-    $five_rate->set_cost( $five_cost );
+    $five_rate->set_label( '5Post' );
+    $five_rate->set_cost( 0 );
     $five_rate->set_taxes( array() );
 
     return array(
@@ -590,7 +578,9 @@ function loraleya_checkout_delivery_summary_rows( $order ) {
         $rows['Пункт 5Post'] = $order->get_billing_address_1();
         $rows['Код пункта']  = $order->get_meta( '_ll_fivepost_point_id' );
         $cost                = $order->get_meta( '_ll_preliminary_shipping_cost' );
-        $rows['Доставка']    = '0' === (string) $cost ? 'Бесплатно' : '250 ₽';
+        $rows['Условия 5Post'] = '0' === (string) $cost
+            ? 'Москва и Московская область — бесплатно'
+            : 'Другие регионы России — 250 ₽';
     } else {
         $mode = $order->get_meta( '_ll_delivery_mode' );
         if ( 'pvz' === $mode ) {
