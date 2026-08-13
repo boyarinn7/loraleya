@@ -224,8 +224,12 @@
   text-transform: none;
 }
 
-/* Кнопка «Выбрать на карте» 5Post после переноса списка доставок. */
-.woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button) {
+/* Кнопка выбора ПВЗ 5Post располагается после региона и города. */
+.woocommerce-checkout .ll-fivepost-map-action {
+  margin: -0.1rem 0 1rem;
+}
+.woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button),
+.woocommerce-checkout .ll-fivepost-map-action .button:not(.single_add_to_cart_button) {
   display: inline-block;
   background: transparent;
   border: 1px solid var(--gold);
@@ -241,7 +245,9 @@
   transition: all var(--transition);
 }
 .woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button):hover,
-.woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button):focus-visible {
+.woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button):focus-visible,
+.woocommerce-checkout .ll-fivepost-map-action .button:not(.single_add_to_cart_button):hover,
+.woocommerce-checkout .ll-fivepost-map-action .button:not(.single_add_to_cart_button):focus-visible {
   background: var(--gold);
   color: var(--bg);
 }
@@ -366,7 +372,8 @@ body.woocommerce-checkout #post5-map-popup
   .woocommerce-checkout .ll-delivery-panel,
   .woocommerce-checkout #order_review { padding: 1rem; }
   .woocommerce-checkout #ll-delivery-methods-host li { padding: 0.75rem; }
-  .woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button) {
+  .woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button),
+  .woocommerce-checkout .ll-fivepost-map-action .button:not(.single_add_to_cart_button) {
     width: 100%;
     margin-top: 0.6rem;
     text-align: center;
