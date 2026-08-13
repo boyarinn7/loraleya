@@ -25,6 +25,7 @@
 
 /* ---- Заголовки секций ---- */
 .woocommerce-checkout #customer_details h3,
+.woocommerce-checkout .ll-delivery-panel h3,
 .woocommerce-checkout #order_review_heading {
   font-family: var(--serif);
   font-weight: 300;
@@ -72,6 +73,12 @@
 }
 .woocommerce-checkout .input-text::placeholder { color: var(--text-muted); }
 .woocommerce-checkout .form-row { margin-bottom: 1rem; }
+.woocommerce-checkout .ll-field-hidden { display: none !important; }
+.woocommerce-checkout .woocommerce-invalid .input-text,
+.woocommerce-checkout .woocommerce-invalid select,
+.woocommerce-checkout .woocommerce-invalid .select2-selection {
+  border-color: #a14a3a;
+}
 
 /* select2 (страна) — тёмная тема */
 .woocommerce-checkout .select2-container .select2-selection__rendered { color: var(--cream); line-height: 1.7; }
@@ -112,11 +119,93 @@
   font-family: var(--serif); color: var(--gold); font-size: 1.4rem;
 }
 
-/* ---- Кнопка «Выбрать на карте» (5Post) ----
-   ВНИМАНИЕ: подтвердить точный класс кнопки в live DOM (плагин fivepost).
-   Если у неё свой класс — добавить его явно. Селектор ниже ловит любую
-   .button внутри #order_review, КРОМЕ #place_order. */
-.woocommerce-checkout #order_review .button:not(#place_order):not(.single_add_to_cart_button) {
+/* ---- Выбор способа доставки ---- */
+.woocommerce-checkout .ll-delivery-panel {
+  clear: both;
+  width: 100%;
+  margin: 0.4rem 0 1.2rem;
+  padding: 1.2rem;
+  background: var(--bg2);
+  border: 1px solid rgba(197, 165, 90, 0.22);
+  border-radius: var(--radius);
+}
+.woocommerce-checkout .ll-delivery-panel h3 {
+  font-size: 1.25rem;
+  margin-bottom: 0.9rem;
+}
+.woocommerce-checkout #ll-delivery-methods-host ul,
+.woocommerce-checkout #ll-delivery-methods-host .woocommerce-shipping-methods {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.woocommerce-checkout #ll-delivery-methods-host li {
+  margin: 0 0 0.65rem;
+  padding: 0.8rem 0.9rem;
+  background: rgba(255, 255, 255, 0.015);
+  border: 1px solid rgba(197, 165, 90, 0.15);
+  border-radius: var(--radius);
+  color: var(--cream);
+  line-height: 1.45;
+}
+.woocommerce-checkout #ll-delivery-methods-host li:last-child { margin-bottom: 0; }
+.woocommerce-checkout #ll-delivery-methods-host input[type="radio"],
+.woocommerce-checkout #billing_delivery_mode_field input[type="radio"] {
+  width: 1rem;
+  height: 1rem;
+  margin: 0 0.45rem 0 0;
+  accent-color: var(--gold);
+  vertical-align: -0.12rem;
+}
+.woocommerce-checkout #ll-delivery-methods-host input[type="radio"] + label {
+  color: var(--cream);
+  cursor: pointer;
+}
+.woocommerce-checkout #ll-delivery-methods-host input[type="radio"]:checked + label {
+  color: var(--gold-light);
+}
+.woocommerce-checkout #ll-delivery-methods-host .amount { color: var(--gold); }
+.woocommerce-checkout .ll-delivery-loading {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  line-height: 1.5;
+}
+.woocommerce-checkout .ll-delivery-tariff {
+  margin: 0.9rem 0 0;
+  padding: 0.75rem 0.85rem;
+  border-left: 2px solid var(--gold);
+  background: rgba(197, 165, 90, 0.06);
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  line-height: 1.55;
+}
+.woocommerce-checkout .ll-shipping-row-source { display: none; }
+
+/* Вариант получения для СДЭК и Яндекс Доставки. */
+.woocommerce-checkout #billing_delivery_mode_field .woocommerce-input-wrapper {
+  display: grid;
+  grid-template-columns: 1rem minmax(0, 1fr);
+  gap: 0.65rem 0.55rem;
+  padding: 0.85rem;
+  background: var(--bg2);
+  border: 1px solid rgba(197, 165, 90, 0.22);
+  border-radius: var(--radius);
+}
+.woocommerce-checkout #billing_delivery_mode_field .woocommerce-input-wrapper br { display: none; }
+.woocommerce-checkout #billing_delivery_mode_field label.radio {
+  display: block;
+  margin: 0;
+  color: var(--cream);
+  cursor: pointer;
+  font-size: 0.9rem;
+  letter-spacing: 0;
+  line-height: 1.35;
+  text-transform: none;
+}
+
+/* Кнопка «Выбрать на карте» 5Post после переноса списка доставок. */
+.woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button) {
   display: inline-block;
   background: transparent;
   border: 1px solid var(--gold);
@@ -131,7 +220,11 @@
   cursor: pointer;
   transition: all var(--transition);
 }
-.woocommerce-checkout #order_review .button:not(#place_order):hover { background: var(--gold); color: var(--bg); }
+.woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button):hover,
+.woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button):focus-visible {
+  background: var(--gold);
+  color: var(--bg);
+}
 
 /* ---- Правила доставки 5Post ---- */
 .woocommerce-checkout .ll-shipping-rules td {
@@ -164,6 +257,30 @@ body.woocommerce-checkout #post5-map-popup
 }
 .woocommerce-checkout #payment .payment_box::before { display: none; }
 
+/* ---- Согласие с политикой и офертой ---- */
+.woocommerce-checkout #ll_privacy_consent_field { margin: 1rem 0; }
+.woocommerce-checkout #ll_privacy_consent_field label.checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0;
+  line-height: 1.5;
+  text-transform: none;
+}
+.woocommerce-checkout #ll_privacy_consent {
+  flex: 0 0 auto;
+  width: 1rem;
+  height: 1rem;
+  margin: 0.15rem 0 0;
+  accent-color: var(--gold);
+}
+.woocommerce-checkout #ll_privacy_consent_field a { color: var(--gold); }
+.woocommerce-checkout #ll_privacy_consent_field a:hover,
+.woocommerce-checkout #ll_privacy_consent_field a:focus-visible { color: var(--gold-light); }
+
 /* ---- Кнопка «Подтвердить заказ» (по образцу .single_add_to_cart_button) ---- */
 .woocommerce-checkout #place_order {
   width: 100%;
@@ -182,6 +299,15 @@ body.woocommerce-checkout #post5-map-popup
   transition: background var(--transition);
 }
 .woocommerce-checkout #place_order:hover { background: var(--gold-light); }
+.woocommerce-checkout #place_order:focus-visible {
+  outline: 2px solid var(--gold-light);
+  outline-offset: 3px;
+}
+.woocommerce-checkout #place_order:disabled,
+.woocommerce-checkout #place_order.ll-order-submitting {
+  opacity: 0.65;
+  cursor: progress;
+}
 
 /* ---- Купон ---- */
 .woocommerce-checkout .woocommerce-form-coupon-toggle .woocommerce-info {
@@ -214,4 +340,15 @@ body.woocommerce-checkout #post5-map-popup
   .woocommerce-checkout form.checkout #order_review_heading,
   .woocommerce-checkout form.checkout #order_review { grid-column: 1; grid-row: auto; }
   .woocommerce-checkout form.checkout #order_review { position: static; margin-top: 1.5rem; }
+}
+
+@media (max-width: 560px) {
+  .woocommerce-checkout .ll-delivery-panel,
+  .woocommerce-checkout #order_review { padding: 1rem; }
+  .woocommerce-checkout #ll-delivery-methods-host li { padding: 0.75rem; }
+  .woocommerce-checkout #ll-delivery-methods-host .button:not(.single_add_to_cart_button) {
+    width: 100%;
+    margin-top: 0.6rem;
+    text-align: center;
+  }
 }
