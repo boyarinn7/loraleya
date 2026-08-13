@@ -66,6 +66,29 @@
         }
     }
 
+    function mountFivePostMapAction() {
+        var $cityField = $('#billing_city_field');
+        var $action = $('#ll-fivepost-map-action');
+        var $mapButton = $('[data-post5_popup="post5-map-popup"]').first();
+
+        if (!$cityField.length) {
+            return;
+        }
+
+        if (!$action.length) {
+            $action = $('<div id="ll-fivepost-map-action" class="ll-fivepost-map-action"></div>');
+            $action.insertAfter($cityField);
+        }
+
+        if ($mapButton.length && !$mapButton.parent().is($action)) {
+            $action.empty().append($mapButton);
+        }
+
+        $action.find('[data-post5_popup="post5-map-popup"]')
+            .addClass('ll-fivepost-map-button')
+            .text('Выбрать ПВЗ на карте');
+    }
+
     function toggleField(fieldSelector, visible) {
         var $field = $(fieldSelector);
 
@@ -147,6 +170,7 @@
     function refreshConditionalFields() {
         var service = selectedDeliveryService();
         var managerDelivery = service === 'cdek' || service === 'yandex';
+        var deliveryLocation = service === 'fivepost' || managerDelivery;
         var mode = $('input[name="billing_delivery_mode"]:checked').val() || '';
         var pickup = managerDelivery && mode === 'pvz';
         var courier = managerDelivery && mode === 'courier';
@@ -166,9 +190,12 @@
             && Boolean($.trim($('#fivepost_point_id').val() || ''))
             && Boolean($.trim($('#billing_address_1').val() || ''));
 
+        mountFivePostMapAction();
+
         toggleField('.ll-manager-delivery-field', managerDelivery);
         toggleField('.ll-delivery-mode-field', managerDelivery);
-        toggleField('.ll-delivery-address-field', managerDelivery);
+        toggleField('.ll-delivery-address-field', deliveryLocation);
+        toggleField('#ll-fivepost-map-action', service === 'fivepost');
         toggleField('.ll-pickup-address-field', pickup);
         toggleField('#billing_address_1_field', courier || fivepostPointSelected);
         toggleField('#billing_address_2_field', courier);
@@ -177,8 +204,8 @@
         configureAddressField(service, fivepostPointSelected);
 
         setFieldRequired('#billing_delivery_mode_field', managerDelivery);
-        setFieldRequired('#billing_state_field', managerDelivery);
-        setFieldRequired('#billing_city_field', managerDelivery);
+        setFieldRequired('#billing_state_field', deliveryLocation);
+        setFieldRequired('#billing_city_field', deliveryLocation);
         setFieldRequired('#billing_pickup_address_field', pickup);
         setFieldRequired('#billing_address_1_field', courier);
         setFieldRequired('#billing_address_2_field', false);
@@ -266,6 +293,12 @@
                 consentChecked = $(this).is(':checked');
             })
             .on('input.llCheckoutWorkflow change.llCheckoutWorkflow', '#billing_state, #billing_city', function () {
+                if (selectedDeliveryService() === 'fivepost') {
+                    clearFivePostPoint();
+                    $('#billing_address_1').val('');
+                    refreshConditionalFields();
+                }
+
                 updateTariffMessage(selectedDeliveryService());
                 requestCheckoutUpdate();
             })
