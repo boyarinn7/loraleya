@@ -273,7 +273,7 @@
 
             var ajaxUrl = (window.loraleya && window.loraleya.ajax_url)
                 ? window.loraleya.ajax_url
-                : '/wp-admin/admin-ajax.php';
+                : form.action;
 
             fetch(ajaxUrl, {
                 method: 'POST',
