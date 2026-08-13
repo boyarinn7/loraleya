@@ -100,49 +100,10 @@ function loraleya_checkout_delivery_service_label( $service ) {
 }
 
 /**
- * Only an explicit Moscow or Moscow Oblast region gets the free 5Post rate.
- * City and street are deliberately ignored so an unrelated address cannot
- * accidentally match the word "Moscow" in another field.
- */
-function loraleya_checkout_is_moscow_region( $destination ) {
-    $state = isset( $destination['state'] ) ? (string) $destination['state'] : '';
-    $state = function_exists( 'mb_strtolower' )
-        ? mb_strtolower( $state, 'UTF-8' )
-        : strtolower( $state );
-    $state = str_replace( 'ё', 'е', $state );
-    $state = preg_replace( '/[^a-zа-я0-9]+/u', ' ', $state );
-    $state = trim( preg_replace( '/\s+/u', ' ', $state ) );
-
-    $moscow_values = array(
-        'mow',
-        'mos',
-        'москва',
-        'г москва',
-        'город москва',
-        'moscow',
-        'moskva',
-        'московская область',
-        'московская обл',
-        'московская обл р-н',
-        'мо',
-        'moscow oblast',
-        'moskovskaya oblast',
-    );
-
-    if ( in_array( $state, $moscow_values, true ) ) {
-        return true;
-    }
-
-    // Saved customer profiles sometimes contain a district after the region.
-    // Accept that suffix without falling back to a broad substring match.
-    return 1 === preg_match( '/^московская (?:область|обл)(?:\s|$)/u', $state );
-}
-
-/**
  * Keep 5Post as a pickup-point selector and add manager-calculated CDEK and
  * Yandex rates. All initial rates are zero because checkout creates an unpaid
- * request. The 5Post 0/250 rule is displayed as a notice and stored for the
- * manager, but is not added to the order total before confirmation.
+ * request. The 5Post terms are part of the method label and are not added to
+ * the order total before manager confirmation.
  */
 function loraleya_checkout_delivery_rates( $rates, $package ) {
     if ( ! class_exists( 'WC_Shipping_Rate' ) ) {
@@ -163,14 +124,14 @@ function loraleya_checkout_delivery_rates( $rates, $package ) {
     if ( ! $five_rate ) {
         $five_rate = new WC_Shipping_Rate(
             'fivepost_shipping_method:pickup',
-            '5Post',
+            '5Post - доставка по Москве и Московской области бесплатно, другие регионы 250 руб',
             0,
             array(),
             'fivepost_shipping_method'
         );
     }
 
-    $five_rate->set_label( '5Post' );
+    $five_rate->set_label( '5Post - доставка по Москве и Московской области бесплатно, другие регионы 250 руб' );
     $five_rate->set_cost( 0 );
     $five_rate->set_taxes( array() );
 
@@ -228,14 +189,14 @@ function loraleya_checkout_fields( $fields ) {
     }
     if ( isset( $billing['billing_state'] ) ) {
         $billing['billing_state']['priority']    = 60;
-        $billing['billing_state']['required']    = true;
+        $billing['billing_state']['required']    = false;
         $billing['billing_state']['label']       = 'Регион';
         $billing['billing_state']['placeholder'] = 'Например, Московская область';
         $billing['billing_state']['class']       = array( 'form-row-wide', 'll-delivery-address-field' );
     }
     if ( isset( $billing['billing_city'] ) ) {
         $billing['billing_city']['priority']    = 70;
-        $billing['billing_city']['required']    = true;
+        $billing['billing_city']['required']    = false;
         $billing['billing_city']['label']       = 'Город или населённый пункт';
         $billing['billing_city']['placeholder'] = 'Например, Раменское';
         $billing['billing_city']['class']       = array( 'form-row-wide', 'll-delivery-address-field' );
@@ -272,7 +233,7 @@ function loraleya_checkout_fields( $fields ) {
     if ( isset( $billing['billing_address_2'] ) ) {
         $billing['billing_address_2']['priority']    = 110;
         $billing['billing_address_2']['required']    = false;
-        $billing['billing_address_2']['label']       = 'Квартира или офис (необязательно)';
+        $billing['billing_address_2']['label']       = 'Квартира или офис';
         $billing['billing_address_2']['placeholder'] = 'Квартира, офис, подъезд, этаж';
         $billing['billing_address_2']['class']       = array( 'form-row-wide', 'll-courier-address-field' );
     }
@@ -288,9 +249,26 @@ function loraleya_checkout_fields( $fields ) {
     // "ship to a different address" section is intentionally removed.
     $fields['shipping'] = array();
 
+    if ( isset( $fields['order']['order_comments'] ) ) {
+        $fields['order']['order_comments']['label'] = 'Примечание к заказу';
+    }
+
     return $fields;
 }
 add_filter( 'woocommerce_checkout_fields', 'loraleya_checkout_fields', 30 );
+
+/**
+ * WooCommerce appends an "optional" suffix to every non-required field.
+ * Keep fields optional where intended, but remove that wording from checkout.
+ */
+function loraleya_checkout_remove_optional_suffix( $field ) {
+    if ( function_exists( 'is_checkout' ) && is_checkout() ) {
+        $field = preg_replace( '/\s*<span class="optional">.*?<\/span>/u', '', $field );
+    }
+
+    return $field;
+}
+add_filter( 'woocommerce_form_field', 'loraleya_checkout_remove_optional_suffix', 30, 1 );
 
 /**
  * The workflow uses one billing/delivery destination. Suppress WooCommerce's
@@ -323,7 +301,7 @@ function loraleya_checkout_delivery_panel() {
     echo '<section class="ll-delivery-panel" aria-labelledby="ll-delivery-title">';
     echo '<h3 id="ll-delivery-title">Способ доставки</h3>';
     echo '<div id="ll-delivery-methods-host">';
-    echo '<p class="ll-delivery-loading">Выберите регион и город — доступные способы появятся здесь.</p>';
+    echo '<p class="ll-delivery-loading">Загружаем способы доставки…</p>';
     echo '</div>';
     echo '<p class="ll-delivery-tariff" aria-live="polite"></p>';
     echo '</section>';
@@ -368,8 +346,18 @@ function loraleya_checkout_validate_delivery() {
     if ( 'fivepost' === $service ) {
         if ( ! loraleya_checkout_post_value( 'fivepost_point_id' ) ) {
             wc_add_notice( 'Выберите пункт выдачи 5Post на карте.', 'error' );
+        } elseif ( ! loraleya_checkout_post_value( 'billing_address_1' ) ) {
+            wc_add_notice( 'Адрес пункта 5Post не сохранился. Выберите пункт на карте ещё раз.', 'error' );
         }
         return;
+    }
+
+    if ( ! loraleya_checkout_post_value( 'billing_state' ) ) {
+        wc_add_notice( 'Укажите регион доставки.', 'error' );
+    }
+
+    if ( ! loraleya_checkout_post_value( 'billing_city' ) ) {
+        wc_add_notice( 'Укажите город или населённый пункт.', 'error' );
     }
 
     if ( ! in_array( $mode, array( 'pvz', 'courier' ), true ) ) {
@@ -411,11 +399,11 @@ function loraleya_checkout_create_order( $order, $data ) {
     if ( 'fivepost' === $service ) {
         $order->update_meta_data( '_ll_fivepost_point_id', loraleya_checkout_post_value( 'fivepost_point_id' ) );
         $order->update_meta_data( '_ll_fivepost_point_zone', loraleya_checkout_post_value( 'fivepost_point_zone' ) );
-        $destination = array( 'state' => isset( $data['billing_state'] ) ? $data['billing_state'] : '' );
-        $order->update_meta_data(
-            '_ll_preliminary_shipping_cost',
-            loraleya_checkout_is_moscow_region( $destination ) ? '0' : '250'
-        );
+        $order->update_meta_data( '_ll_preliminary_shipping_cost', 'informational' );
+        $order->set_billing_state( '' );
+        $order->set_billing_city( '' );
+        $order->set_billing_address_2( '' );
+        $order->set_billing_postcode( '' );
     } else {
         $order->update_meta_data( '_ll_preliminary_shipping_cost', 'manager' );
     }
@@ -570,18 +558,15 @@ function loraleya_checkout_delivery_summary_rows( $order ) {
 
     $rows = array(
         'Способ доставки' => loraleya_checkout_delivery_service_label( $service ),
-        'Регион'          => $order->get_billing_state(),
-        'Город'           => $order->get_billing_city(),
     );
 
     if ( 'fivepost' === $service ) {
         $rows['Пункт 5Post'] = $order->get_billing_address_1();
         $rows['Код пункта']  = $order->get_meta( '_ll_fivepost_point_id' );
-        $cost                = $order->get_meta( '_ll_preliminary_shipping_cost' );
-        $rows['Условия 5Post'] = '0' === (string) $cost
-            ? 'Москва и Московская область — бесплатно'
-            : 'Другие регионы России — 250 ₽';
+        $rows['Условия 5Post'] = 'Доставка по Москве и Московской области бесплатно, другие регионы 250 руб';
     } else {
+        $rows['Регион'] = $order->get_billing_state();
+        $rows['Город']  = $order->get_billing_city();
         $mode = $order->get_meta( '_ll_delivery_mode' );
         if ( 'pvz' === $mode ) {
             $rows['Получение'] = 'До пункта выдачи (ПВЗ)';
