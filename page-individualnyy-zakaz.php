@@ -53,7 +53,8 @@ $colors = get_terms([
 <section class="co-config">
     <div class="co-container">
         <div class="co-config-box">
-            <form id="customOrderForm" novalidate>
+            <form id="customOrderForm" method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" novalidate>
+                <input type="hidden" name="action" value="loraleya_custom_order">
 
                 <!-- 1. Форма стола -->
                 <div class="co-step">
