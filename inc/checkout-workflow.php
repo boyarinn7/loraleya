@@ -344,6 +344,14 @@ function loraleya_checkout_validate_delivery() {
     }
 
     if ( 'fivepost' === $service ) {
+        if ( ! loraleya_checkout_post_value( 'billing_state' ) ) {
+            wc_add_notice( 'Укажите регион доставки.', 'error' );
+        }
+
+        if ( ! loraleya_checkout_post_value( 'billing_city' ) ) {
+            wc_add_notice( 'Укажите город или населённый пункт.', 'error' );
+        }
+
         if ( ! loraleya_checkout_post_value( 'fivepost_point_id' ) ) {
             wc_add_notice( 'Выберите пункт выдачи 5Post на карте.', 'error' );
         } elseif ( ! loraleya_checkout_post_value( 'billing_address_1' ) ) {
@@ -400,8 +408,6 @@ function loraleya_checkout_create_order( $order, $data ) {
         $order->update_meta_data( '_ll_fivepost_point_id', loraleya_checkout_post_value( 'fivepost_point_id' ) );
         $order->update_meta_data( '_ll_fivepost_point_zone', loraleya_checkout_post_value( 'fivepost_point_zone' ) );
         $order->update_meta_data( '_ll_preliminary_shipping_cost', 'informational' );
-        $order->set_billing_state( '' );
-        $order->set_billing_city( '' );
         $order->set_billing_address_2( '' );
         $order->set_billing_postcode( '' );
     } else {
