@@ -1913,3 +1913,35 @@ $loraleya_checkout_workflow_file = get_template_directory() . '/inc/checkout-wor
 if ( file_exists( $loraleya_checkout_workflow_file ) ) {
     require_once $loraleya_checkout_workflow_file;
 }
+
+/**
+ * Страница оплаты заказа: в строке «Доставка» показываем только сумму.
+ */
+add_filter( 'woocommerce_order_shipping_to_display', function ( $shipping, $order, $tax_display ) {
+    if ( ! function_exists( 'is_wc_endpoint_url' ) || ! is_wc_endpoint_url( 'order-pay' ) || ! $order instanceof WC_Order ) {
+        return $shipping;
+    }
+
+    $amount = (float) $order->get_shipping_total();
+    if ( 'incl' === $tax_display ) {
+        $amount += (float) $order->get_shipping_tax();
+    }
+
+    return wc_price( $amount, array( 'currency' => $order->get_currency() ) );
+}, 100, 3 );
+
+/**
+ * Страница оплаты заказа: не показываем прежний способ оплаты в итогах.
+ */
+add_filter( 'woocommerce_get_order_item_totals', function ( $totals, $order, $tax_display ) {
+    if (
+        function_exists( 'is_wc_endpoint_url' )
+        && is_wc_endpoint_url( 'order-pay' )
+        && $order instanceof WC_Order
+        && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' )
+    ) {
+        unset( $totals['payment_method'] );
+    }
+
+    return $totals;
+}, 100, 3 );
