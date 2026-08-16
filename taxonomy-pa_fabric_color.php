@@ -259,40 +259,49 @@ $photo_prefix = $color['photo_prefix'] ?? $slug;
 $upload_dir = wp_get_upload_dir();
 $upload_url = $upload_dir['baseurl'];
 
-// Функция для получения URL фото по prefix и типу
-function loraleya_color_photo($upload_url, $prefix, $type, $ext = 'webp') {
-    // Имя файла без расширения — это заголовок вложения в WP
-    $search_title = $prefix . '-' . $type;
+// Внутренний request-level lookup ID вложения по заголовку.
+function loraleya_color_attachment_id($search_title) {
+    static $attachment_ids = [];
+
+    if (array_key_exists($search_title, $attachment_ids)) {
+        return $attachment_ids[$search_title];
+    }
+
     $attachment = get_posts([
         'post_type'   => 'attachment',
         'post_status' => 'inherit',
         'numberposts' => 1,
         'title'       => $search_title,
     ]);
-    if (!empty($attachment)) {
-        return wp_get_attachment_url($attachment[0]->ID);
+
+    if (empty($attachment)) {
+        // Fallback: поиск через 's'
+        $attachment = get_posts([
+            'post_type'   => 'attachment',
+            'post_status' => 'inherit',
+            'numberposts' => 1,
+            's'           => $search_title,
+        ]);
     }
-    // Fallback: поиск через 's'
-    $attachment = get_posts([
-        'post_type'   => 'attachment',
-        'post_status' => 'inherit',
-        'numberposts' => 1,
-        's'           => $search_title,
-    ]);
-    if (!empty($attachment)) {
-        return wp_get_attachment_url($attachment[0]->ID);
-    }
-    return '';
+
+    $attachment_ids[$search_title] = !empty($attachment) ? (int) $attachment[0]->ID : 0;
+    return $attachment_ids[$search_title];
+}
+
+// Функция для получения URL фото по prefix и типу
+function loraleya_color_photo($upload_url, $prefix, $type, $ext = 'webp') {
+    // Имя файла без расширения — это заголовок вложения в WP
+    $search_title = $prefix . '-' . $type;
+    $attachment_id = loraleya_color_attachment_id($search_title);
+    if (!$attachment_id) return '';
+    return wp_get_attachment_url($attachment_id) ?: '';
 }
 
 function loraleya_color_img($prefix, $type, $size = 'medium_large', $attr = []) {
     $search_title = $prefix . '-' . $type;
-    $att = get_posts(['post_type'=>'attachment','post_status'=>'inherit','numberposts'=>1,'title'=>$search_title]);
-    if (empty($att)) {
-        $att = get_posts(['post_type'=>'attachment','post_status'=>'inherit','numberposts'=>1,'s'=>$search_title]);
-    }
-    if (empty($att)) return '';
-    return wp_get_attachment_image((int) $att[0]->ID, $size, false, $attr);
+    $attachment_id = loraleya_color_attachment_id($search_title);
+    if (!$attachment_id) return '';
+    return wp_get_attachment_image($attachment_id, $size, false, $attr);
 }
 
 function loraleya_color_video($prefix) {
