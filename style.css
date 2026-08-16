@@ -5293,11 +5293,16 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
     display: none;
 }
 
+.woocommerce-cart .wc-block-components-totals-item:has(.wc-block-components-totals-shipping__via) {
+    display: none !important;
+}
+
 .woocommerce-cart .cart_totals .ll-cart-shipping-info td {
     font: inherit;
     line-height: 1.5;
 }
 
-.woocommerce-cart .cart_totals .ll-cart-shipping-info strong {
+.woocommerce-cart .cart_totals .ll-cart-shipping-info strong,
+.woocommerce-cart .wp-block-woocommerce-cart .ll-cart-shipping-info strong {
     font-weight: 600;
 }

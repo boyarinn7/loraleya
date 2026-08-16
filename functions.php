@@ -141,8 +141,27 @@ add_action( 'wp_enqueue_scripts', function () {
 add_action( 'woocommerce_cart_totals_before_order_total', 'loraleya_cart_shipping_info' );
 function loraleya_cart_shipping_info() {
     echo '<tr class="ll-cart-shipping-info"><td colspan="2">'
-        . 'Доставка <strong>5Post</strong> по Москве и Московской области <strong>БЕСПЛАТНО</strong>, другие регионы <strong>250 руб</strong>.'
+        . loraleya_cart_shipping_info_html()
         . '</td></tr>';
+}
+
+function loraleya_cart_shipping_info_html() {
+    return 'Доставка <strong>5Post</strong> по Москве и Московской области <strong>БЕСПЛАТНО</strong>, другие регионы <strong>250 руб</strong>.';
+}
+
+add_filter( 'render_block_woocommerce/cart', 'loraleya_cart_block_shipping_info', 10, 2 );
+function loraleya_cart_block_shipping_info( $block_content, $block ) {
+    if ( ! function_exists( 'is_cart' ) || ! is_cart() ) {
+        return $block_content;
+    }
+
+    $shipping_block = '~<div\b(?=[^>]*class=["\'][^"\']*\bwp-block-woocommerce-cart-order-summary-shipping-block\b)[^>]*>\s*</div>~i';
+    $shipping_info  = '<div class="wc-block-components-totals-wrapper ll-cart-shipping-info">'
+        . '<div class="wc-block-components-totals-item"><span class="wc-block-components-totals-item__label">'
+        . loraleya_cart_shipping_info_html()
+        . '</span></div></div>';
+
+    return preg_replace( $shipping_block, $shipping_info, $block_content, 1 );
 }
 
 add_filter( 'woocommerce_no_shipping_available_html', 'loraleya_no_shipping_text' );
