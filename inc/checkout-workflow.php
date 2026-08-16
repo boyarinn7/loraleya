@@ -603,27 +603,66 @@ function loraleya_checkout_admin_delivery_summary( $order ) {
 }
 add_action( 'woocommerce_admin_order_data_after_billing_address', 'loraleya_checkout_admin_delivery_summary', 20 );
 
+function loraleya_checkout_is_manager_invoice_email( $order, $email ) {
+    return $order instanceof WC_Order
+        && $email instanceof WC_Email_Customer_Invoice
+        && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' );
+}
+
+function loraleya_checkout_invoice_order_totals( $totals, $order, $tax_display ) {
+    if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
+        unset( $totals['payment_method'] );
+    }
+
+    return $totals;
+}
+
+function loraleya_checkout_invoice_totals_begin( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( loraleya_checkout_is_manager_invoice_email( $order, $email ) ) {
+        add_filter( 'woocommerce_get_order_item_totals', 'loraleya_checkout_invoice_order_totals', 20, 3 );
+    }
+}
+add_action( 'woocommerce_email_before_order_table', 'loraleya_checkout_invoice_totals_begin', 20, 4 );
+
+function loraleya_checkout_invoice_totals_end( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( loraleya_checkout_is_manager_invoice_email( $order, $email ) ) {
+        remove_filter( 'woocommerce_get_order_item_totals', 'loraleya_checkout_invoice_order_totals', 20 );
+    }
+}
+add_action( 'woocommerce_email_after_order_table', 'loraleya_checkout_invoice_totals_end', 5, 4 );
+
+function loraleya_checkout_email_price_styles( $css ) {
+    return $css . "\n.woocommerce-Price-amount { white-space: nowrap; word-break: normal; overflow-wrap: normal; }\n";
+}
+add_filter( 'woocommerce_email_styles', 'loraleya_checkout_email_price_styles' );
+
 function loraleya_checkout_email_delivery_summary( $order, $sent_to_admin, $plain_text, $email ) {
     $rows = loraleya_checkout_delivery_summary_rows( $order );
     if ( ! $rows ) {
         return;
     }
 
+    $is_manager_invoice = loraleya_checkout_is_manager_invoice_email( $order, $email );
+
     if ( $plain_text ) {
-        echo "\nДОСТАВКА И ПОДТВЕРЖДЕНИЕ\n";
-        echo $sent_to_admin
-            ? "Необходимо связаться с покупателем до оплаты.\n"
-            : "Менеджер свяжется с вами для подтверждения заказа.\n";
+        echo $is_manager_invoice ? "\nДОСТАВКА\n" : "\nДОСТАВКА И ПОДТВЕРЖДЕНИЕ\n";
+        if ( ! $is_manager_invoice ) {
+            echo $sent_to_admin
+                ? "Необходимо связаться с покупателем до оплаты.\n"
+                : "Менеджер свяжется с вами для подтверждения заказа.\n";
+        }
         foreach ( $rows as $label => $value ) {
             echo wp_strip_all_tags( $label . ': ' . $value ) . "\n";
         }
         return;
     }
 
-    echo '<h2>Доставка и подтверждение</h2>';
-    echo $sent_to_admin
-        ? '<p><strong>Необходимо связаться с покупателем до оплаты.</strong></p>'
-        : '<p>Менеджер свяжется с вами для подтверждения наличия, количества, сроков и доставки.</p>';
+    echo $is_manager_invoice ? '<h2>Доставка</h2>' : '<h2>Доставка и подтверждение</h2>';
+    if ( ! $is_manager_invoice ) {
+        echo $sent_to_admin
+            ? '<p><strong>Необходимо связаться с покупателем до оплаты.</strong></p>'
+            : '<p>Менеджер свяжется с вами для подтверждения наличия, количества, сроков и доставки.</p>';
+    }
     echo '<table cellspacing="0" cellpadding="6" style="width:100%;border:1px solid #e5e5e5" border="1">';
     foreach ( $rows as $label => $value ) {
         echo '<tr><th style="text-align:left">' . esc_html( $label ) . '</th><td>' . wp_kses_post( $value ) . '</td></tr>';
