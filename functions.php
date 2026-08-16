@@ -138,6 +138,13 @@ add_action( 'wp_enqueue_scripts', function () {
 
 // ===== WOOCOMMERCE ADJUSTMENTS =====
 
+add_action( 'woocommerce_cart_totals_before_order_total', 'loraleya_cart_shipping_info' );
+function loraleya_cart_shipping_info() {
+    echo '<tr class="ll-cart-shipping-info"><td colspan="2">'
+        . 'Доставка <strong>5Post</strong> по Москве и Московской области <strong>БЕСПЛАТНО</strong>, другие регионы <strong>250 руб</strong>.'
+        . '</td></tr>';
+}
+
 add_filter( 'woocommerce_no_shipping_available_html', 'loraleya_no_shipping_text' );
 add_filter( 'woocommerce_cart_no_shipping_available_html', 'loraleya_no_shipping_text' );
 function loraleya_no_shipping_text( $html ) {
