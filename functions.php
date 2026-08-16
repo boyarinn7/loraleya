@@ -1016,6 +1016,8 @@ function loraleya_send_telegram($token, $chat_id, $text) {
  */
 function loraleya_get_color_photo_url($color_slug, $type, $size = 'large') {
     static $cache = [];
+    static $attachment_ids = [];
+
     $cache_key = $color_slug . '|' . $type . '|' . $size;
     if (isset($cache[$cache_key])) {
         return $cache[$cache_key];
@@ -1052,35 +1054,31 @@ function loraleya_get_color_photo_url($color_slug, $type, $size = 'large') {
 
     $title = $prefix . '-' . $type;
 
-    $attachments = get_posts([
-        'post_type'      => 'attachment',
-        'name'           => $title,
-        'posts_per_page' => 1,
-        'post_status'    => 'inherit',
-    ]);
+    if (!array_key_exists($title, $attachment_ids)) {
+        $attachments = get_posts([
+            'post_type'      => 'attachment',
+            'name'           => $title,
+            'posts_per_page' => 1,
+            'post_status'    => 'inherit',
+        ]);
 
-    if (!empty($attachments)) {
-        $url = wp_get_attachment_image_url($attachments[0]->ID, $size);
-        $cache[$cache_key] = $url ?: '';
-        return $cache[$cache_key];
+        if (empty($attachments)) {
+            // Фолбэк: scaled-суффикс
+            $attachments = get_posts([
+                'post_type'      => 'attachment',
+                'name'           => $title . '-scaled',
+                'posts_per_page' => 1,
+                'post_status'    => 'inherit',
+            ]);
+        }
+
+        $attachment_ids[$title] = !empty($attachments) ? $attachments[0]->ID : 0;
     }
 
-    // Фолбэк: scaled-суффикс
-    $attachments = get_posts([
-        'post_type'      => 'attachment',
-        'name'           => $title . '-scaled',
-        'posts_per_page' => 1,
-        'post_status'    => 'inherit',
-    ]);
-
-    if (!empty($attachments)) {
-        $url = wp_get_attachment_image_url($attachments[0]->ID, $size);
-        $cache[$cache_key] = $url ?: '';
-        return $cache[$cache_key];
-    }
-
-    $cache[$cache_key] = '';
-    return '';
+    $attachment_id = $attachment_ids[$title];
+    $url = $attachment_id ? wp_get_attachment_image_url($attachment_id, $size) : '';
+    $cache[$cache_key] = $url ?: '';
+    return $cache[$cache_key];
 }
 
 // === СОГЛАСИЕ НА ОБРАБОТКУ ПЕРСОНАЛЬНЫХ ДАННЫХ В БЛОЧНОМ ЧЕКАУТЕ ===
