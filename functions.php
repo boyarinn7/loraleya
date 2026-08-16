@@ -53,12 +53,11 @@ function loraleya_scripts() {
     $main_js = get_template_directory() . '/assets/js/main.js';
     wp_enqueue_script('loraleya-main', get_template_directory_uri() . '/assets/js/main.js', [], file_exists($main_js) ? filemtime($main_js) : '1.0.0', true);
 
-    // Constructor script
-    $constructor_js = get_template_directory() . '/assets/js/constructor.js';
-    wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], file_exists($constructor_js) ? filemtime($constructor_js) : '1.0', true);
-
-    // Лайтбокс галереи сценария — только на странице сценария
+    // Конструктор и лайтбокс галереи — только на странице сценария
     if (is_singular('scenario')) {
+        $constructor_js = get_template_directory() . '/assets/js/constructor.js';
+        wp_enqueue_script('loraleya-constructor', get_template_directory_uri() . '/assets/js/constructor.js', [], file_exists($constructor_js) ? filemtime($constructor_js) : '1.0', true);
+
         $scenario_js = get_stylesheet_directory() . '/assets/js/ll-scenario.js';
         wp_enqueue_script('ll-scenario', get_stylesheet_directory_uri() . '/assets/js/ll-scenario.js', [], file_exists($scenario_js) ? filemtime($scenario_js) : '1.0.0', true);
     }
@@ -393,6 +392,60 @@ add_filter('woocommerce_taxonomy_args_pa_fabric_color', function ($args) {
 // ===== HELPERS =====
 
 /**
+ * Построить request-level индекс вариаций родительского товара.
+ *
+ * @param int $product_id ID родительского вариативного товара
+ * @return array
+ */
+function loraleya_get_variation_index($product_id) {
+    static $indexes = [];
+
+    $product_id = (int) $product_id;
+    if (array_key_exists($product_id, $indexes)) {
+        return $indexes[$product_id];
+    }
+
+    $indexes[$product_id] = [
+        'by_color'           => [],
+        'by_color_and_size'  => [],
+        'variation_products' => [],
+    ];
+
+    $product = wc_get_product($product_id);
+    if (!$product || !$product->is_type('variable')) {
+        return $indexes[$product_id];
+    }
+
+    foreach ($product->get_children() as $variation_id) {
+        $variation = wc_get_product($variation_id);
+        if (!$variation) continue;
+
+        $indexes[$product_id]['variation_products'][$variation_id] = $variation;
+        $attrs = $variation->get_variation_attributes();
+        $color_slug = $attrs['attribute_pa_fabric_color'] ?? '';
+
+        if (!array_key_exists($color_slug, $indexes[$product_id]['by_color'])) {
+            $indexes[$product_id]['by_color'][$color_slug] = $variation_id;
+        }
+
+        foreach ($attrs as $attr_key => $attr_value) {
+            if (strpos($attr_key, 'attribute_pa_') !== 0 || $attr_key === 'attribute_pa_fabric_color') {
+                continue;
+            }
+
+            $size_taxonomy = substr($attr_key, strlen('attribute_pa_'));
+            $size_slug = urldecode($attr_value);
+            if (!isset($indexes[$product_id]['by_color_and_size'][$color_slug][$size_taxonomy])
+                || !array_key_exists($size_slug, $indexes[$product_id]['by_color_and_size'][$color_slug][$size_taxonomy])) {
+                $indexes[$product_id]['by_color_and_size'][$color_slug][$size_taxonomy][$size_slug] = $variation_id;
+            }
+        }
+    }
+
+    return $indexes[$product_id];
+}
+
+/**
  * Найти variation_id по комбинации цвета и размера.
  *
  * @param int    $product_id     ID родительского вариативного товара
@@ -402,33 +455,15 @@ add_filter('woocommerce_taxonomy_args_pa_fabric_color', function ($args) {
  * @return int variation_id или 0 если не найдено
  */
 function loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_taxonomy) {
-    $product = wc_get_product($product_id);
-    if (!$product || !$product->is_type('variable')) return 0;
-
-    // Если размер не задан (товар вариативен только по цвету — например, Салфетка/Куверт) —
-    // ищем первую вариацию с нужным цветом и игнорируем размер.
+    $index = loraleya_get_variation_index($product_id);
     $has_size = ($size_slug !== null && $size_taxonomy !== null);
-    $size_attr_key = $has_size ? ('attribute_pa_' . $size_taxonomy) : '';
 
-    foreach ($product->get_children() as $variation_id) {
-        $variation = wc_get_product($variation_id);
-        if (!$variation) continue;
-
-        $attrs = $variation->get_variation_attributes();
-
-        $matches_color = ($attrs['attribute_pa_fabric_color'] ?? '') === $color_slug;
-        if (!$matches_color) continue;
-
-        if (!$has_size) {
-            return $variation_id;
-        }
-
-        $matches_size = urldecode($attrs[$size_attr_key] ?? '') === $size_slug;
-        if ($matches_size) {
-            return $variation_id;
-        }
+    // Для товара только с цветом сохраняем прежнее поведение: первая подходящая вариация.
+    if (!$has_size) {
+        return $index['by_color'][$color_slug] ?? 0;
     }
-    return 0;
+
+    return $index['by_color_and_size'][$color_slug][$size_taxonomy][$size_slug] ?? 0;
 }
 
 /**
@@ -439,6 +474,12 @@ function loraleya_find_variation_id($product_id, $color_slug, $size_slug, $size_
  * @return array data-item => ['product_id' => int, 'variation_id' => int, 'attrs' => array]
  */
 function loraleya_build_item_map($color_slug) {
+    static $maps = [];
+
+    if (array_key_exists($color_slug, $maps)) {
+        return $maps[$color_slug];
+    }
+
     $items = [
         // Дорожки (variable, product_id = 39)
         'Дорожка 140'   => [39, '140',    'razmer-dorozhki'],
@@ -477,7 +518,8 @@ function loraleya_build_item_map($color_slug) {
             'attrs'        => $attrs,
         ];
     }
-    return $map;
+    $maps[$color_slug] = $map;
+    return $maps[$color_slug];
 }
 
 /**
@@ -488,6 +530,12 @@ function loraleya_build_item_map($color_slug) {
  * @return array data-item => ['price' => float, 'old_price' => float|null]
  */
 function loraleya_get_item_prices($color_slug) {
+    static $prices_by_color = [];
+
+    if (array_key_exists($color_slug, $prices_by_color)) {
+        return $prices_by_color[$color_slug];
+    }
+
     $map = loraleya_build_item_map($color_slug);
     $prices = [];
 
@@ -497,7 +545,8 @@ function loraleya_get_item_prices($color_slug) {
         $old_price = null;
 
         if ($variation_id) {
-            $variation = wc_get_product($variation_id);
+            $variation_index = loraleya_get_variation_index($entry['product_id']);
+            $variation = $variation_index['variation_products'][$variation_id] ?? wc_get_product($variation_id);
             if ($variation) {
                 $price     = (float) $variation->get_price();
                 $sale      = $variation->get_sale_price();
@@ -514,7 +563,8 @@ function loraleya_get_item_prices($color_slug) {
         ];
     }
 
-    return $prices;
+    $prices_by_color[$color_slug] = $prices;
+    return $prices_by_color[$color_slug];
 }
 
 // ===== AJAX ADD TO CART =====
