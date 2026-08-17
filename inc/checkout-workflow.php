@@ -612,6 +612,18 @@ function loraleya_checkout_is_manager_invoice_email( $order, $email ) {
 function loraleya_checkout_invoice_order_totals( $totals, $order, $tax_display ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
         unset( $totals['payment_method'] );
+
+        $service = $order->get_meta( '_ll_delivery_service' );
+        if ( isset( $totals['shipping'] ) && in_array( $service, array( 'cdek', 'yandex' ), true ) ) {
+            $shipping_total = (float) $order->get_shipping_total();
+            if ( 'incl' === $tax_display ) {
+                $shipping_total += (float) $order->get_shipping_tax();
+            }
+
+            $totals['shipping']['label'] = 'cdek' === $service ? 'Доставка СДЭК' : 'Доставка Яндекс';
+            $totals['shipping']['value'] = wc_price( $shipping_total, array( 'currency' => $order->get_currency() ) );
+            unset( $totals['shipping']['meta'] );
+        }
     }
 
     return $totals;
@@ -643,6 +655,10 @@ function loraleya_checkout_email_delivery_summary( $order, $sent_to_admin, $plai
     }
 
     $is_manager_invoice = loraleya_checkout_is_manager_invoice_email( $order, $email );
+    $service            = $order->get_meta( '_ll_delivery_service' );
+    if ( $is_manager_invoice && in_array( $service, array( 'cdek', 'yandex' ), true ) ) {
+        unset( $rows['Доставка'] );
+    }
 
     if ( $plain_text ) {
         echo $is_manager_invoice ? "\nДОСТАВКА\n" : "\nДОСТАВКА И ПОДТВЕРЖДЕНИЕ\n";
