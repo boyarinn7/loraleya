@@ -180,6 +180,24 @@
         resSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
+    function normalizeRussianPhone(value) {
+        var phone = String(value || '').trim();
+        if (!phone || !/^\+?[\d\s().\-–—]+$/.test(phone)) return '';
+
+        var digits = phone.replace(/\D/g, '');
+        if (phone.charAt(0) === '+') {
+            return /^7\d{10}$/.test(digits) ? '+' + digits : '';
+        }
+        if (/^8\d{10}$/.test(digits)) {
+            return '+7' + digits.slice(1);
+        }
+        return /^7\d{10}$/.test(digits) ? '+' + digits : '';
+    }
+
+    function isValidEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+    }
+
     function collectFormData() {
         var fd = new FormData();
 
@@ -193,6 +211,7 @@
 
         fd.append('customer_name',    document.getElementById('coName').value.trim());
         fd.append('customer_contact', document.getElementById('coContact').value.trim());
+        fd.append('customer_email',   document.getElementById('coEmail').value.trim());
         fd.append('customer_notes',   document.getElementById('coNotes').value.trim());
 
         if (document.getElementById('coConsent').checked) fd.append('consent', '1');
@@ -226,34 +245,72 @@
     }
 
     if (form) {
+        var contactInput = document.getElementById('coContact');
+        if (contactInput) {
+            contactInput.addEventListener('input', function () {
+                if (normalizeRussianPhone(contactInput.value)) {
+                    contactInput.classList.remove('co-ct-input--error');
+                    if (!document.querySelector('.co-ct-input--error, .co-consent--error')) {
+                        hideFormError();
+                    }
+                }
+            });
+        }
+
+        var emailInput = document.getElementById('coEmail');
+        if (emailInput) {
+            emailInput.addEventListener('input', function () {
+                if (isValidEmail(emailInput.value)) {
+                    emailInput.classList.remove('co-ct-input--error');
+                    if (!document.querySelector('.co-ct-input--error, .co-consent--error')) {
+                        hideFormError();
+                    }
+                }
+            });
+        }
+
         form.addEventListener('submit', function (e) {
             e.preventDefault();
 
             var nameEl       = document.getElementById('coName');
             var contactEl    = document.getElementById('coContact');
+            var emailEl      = document.getElementById('coEmail');
             var consentEl    = document.getElementById('coConsent');
             var consentBlock = document.querySelector('.co-consent');
 
             // Сбрасываем предыдущие визуальные ошибки
             hideFormError();
             if (consentBlock) consentBlock.classList.remove('co-consent--error');
-            [nameEl, contactEl].forEach(function (el) {
+            [nameEl, contactEl, emailEl].forEach(function (el) {
                 if (el) el.classList.remove('co-ct-input--error');
             });
 
-            // Валидация имени и контакта
-            var missingFields = false;
-            [nameEl, contactEl].forEach(function (el) {
-                if (!el || !el.value.trim()) {
-                    if (el) el.classList.add('co-ct-input--error');
-                    missingFields = true;
-                }
-            });
-
-            if (missingFields) {
-                showFormError('Заполните имя и контактный номер.', nameEl);
+            // Валидация имени и телефона
+            if (!nameEl || !nameEl.value.trim()) {
+                if (nameEl) nameEl.classList.add('co-ct-input--error');
+                showFormError('Заполните имя.', nameEl);
                 return;
             }
+
+            var normalizedPhone = contactEl ? normalizeRussianPhone(contactEl.value) : '';
+            if (!normalizedPhone) {
+                if (contactEl) contactEl.classList.add('co-ct-input--error');
+                showFormError('Введите номер телефона, например +79991234567', contactEl);
+                return;
+            }
+            contactEl.value = normalizedPhone;
+
+            if (!emailEl || !emailEl.value.trim()) {
+                if (emailEl) emailEl.classList.add('co-ct-input--error');
+                showFormError('Введите электронную почту.', emailEl);
+                return;
+            }
+            if (!isValidEmail(emailEl.value)) {
+                emailEl.classList.add('co-ct-input--error');
+                showFormError('Введите корректный адрес электронной почты.', emailEl);
+                return;
+            }
+            emailEl.value = emailEl.value.trim();
 
             // Валидация согласия с ПД
             if (!consentEl || !consentEl.checked) {
@@ -318,7 +375,7 @@
             btnSubmit.textContent = 'Отправить заявку →';
         }
 
-        ['coName', 'coContact', 'coNotes', 'coDimL', 'coDimW'].forEach(function (id) {
+        ['coName', 'coContact', 'coEmail', 'coNotes', 'coDimL', 'coDimW'].forEach(function (id) {
             var el = document.getElementById(id);
             if (el) {
                 el.value = '';

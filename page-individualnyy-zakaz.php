@@ -266,11 +266,15 @@ $colors = get_terms([
                                 <input type="text" id="coName" name="customer_name" class="co-ct-input" placeholder="Как к вам обращаться" required>
                             </div>
                             <div class="co-ct-field">
-                                <label class="co-ct-label" for="coContact">Телефон или Telegram</label>
-                                <input type="text" id="coContact" name="customer_contact" class="co-ct-input" placeholder="+7 (___) ___-__-__" required>
+                                <label class="co-ct-label" for="coContact">Телефон</label>
+                                <input type="tel" id="coContact" name="customer_contact" class="co-ct-input" placeholder="+79991234567" inputmode="tel" autocomplete="tel" required>
                             </div>
                         </div>
                         <div class="co-ct-row">
+                            <div class="co-ct-field">
+                                <label class="co-ct-label" for="coEmail">Электронная почта</label>
+                                <input type="email" id="coEmail" name="customer_email" class="co-ct-input" placeholder="name@example.ru" autocomplete="email" required>
+                            </div>
                             <div class="co-ct-field">
                                 <label class="co-ct-label" for="coNotes">Комментарий</label>
                                 <textarea id="coNotes" name="customer_notes" class="co-ct-input" placeholder="Опишите пожелания, особенности стола, или задайте вопрос"></textarea>
@@ -306,7 +310,7 @@ $colors = get_terms([
 
                 <!-- SUBMIT -->
                 <div class="co-submit-area">
-                    <div class="co-submit-info">Заявка будет отправлена на почту и в Telegram. Мы свяжемся с вами в течение 2 часов для уточнения деталей и расчёта стоимости.</div>
+                    <div class="co-submit-info">Заявка будет отправлена на почту. Мы свяжемся с вами в течение 2 часов для уточнения деталей и расчёта стоимости.</div>
                     <button type="submit" class="co-btn-submit">
                         Отправить заявку →
                     </button>

@@ -106,7 +106,14 @@ function loraleya_scripts() {
 
     // Custom order page script
     if (is_page('individualnyy-zakaz')) {
-        wp_enqueue_script('loraleya-custom-order', get_template_directory_uri() . '/assets/js/custom-order.js', [], '1.0.0', true);
+        $custom_order_js = get_template_directory() . '/assets/js/custom-order.js';
+        wp_enqueue_script(
+            'loraleya-custom-order',
+            get_template_directory_uri() . '/assets/js/custom-order.js',
+            [],
+            file_exists($custom_order_js) ? filemtime($custom_order_js) : '1.0.0',
+            true
+        );
     }
 }
 add_action('wp_enqueue_scripts', 'loraleya_scripts');
@@ -860,6 +867,36 @@ function loraleya_get_scenario_defaults($scenario_slug) {
    CUSTOM ORDER FORM HANDLER
    ============================================= */
 
+function loraleya_normalize_custom_order_phone($value) {
+    $phone = trim((string) $value);
+    if ($phone === '' || mb_strlen($phone) > 100 || !preg_match('/^\+?[\d\s().\-–—]+$/u', $phone)) {
+        return '';
+    }
+
+    $digits = preg_replace('/\D+/u', '', $phone);
+    if (strpos($phone, '+') === 0) {
+        return preg_match('/^7\d{10}$/', $digits) ? '+' . $digits : '';
+    }
+    if (preg_match('/^8\d{10}$/', $digits)) {
+        return '+7' . substr($digits, 1);
+    }
+    return preg_match('/^7\d{10}$/', $digits) ? '+' . $digits : '';
+}
+
+function loraleya_send_custom_order_email($subject, $body) {
+    $email_to = defined('LORALEYA_NOTIFY_EMAIL') ? LORALEYA_NOTIFY_EMAIL : 'loraleya-tex@yandex.ru';
+    $headers  = [
+        'Content-Type: text/plain; charset=UTF-8',
+        'From: LoraLeya <noreply@loraleya.ru>',
+    ];
+    $sent = wp_mail($email_to, $subject, $body, $headers);
+    if (!$sent) {
+        error_log('[LoraLeya] Custom order wp_mail failed for ' . $email_to);
+    }
+
+    return $sent;
+}
+
 function loraleya_handle_custom_order() {
 
     // 1. Honeypot: если заполнен — это бот, тихо завершаем как успех
@@ -875,17 +912,35 @@ function loraleya_handle_custom_order() {
     }
 
     // 3. Валидация обязательных полей
-    $name    = isset($_POST['customer_name'])    ? sanitize_text_field(wp_unslash($_POST['customer_name']))    : '';
-    $contact = isset($_POST['customer_contact']) ? sanitize_text_field(wp_unslash($_POST['customer_contact'])) : '';
-    $consent = !empty($_POST['consent']);
+    $name          = isset($_POST['customer_name']) ? sanitize_text_field(wp_unslash($_POST['customer_name'])) : '';
+    $contact_input = isset($_POST['customer_contact']) ? sanitize_text_field(wp_unslash($_POST['customer_contact'])) : '';
+    $contact       = loraleya_normalize_custom_order_phone($contact_input);
+    $email_input   = isset($_POST['customer_email']) ? trim(wp_unslash($_POST['customer_email'])) : '';
+    $email         = sanitize_email($email_input);
+    $consent       = !empty($_POST['consent']);
 
-    if ($name === '' || $contact === '') {
-        wp_send_json_error(['message' => 'Заполните имя и контакт.'], 400);
+    if ($name === '') {
+        wp_send_json_error(['message' => 'Заполните имя.'], 400);
         return;
     }
 
-    if (mb_strlen($name) > 100 || mb_strlen($contact) > 100) {
-        wp_send_json_error(['message' => 'Слишком длинные значения в имени или контакте.'], 400);
+    if ($contact === '') {
+        wp_send_json_error(['message' => 'Введите номер телефона, например +79991234567'], 400);
+        return;
+    }
+
+    if ($email_input === '') {
+        wp_send_json_error(['message' => 'Введите электронную почту.'], 400);
+        return;
+    }
+
+    if ($email === '' || !is_email($email)) {
+        wp_send_json_error(['message' => 'Введите корректный адрес электронной почты.'], 400);
+        return;
+    }
+
+    if (mb_strlen($name) > 100) {
+        wp_send_json_error(['message' => 'Слишком длинное значение в имени.'], 400);
         return;
     }
 
@@ -922,7 +977,8 @@ function loraleya_handle_custom_order() {
         '🪡 Новая заявка с loraleya.ru',
         '',
         "Имя: {$name}",
-        "Контакт: {$contact}",
+        "Телефон: {$contact}",
+        "Email: {$email}",
         '',
         '— Параметры заказа —',
         "Форма стола: " . ($shape_name ?: '—'),
@@ -948,8 +1004,8 @@ function loraleya_handle_custom_order() {
     $body    = implode("\n", $lines);
     $subject = "LoraLeya: заявка от {$name}";
 
-    // 6. Отправка через канальный helper
-    $sent = loraleya_send_notification($subject, $body);
+    // 6. Отправка заявки только по email
+    $sent = loraleya_send_custom_order_email($subject, $body);
 
     if ($sent) {
         wp_send_json_success(['message' => 'Заявка отправлена. Свяжемся в течение 2 часов.']);
