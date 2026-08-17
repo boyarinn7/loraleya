@@ -1,6 +1,7 @@
 jQuery(function ($) {
     var $sel = $('select[name="attribute_pa_fabric_color"]');
     if (!$sel.length) return;
+    var $form = $sel.closest('form.variations_form');
 
     var data = (window.LoraleyaSwatches || {}).colors || {};
 
@@ -50,6 +51,13 @@ jQuery(function ($) {
 
     // Если WC не собрал полную вариацию (нет размера) — удержать превью выбранного цвета
     $(document.body).on('hide_variation', function () {
+        if (!userPicked) return;
+        var slug = $sel.val();
+        if (slug) setGalleryImage(slug);
+    });
+
+    // WC подменяет gallery изображением вариации; после обновления возвращаем фото выбранного цвета
+    $form.on('show_variation', function () {
         if (!userPicked) return;
         var slug = $sel.val();
         if (slug) setGalleryImage(slug);

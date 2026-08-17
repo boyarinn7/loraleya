@@ -1668,11 +1668,12 @@ add_action('after_setup_theme', function () {
 add_action('wp_enqueue_scripts', function () {
     if (!function_exists('is_product') || !is_product()) return;
 
+    $product_swatches_js = get_stylesheet_directory() . '/assets/js/product-swatches.js';
     wp_enqueue_script(
         'loraleya-product-swatches',
         get_stylesheet_directory_uri() . '/assets/js/product-swatches.js',
         ['jquery', 'wc-add-to-cart-variation'],
-        '1.0',
+        file_exists($product_swatches_js) ? filemtime($product_swatches_js) : '1.0',
         true
     );
 
@@ -1697,13 +1698,13 @@ add_action('wp_enqueue_scripts', function () {
         if ($prod && $prod->is_type('variable')) {
             $color_imgs = [];
             foreach ($prod->get_children() as $vid) {
-                $thumb_id = get_post_thumbnail_id($vid); // только собственное фото вариации
-                if (!$thumb_id) continue;
                 $variation = wc_get_product($vid);
-                if (!$variation) continue;
+                if (!($variation instanceof WC_Product_Variation)) continue;
                 $attrs = $variation->get_variation_attributes();
                 $color = isset($attrs['attribute_pa_fabric_color']) ? $attrs['attribute_pa_fabric_color'] : '';
                 if ($color === '' || isset($color_imgs[$color])) continue;
+                $thumb_id = $variation->get_image_id('edit'); // только собственное фото, без fallback на parent product
+                if (!$thumb_id) continue;
                 $u = wp_get_attachment_image_url($thumb_id, 'woocommerce_single');
                 if ($u) $color_imgs[$color] = $u;
             }
