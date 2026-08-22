@@ -595,6 +595,15 @@ function loraleya_checkout_admin_delivery_summary( $order ) {
         return;
     }
 
+    $service = $order instanceof WC_Order ? $order->get_meta( '_ll_delivery_service' ) : '';
+    if (
+        $order instanceof WC_Order
+        && 'yes' === $order->get_meta( '_ll_individual_order' )
+        && in_array( $service, array( 'cdek', 'yandex' ), true )
+    ) {
+        $rows['Доставка'] = wc_price( $order->get_shipping_total(), array( 'currency' => $order->get_currency() ) );
+    }
+
     echo '<div class="ll-admin-delivery-summary"><h3>Доставка и подтверждение</h3><p><strong>Требуется связаться с покупателем до оплаты.</strong></p><dl>';
     foreach ( $rows as $label => $value ) {
         echo '<dt><strong>' . esc_html( $label ) . ':</strong></dt><dd>' . wp_kses_post( $value ) . '</dd>';
@@ -603,24 +612,550 @@ function loraleya_checkout_admin_delivery_summary( $order ) {
 }
 add_action( 'woocommerce_admin_order_data_after_billing_address', 'loraleya_checkout_admin_delivery_summary', 20 );
 
+function loraleya_checkout_admin_tracking_number( $order ) {
+    if ( ! $order instanceof WC_Order || ! current_user_can( 'manage_woocommerce' ) ) {
+        return;
+    }
+
+    wp_nonce_field( 'loraleya_checkout_save_tracking_number', 'loraleya_checkout_tracking_nonce' );
+    woocommerce_wp_text_input(
+        array(
+            'id'            => '_ll_tracking_number',
+            'label'         => 'Трек-номер отправления',
+            'value'         => $order->get_meta( '_ll_tracking_number' ),
+            'wrapper_class' => 'form-field-wide',
+        )
+    );
+}
+add_action( 'woocommerce_admin_order_data_after_billing_address', 'loraleya_checkout_admin_tracking_number', 25 );
+
+function loraleya_checkout_save_tracking_number( $order_id, $order = null ) {
+    if (
+        ! current_user_can( 'manage_woocommerce' )
+        || empty( $_POST['loraleya_checkout_tracking_nonce'] )
+        || ! wp_verify_nonce(
+            sanitize_text_field( wp_unslash( $_POST['loraleya_checkout_tracking_nonce'] ) ),
+            'loraleya_checkout_save_tracking_number'
+        )
+    ) {
+        return;
+    }
+
+    $order = $order instanceof WC_Order ? $order : wc_get_order( $order_id );
+    if ( ! $order ) {
+        return;
+    }
+
+    $tracking_number = isset( $_POST['_ll_tracking_number'] )
+        ? sanitize_text_field( wp_unslash( $_POST['_ll_tracking_number'] ) )
+        : '';
+
+    if ( '' === $tracking_number ) {
+        $order->delete_meta_data( '_ll_tracking_number' );
+    } else {
+        $order->update_meta_data( '_ll_tracking_number', $tracking_number );
+    }
+
+    $order->save();
+}
+add_action( 'woocommerce_process_shop_order_meta', 'loraleya_checkout_save_tracking_number', 20, 2 );
+
 function loraleya_checkout_is_manager_invoice_email( $order, $email ) {
     return $order instanceof WC_Order
         && $email instanceof WC_Email_Customer_Invoice
         && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' );
 }
 
+function loraleya_checkout_manager_invoice_intro_context( $active = null ) {
+    static $is_active = false;
+
+    if ( null !== $active ) {
+        $is_active = (bool) $active;
+    }
+
+    return $is_active;
+}
+
+function loraleya_checkout_manager_invoice_intro_text( $translation, $text, $domain ) {
+    if ( ! loraleya_checkout_manager_invoice_intro_context() || 'woocommerce' !== $domain ) {
+        return $translation;
+    }
+
+    $invoice_texts = array(
+        'An order has been created for you on %1$s. Your order details are below, with a link to make payment when you’re ready: %2$s',
+        "An order has been created for you on %1\$s. Your order details are below, with a link to make payment when you're ready: %2\$s",
+        "An order has been created for you on %s. The order details are as follows, with a link to make payment when you're ready: %s",
+    );
+
+    return in_array( $text, $invoice_texts, true )
+        ? 'Ваш заказ согласован и готов к оплате. Для оплаты перейдите по ссылке: %2$s'
+        : $translation;
+}
+add_filter( 'gettext', 'loraleya_checkout_manager_invoice_intro_text', 20, 3 );
+
+function loraleya_checkout_manager_invoice_intro_end( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( loraleya_checkout_is_manager_invoice_email( $order, $email ) ) {
+        loraleya_checkout_manager_invoice_intro_context( false );
+    }
+}
+add_action( 'woocommerce_email_before_order_table', 'loraleya_checkout_manager_invoice_intro_end', 1, 4 );
+
+function loraleya_checkout_is_manager_processing_email( $order, $email ) {
+    return $order instanceof WC_Order
+        && $email instanceof WC_Email
+        && 'customer_processing_order' === $email->id
+        && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' )
+        && 'yes' !== $order->get_meta( '_ll_individual_order' );
+}
+
+function loraleya_checkout_manager_processing_intro_context( $active = null ) {
+    static $is_active = false;
+
+    if ( null !== $active ) {
+        $is_active = (bool) $active;
+    }
+
+    return $is_active;
+}
+
+function loraleya_checkout_manager_processing_intro_text( $translation, $text, $domain ) {
+    if ( ! loraleya_checkout_manager_processing_intro_context() || 'woocommerce' !== $domain ) {
+        return $translation;
+    }
+
+    $hidden_texts = array(
+        'Just to let you know &mdash; we’ve received your order, and it is now being processed.',
+        'Here’s a reminder of what you’ve ordered:',
+        "Just to let you know &mdash; we've received your order #%s, and it is now being processed:",
+    );
+
+    return in_array( $text, $hidden_texts, true ) ? '' : $translation;
+}
+add_filter( 'gettext', 'loraleya_checkout_manager_processing_intro_text', 20, 3 );
+
+function loraleya_checkout_manager_processing_content( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( ! loraleya_checkout_is_manager_processing_email( $order, $email ) ) {
+        return;
+    }
+
+    if ( $plain_text ) {
+        echo "Спасибо за заказ! Мы приступили к его подготовке.\n\n";
+        echo "Если у вас появятся вопросы, свяжитесь с нами:\n\n";
+        echo "Email: loraleya-tex@yandex.ru\n";
+        echo "Телефон: +7 926 495 02 10\n";
+        return;
+    }
+
+    echo '<p>Спасибо за заказ! Мы приступили к его подготовке.</p>';
+    echo '<p>Если у вас появятся вопросы, свяжитесь с нами:</p>';
+    echo '<p>Email: <a href="mailto:loraleya-tex@yandex.ru">loraleya-tex@yandex.ru</a><br>';
+    echo 'Телефон: <a href="tel:+79264950210">+7 926 495 02 10</a></p>';
+}
+
+function loraleya_checkout_manager_processing_hooks( $activate ) {
+    static $removed_hooks = array();
+    static $is_active     = false;
+
+    if ( $activate ) {
+        if ( $is_active ) {
+            return;
+        }
+
+        $mailer = WC()->mailer();
+        $hooks  = array(
+            array( 'woocommerce_email_order_details', array( $mailer, 'order_downloads' ), 4 ),
+            array( 'woocommerce_email_order_details', array( $mailer, 'order_details' ), 4 ),
+            array( 'woocommerce_email_order_details', array( 'WC_Structured_Data', 'generate_order_data' ), 3 ),
+            array( 'woocommerce_email_order_details', array( 'WC_Structured_Data', 'output_structured_data' ), 3 ),
+            array( 'woocommerce_email_order_meta', array( $mailer, 'order_meta' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'customer_details' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'email_addresses' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'email_address' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'additional_checkout_fields' ), 3 ),
+        );
+
+        foreach ( $hooks as $hook ) {
+            $priority = has_action( $hook[0], $hook[1] );
+            if ( false !== $priority ) {
+                remove_action( $hook[0], $hook[1], $priority );
+                $removed_hooks[] = array( $hook[0], $hook[1], $priority, $hook[2] );
+            }
+        }
+
+        add_action( 'woocommerce_email_order_details', 'loraleya_checkout_manager_processing_content', 10, 4 );
+        add_action( 'woocommerce_email_customer_details', 'loraleya_checkout_manager_processing_restore', PHP_INT_MAX, 4 );
+        $is_active = true;
+        return;
+    }
+
+    if ( ! $is_active ) {
+        return;
+    }
+
+    remove_action( 'woocommerce_email_order_details', 'loraleya_checkout_manager_processing_content', 10 );
+    remove_action( 'woocommerce_email_customer_details', 'loraleya_checkout_manager_processing_restore', PHP_INT_MAX );
+
+    foreach ( $removed_hooks as $hook ) {
+        add_action( $hook[0], $hook[1], $hook[2], $hook[3] );
+    }
+
+    $removed_hooks = array();
+    $is_active     = false;
+}
+
+function loraleya_checkout_manager_processing_restore( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( loraleya_checkout_is_manager_processing_email( $order, $email ) ) {
+        loraleya_checkout_manager_processing_hooks( false );
+        loraleya_checkout_manager_processing_intro_context( false );
+    }
+}
+
+function loraleya_checkout_is_manager_completed_email( $order, $email ) {
+    return $order instanceof WC_Order
+        && $email instanceof WC_Email
+        && 'customer_completed_order' === $email->id
+        && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' );
+}
+
+function loraleya_checkout_manager_completed_intro_context( $active = null ) {
+    static $is_active = false;
+
+    if ( null !== $active ) {
+        $is_active = (bool) $active;
+    }
+
+    return $is_active;
+}
+
+function loraleya_checkout_manager_completed_intro_text( $translation, $text, $domain ) {
+    if ( ! loraleya_checkout_manager_completed_intro_context() || 'woocommerce' !== $domain ) {
+        return $translation;
+    }
+
+    $hidden_texts = array(
+        'We have finished processing your order.',
+        'Here’s a reminder of what you’ve ordered:',
+        "Here's a reminder of what you've ordered:",
+    );
+
+    return in_array( $text, $hidden_texts, true ) ? '' : $translation;
+}
+add_filter( 'gettext', 'loraleya_checkout_manager_completed_intro_text', 20, 3 );
+
+function loraleya_checkout_manager_completed_content( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( ! loraleya_checkout_is_manager_completed_email( $order, $email ) ) {
+        return;
+    }
+
+    $service_key     = (string) $order->get_meta( '_ll_delivery_service' );
+    $service         = loraleya_checkout_delivery_service_label( $service_key );
+    $tracking_number = trim( (string) $order->get_meta( '_ll_tracking_number' ) );
+    $delivery_mode   = (string) $order->get_meta( '_ll_delivery_mode' );
+
+    if ( $plain_text ) {
+        echo "Ваш заказ передан в службу доставки и уже в пути.\n\n";
+        if ( '' !== $service ) {
+            echo 'Способ доставки: ' . wp_strip_all_tags( $service ) . "\n";
+        }
+        if ( '' !== $tracking_number ) {
+            echo 'Трек-номер: ' . wp_strip_all_tags( $tracking_number ) . "\n";
+        }
+        if ( 'fivepost' === $service_key || 'pvz' === $delivery_mode ) {
+            echo "\nКогда заказ поступит в пункт выдачи, служба доставки отправит вам уведомление о готовности к получению.\n";
+        } elseif ( 'courier' === $delivery_mode ) {
+            echo "\nКурьер свяжется с вами перед доставкой.\n";
+        }
+        echo "\nЕсли у вас появятся вопросы, свяжитесь с нами:\n\n";
+        echo "Email: loraleya-tex@yandex.ru\n";
+        echo "Телефон: +7 926 495 02 10\n";
+        return;
+    }
+
+    echo '<p>Ваш заказ передан в службу доставки и уже в пути.</p>';
+    if ( '' !== $service || '' !== $tracking_number ) {
+        echo '<p>';
+        if ( '' !== $service ) {
+            echo 'Способ доставки: ' . esc_html( $service );
+        }
+        if ( '' !== $tracking_number ) {
+            echo ( '' !== $service ? '<br>' : '' ) . 'Трек-номер: ' . esc_html( $tracking_number );
+        }
+        echo '</p>';
+    }
+    if ( 'fivepost' === $service_key || 'pvz' === $delivery_mode ) {
+        echo '<p>Когда заказ поступит в пункт выдачи, служба доставки отправит вам уведомление о готовности к получению.</p>';
+    } elseif ( 'courier' === $delivery_mode ) {
+        echo '<p>Курьер свяжется с вами перед доставкой.</p>';
+    }
+    echo '<p>Если у вас появятся вопросы, свяжитесь с нами:</p>';
+    echo '<p>Email: <a href="mailto:loraleya-tex@yandex.ru">loraleya-tex@yandex.ru</a><br>';
+    echo 'Телефон: <a href="tel:+79264950210">+7 926 495 02 10</a></p>';
+}
+
+function loraleya_checkout_manager_completed_hooks( $activate ) {
+    static $removed_hooks = array();
+    static $is_active     = false;
+
+    if ( $activate ) {
+        if ( $is_active ) {
+            return;
+        }
+
+        $mailer = WC()->mailer();
+        $hooks  = array(
+            array( 'woocommerce_email_order_details', array( $mailer, 'order_downloads' ), 4 ),
+            array( 'woocommerce_email_order_details', array( $mailer, 'order_details' ), 4 ),
+            array( 'woocommerce_email_order_details', array( 'WC_Structured_Data', 'generate_order_data' ), 3 ),
+            array( 'woocommerce_email_order_details', array( 'WC_Structured_Data', 'output_structured_data' ), 3 ),
+            array( 'woocommerce_email_order_meta', array( $mailer, 'order_meta' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'customer_details' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'email_addresses' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'email_address' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'additional_checkout_fields' ), 3 ),
+        );
+
+        foreach ( $hooks as $hook ) {
+            $priority = has_action( $hook[0], $hook[1] );
+            if ( false !== $priority ) {
+                remove_action( $hook[0], $hook[1], $priority );
+                $removed_hooks[] = array( $hook[0], $hook[1], $priority, $hook[2] );
+            }
+        }
+
+        add_action( 'woocommerce_email_order_details', 'loraleya_checkout_manager_completed_content', 10, 4 );
+        add_action( 'woocommerce_email_customer_details', 'loraleya_checkout_manager_completed_restore', PHP_INT_MAX, 4 );
+        $is_active = true;
+        return;
+    }
+
+    if ( ! $is_active ) {
+        return;
+    }
+
+    remove_action( 'woocommerce_email_order_details', 'loraleya_checkout_manager_completed_content', 10 );
+    remove_action( 'woocommerce_email_customer_details', 'loraleya_checkout_manager_completed_restore', PHP_INT_MAX );
+
+    foreach ( $removed_hooks as $hook ) {
+        add_action( $hook[0], $hook[1], $hook[2], $hook[3] );
+    }
+
+    $removed_hooks = array();
+    $is_active     = false;
+}
+
+function loraleya_checkout_manager_completed_restore( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( loraleya_checkout_is_manager_completed_email( $order, $email ) ) {
+        loraleya_checkout_manager_completed_hooks( false );
+        loraleya_checkout_manager_completed_intro_context( false );
+    }
+}
+
+function loraleya_checkout_is_manager_customer_note_email( $order, $email ) {
+    return $order instanceof WC_Order
+        && $email instanceof WC_Email
+        && 'customer_note' === $email->id
+        && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' )
+        && 'yes' !== $order->get_meta( '_ll_individual_order' );
+}
+
+function loraleya_checkout_manager_customer_note_context( $order_number = null ) {
+    static $current_order_number = '';
+
+    if ( null !== $order_number ) {
+        $current_order_number = (string) $order_number;
+    }
+
+    return $current_order_number;
+}
+
+function loraleya_checkout_manager_customer_note_text( $translation, $text, $domain ) {
+    $order_number = loraleya_checkout_manager_customer_note_context();
+    if ( '' === $order_number || 'woocommerce' !== $domain ) {
+        return $translation;
+    }
+
+    if ( 'The following note has been added to your order:' === $text ) {
+        return 'Заказ №' . $order_number;
+    }
+
+    if ( 'As a reminder, here are your order details:' === $text ) {
+        return '';
+    }
+
+    return $translation;
+}
+add_filter( 'gettext', 'loraleya_checkout_manager_customer_note_text', 20, 3 );
+
+function loraleya_checkout_manager_customer_note_hooks( $activate ) {
+    static $removed_hooks = array();
+    static $is_active     = false;
+
+    if ( $activate ) {
+        if ( $is_active ) {
+            return;
+        }
+
+        $mailer = WC()->mailer();
+        $hooks  = array(
+            array( 'woocommerce_email_order_details', array( $mailer, 'order_downloads' ), 4 ),
+            array( 'woocommerce_email_order_details', array( $mailer, 'order_details' ), 4 ),
+            array( 'woocommerce_email_order_details', array( 'WC_Structured_Data', 'generate_order_data' ), 3 ),
+            array( 'woocommerce_email_order_details', array( 'WC_Structured_Data', 'output_structured_data' ), 3 ),
+            array( 'woocommerce_email_order_meta', array( $mailer, 'order_meta' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'customer_details' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'email_addresses' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'email_address' ), 3 ),
+            array( 'woocommerce_email_customer_details', array( $mailer, 'additional_checkout_fields' ), 3 ),
+        );
+
+        foreach ( $hooks as $hook ) {
+            $priority = has_action( $hook[0], $hook[1] );
+            if ( false !== $priority ) {
+                remove_action( $hook[0], $hook[1], $priority );
+                $removed_hooks[] = array( $hook[0], $hook[1], $priority, $hook[2] );
+            }
+        }
+
+        add_action( 'woocommerce_email_customer_details', 'loraleya_checkout_manager_customer_note_restore', PHP_INT_MAX, 4 );
+        $is_active = true;
+        return;
+    }
+
+    if ( ! $is_active ) {
+        return;
+    }
+
+    remove_action( 'woocommerce_email_customer_details', 'loraleya_checkout_manager_customer_note_restore', PHP_INT_MAX );
+
+    foreach ( $removed_hooks as $hook ) {
+        add_action( $hook[0], $hook[1], $hook[2], $hook[3] );
+    }
+
+    $removed_hooks = array();
+    $is_active     = false;
+}
+
+function loraleya_checkout_manager_customer_note_restore( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( loraleya_checkout_is_manager_customer_note_email( $order, $email ) ) {
+        loraleya_checkout_manager_customer_note_hooks( false );
+        loraleya_checkout_manager_customer_note_context( '' );
+    }
+}
+
+function loraleya_checkout_is_initial_customer_order( $order ) {
+    return $order instanceof WC_Order
+        && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' )
+        && 'yes' !== $order->get_meta( '_ll_individual_order' );
+}
+
+function loraleya_checkout_order_items_total_html( $order, $tax_display ) {
+    $total = 0.0;
+
+    foreach ( $order->get_items( 'line_item' ) as $item ) {
+        $total += (float) $item->get_total();
+
+        if ( 'incl' === $tax_display ) {
+            $total += (float) $item->get_total_tax();
+        }
+    }
+
+    return wc_price( $total, array( 'currency' => $order->get_currency() ) );
+}
+
+function loraleya_checkout_customer_on_hold_order_totals( $totals, $order, $tax_display ) {
+    if ( ! loraleya_checkout_is_initial_customer_order( $order ) ) {
+        return $totals;
+    }
+
+    return array(
+        'll_product_total' => array(
+            'label' => 'Итого стоимость товара:',
+            'value' => loraleya_checkout_order_items_total_html( $order, $tax_display ),
+        ),
+    );
+}
+
+function loraleya_checkout_customer_on_hold_email_begin( $order, $sent_to_admin, $plain_text, $email ) {
+    if (
+        ! $sent_to_admin
+        && $email instanceof WC_Email
+        && 'customer_on_hold_order' === $email->id
+        && loraleya_checkout_is_initial_customer_order( $order )
+    ) {
+        add_filter( 'woocommerce_get_order_item_totals', 'loraleya_checkout_customer_on_hold_order_totals', 100, 3 );
+    }
+}
+add_action( 'woocommerce_email_before_order_table', 'loraleya_checkout_customer_on_hold_email_begin', 20, 4 );
+
+function loraleya_checkout_customer_on_hold_email_end( $order, $sent_to_admin, $plain_text, $email ) {
+    if (
+        ! $sent_to_admin
+        && $email instanceof WC_Email
+        && 'customer_on_hold_order' === $email->id
+        && loraleya_checkout_is_initial_customer_order( $order )
+    ) {
+        remove_filter( 'woocommerce_get_order_item_totals', 'loraleya_checkout_customer_on_hold_order_totals', 100 );
+    }
+}
+add_action( 'woocommerce_email_after_order_table', 'loraleya_checkout_customer_on_hold_email_end', 5, 4 );
+
+function loraleya_checkout_customer_on_hold_intro_context( $active = null ) {
+    static $is_active = false;
+
+    if ( null !== $active ) {
+        $is_active = (bool) $active;
+    }
+
+    return $is_active;
+}
+
+function loraleya_checkout_customer_on_hold_intro_text( $translation, $text, $domain ) {
+    if ( ! loraleya_checkout_customer_on_hold_intro_context() || 'woocommerce' !== $domain ) {
+        return $translation;
+    }
+
+    $hidden_texts = array(
+        'We’ve received your order and it’s currently on hold until we can confirm your payment has been processed.',
+        'Here’s a reminder of what you’ve ordered:',
+        'Thanks for your order. It’s on-hold until we confirm that payment has been received.',
+        "We've received your order and it's currently on hold until we can confirm your payment has been processed.",
+        "Here's a reminder of what you've ordered:",
+        "Thanks for your order. It's on-hold until we confirm that payment has been received.",
+    );
+
+    return in_array( $text, $hidden_texts, true ) ? '' : $translation;
+}
+add_filter( 'gettext', 'loraleya_checkout_customer_on_hold_intro_text', 20, 3 );
+
+function loraleya_checkout_customer_on_hold_intro_end( $order, $sent_to_admin, $plain_text, $email ) {
+    if (
+        ! $sent_to_admin
+        && $email instanceof WC_Email
+        && 'customer_on_hold_order' === $email->id
+        && loraleya_checkout_is_initial_customer_order( $order )
+    ) {
+        loraleya_checkout_customer_on_hold_intro_context( false );
+    }
+}
+add_action( 'woocommerce_email_before_order_table', 'loraleya_checkout_customer_on_hold_intro_end', 1, 4 );
+
 function loraleya_checkout_invoice_order_totals( $totals, $order, $tax_display ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
         unset( $totals['payment_method'] );
 
         $service = $order->get_meta( '_ll_delivery_service' );
-        if ( isset( $totals['shipping'] ) && in_array( $service, array( 'cdek', 'yandex' ), true ) ) {
+        if ( isset( $totals['shipping'] ) && in_array( $service, array( 'fivepost', 'cdek', 'yandex' ), true ) ) {
             $shipping_total = (float) $order->get_shipping_total();
             if ( 'incl' === $tax_display ) {
                 $shipping_total += (float) $order->get_shipping_tax();
             }
 
-            $totals['shipping']['label'] = 'cdek' === $service ? 'Доставка СДЭК' : 'Доставка Яндекс';
+            $shipping_labels = array(
+                'fivepost' => 'Доставка 5Post',
+                'cdek'     => 'Доставка СДЭК',
+                'yandex'   => 'Доставка Яндекс',
+            );
+            $totals['shipping']['label'] = $shipping_labels[ $service ];
             $totals['shipping']['value'] = wc_price( $shipping_total, array( 'currency' => $order->get_currency() ) );
             unset( $totals['shipping']['meta'] );
         }
@@ -649,15 +1184,63 @@ function loraleya_checkout_email_price_styles( $css ) {
 add_filter( 'woocommerce_email_styles', 'loraleya_checkout_email_price_styles' );
 
 function loraleya_checkout_email_delivery_summary( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( loraleya_checkout_is_manager_processing_email( $order, $email ) ) {
+        return;
+    }
+
+    if ( loraleya_checkout_is_manager_completed_email( $order, $email ) ) {
+        return;
+    }
+
+    if ( loraleya_checkout_is_manager_customer_note_email( $order, $email ) ) {
+        return;
+    }
+
     $rows = loraleya_checkout_delivery_summary_rows( $order );
     if ( ! $rows ) {
         return;
     }
 
+    $is_initial_customer_email = ! $sent_to_admin
+        && $email instanceof WC_Email
+        && 'customer_on_hold_order' === $email->id
+        && loraleya_checkout_is_initial_customer_order( $order );
+
+    if ( $is_initial_customer_email ) {
+        $service = $order->get_meta( '_ll_delivery_service' );
+
+        if ( in_array( $service, array( 'cdek', 'yandex' ), true ) ) {
+            unset( $rows['Доставка'] );
+            $rows[ 'cdek' === $service ? 'Доставка СДЭК' : 'Доставка Яндекс' ] = 'Стоимость рассчитает менеджер индивидуально';
+        }
+
+        if ( $plain_text ) {
+            echo "\nДОСТАВКА И СОГЛАСОВАНИЕ\n";
+            echo "Заказ принят. Мы свяжемся с вами для согласования деталей заказа, сроков и доставки. После согласования вы получите ссылку на оплату.\n";
+            foreach ( $rows as $label => $value ) {
+                echo wp_strip_all_tags( $label . ': ' . $value ) . "\n";
+            }
+            return;
+        }
+
+        echo '<h2>Доставка и согласование</h2>';
+        echo '<p>Заказ принят. Мы свяжемся с вами для согласования деталей заказа, сроков и доставки. После согласования вы получите ссылку на оплату.</p>';
+        echo '<table cellspacing="0" cellpadding="6" style="width:100%;border:1px solid #e5e5e5" border="1">';
+        foreach ( $rows as $label => $value ) {
+            echo '<tr><th style="text-align:left">' . esc_html( $label ) . '</th><td>' . wp_kses_post( $value ) . '</td></tr>';
+        }
+        echo '</table>';
+        return;
+    }
+
     $is_manager_invoice = loraleya_checkout_is_manager_invoice_email( $order, $email );
     $service            = $order->get_meta( '_ll_delivery_service' );
-    if ( $is_manager_invoice && in_array( $service, array( 'cdek', 'yandex' ), true ) ) {
-        unset( $rows['Доставка'] );
+    if ( $is_manager_invoice ) {
+        if ( 'fivepost' === $service ) {
+            unset( $rows['Условия 5Post'] );
+        } elseif ( in_array( $service, array( 'cdek', 'yandex' ), true ) ) {
+            unset( $rows['Доставка'] );
+        }
     }
 
     if ( $plain_text ) {
@@ -709,18 +1292,35 @@ add_filter( 'woocommerce_email_subject_new_order', static function ( $subject, $
 }, 20, 2 );
 
 add_filter( 'woocommerce_email_subject_customer_on_hold_order', static function ( $subject, $order ) {
-    if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
-        return 'Заказ №' . $order->get_order_number() . ' принят — менеджер свяжется с вами';
+    if ( loraleya_checkout_is_initial_customer_order( $order ) ) {
+        return 'Заказ №' . $order->get_order_number() . ' принят';
     }
     return $subject;
 }, 20, 2 );
 
 add_filter( 'woocommerce_email_heading_customer_on_hold_order', static function ( $heading, $order ) {
-    if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
+    if ( loraleya_checkout_is_initial_customer_order( $order ) ) {
+        loraleya_checkout_customer_on_hold_intro_context( true );
         return 'Ваш заказ принят';
     }
     return $heading;
 }, 20, 2 );
+
+add_filter( 'woocommerce_email_additional_content_customer_on_hold_order', static function ( $content, $order ) {
+    return loraleya_checkout_is_initial_customer_order( $order ) ? '' : $content;
+}, 20, 2 );
+
+add_filter( 'woocommerce_email_order_details_heading', static function ( $heading, $order, $email ) {
+    if (
+        $email instanceof WC_Email
+        && 'customer_on_hold_order' === $email->id
+        && loraleya_checkout_is_initial_customer_order( $order )
+    ) {
+        return 'Детали заказа';
+    }
+
+    return $heading;
+}, 20, 3 );
 
 add_filter( 'woocommerce_email_subject_customer_invoice', static function ( $subject, $order ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
@@ -731,10 +1331,69 @@ add_filter( 'woocommerce_email_subject_customer_invoice', static function ( $sub
 
 add_filter( 'woocommerce_email_heading_customer_invoice', static function ( $heading, $order ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
+        loraleya_checkout_manager_invoice_intro_context( true );
         return 'Заказ подтверждён — можно оплатить';
     }
     return $heading;
 }, 20, 2 );
+
+add_filter( 'woocommerce_email_subject_customer_processing_order', static function ( $subject, $order, $email ) {
+    if ( loraleya_checkout_is_manager_processing_email( $order, $email ) ) {
+        return 'Заказ №' . $order->get_order_number() . ' принят в работу';
+    }
+
+    return $subject;
+}, 20, 3 );
+
+add_filter( 'woocommerce_email_heading_customer_processing_order', static function ( $heading, $order, $email ) {
+    if ( loraleya_checkout_is_manager_processing_email( $order, $email ) ) {
+        loraleya_checkout_manager_processing_intro_context( true );
+        loraleya_checkout_manager_processing_hooks( true );
+        return 'Ваш заказ принят в работу';
+    }
+
+    return $heading;
+}, 20, 3 );
+
+add_filter( 'woocommerce_email_additional_content_customer_processing_order', static function ( $content, $order, $email ) {
+    return loraleya_checkout_is_manager_processing_email( $order, $email ) ? '' : $content;
+}, 20, 3 );
+
+add_filter( 'woocommerce_email_subject_customer_completed_order', static function ( $subject, $order, $email ) {
+    if ( loraleya_checkout_is_manager_completed_email( $order, $email ) ) {
+        return 'Заказ №' . $order->get_order_number() . ' отправлен';
+    }
+
+    return $subject;
+}, 20, 3 );
+
+add_filter( 'woocommerce_email_heading_customer_completed_order', static function ( $heading, $order, $email ) {
+    if ( loraleya_checkout_is_manager_completed_email( $order, $email ) ) {
+        loraleya_checkout_manager_completed_intro_context( true );
+        loraleya_checkout_manager_completed_hooks( true );
+        return 'Ваш заказ отправлен';
+    }
+
+    return $heading;
+}, 20, 3 );
+
+add_filter( 'woocommerce_email_additional_content_customer_completed_order', static function ( $content, $order, $email ) {
+    return loraleya_checkout_is_manager_completed_email( $order, $email ) ? '' : $content;
+}, 20, 3 );
+
+add_filter( 'woocommerce_email_heading_customer_note', static function ( $heading, $order, $email ) {
+    if ( loraleya_checkout_is_manager_customer_note_email( $order, $email ) ) {
+        loraleya_checkout_manager_customer_note_context( $order->get_order_number() );
+        loraleya_checkout_manager_customer_note_hooks( true );
+        return 'Сообщение по вашему заказу';
+    }
+
+    return $heading;
+}, 20, 3 );
+
+add_filter( 'woocommerce_email_additional_content_customer_note', static function ( $content, $order, $email ) {
+    return loraleya_checkout_is_manager_customer_note_email( $order, $email ) ? '' : $content;
+}, 20, 3 );
 
 /**
  * Load the conditional checkout interface only when its file exists.
