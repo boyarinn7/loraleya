@@ -911,6 +911,12 @@ function loraleya_handle_custom_order() {
         return;
     }
 
+    $request_token = isset($_POST['request_token']) ? sanitize_text_field(wp_unslash($_POST['request_token'])) : '';
+    if (!preg_match('/^[a-z0-9-]{20,80}$/i', $request_token)) {
+        wp_send_json_error(['message' => 'Не удалось подтвердить отправку формы. Обновите страницу и попробуйте снова.'], 400);
+        return;
+    }
+
     // 3. Валидация обязательных полей
     $name          = isset($_POST['customer_name']) ? sanitize_text_field(wp_unslash($_POST['customer_name'])) : '';
     $contact_input = isset($_POST['customer_contact']) ? sanitize_text_field(wp_unslash($_POST['customer_contact'])) : '';
@@ -973,9 +979,47 @@ function loraleya_handle_custom_order() {
 
     $size_text = ($dim_length && $dim_width) ? "{$dim_length} × {$dim_width} см" : 'Не указан';
 
+    if (!function_exists('loraleya_custom_order_create_request')) {
+        error_log('[LoraLeya] Custom order workflow module is unavailable.');
+        wp_send_json_error(['message' => 'Не удалось сохранить заявку. Попробуйте позже.'], 500);
+        return;
+    }
+
+    $request_result = loraleya_custom_order_create_request([
+        'customer_name' => $name,
+        'phone'          => $contact,
+        'email'          => $email,
+        'shape'          => $shape_name,
+        'length'         => $dim_length,
+        'width'          => $dim_width,
+        'persons'        => $persons,
+        'color'          => $color_name,
+        'items_summary'  => $items_text,
+        'options'        => implode(', ', $opts_list),
+        'customer_notes' => $notes,
+    ], $request_token);
+    if (is_wp_error($request_result)) {
+        error_log('[LoraLeya] Custom request save failed: ' . $request_result->get_error_code());
+        $error_code  = $request_result->get_error_code();
+        $http_status = 'custom_request_rate_limited' === $error_code ? 429 : ( 'custom_request_in_progress' === $error_code ? 409 : 500 );
+        wp_send_json_error(['message' => $request_result->get_error_message()], $http_status);
+        return;
+    }
+    $request_id     = absint($request_result['request_id']);
+    $request_number = loraleya_custom_order_number($request_id);
+
+    if (empty($request_result['created'])) {
+        wp_send_json_success([
+            'request_number' => $request_number,
+            'message'        => "Заявка {$request_number} уже принята. Мы свяжемся с вами для согласования деталей.",
+        ]);
+        return;
+    }
+
     $lines = [
         '🪡 Новая заявка с loraleya.ru',
         '',
+        "Заявка: {$request_number}",
         "Имя: {$name}",
         "Телефон: {$contact}",
         "Email: {$email}",
@@ -1002,16 +1046,41 @@ function loraleya_handle_custom_order() {
     $lines[] = 'Дата: ' . wp_date('d.m.Y H:i');
 
     $body    = implode("\n", $lines);
-    $subject = "LoraLeya: заявка от {$name}";
+    $subject = "LoraLeya: заявка {$request_number} от {$name}";
 
-    // 6. Отправка заявки только по email
-    $sent = loraleya_send_custom_order_email($subject, $body);
+    // 6. Email отправляются после сохранения. Их сбой не удаляет заявку.
+    $owner_sent = loraleya_send_custom_order_email($subject, $body);
 
-    if ($sent) {
-        wp_send_json_success(['message' => 'Заявка отправлена. Свяжемся в течение 2 часов.']);
-    } else {
-        wp_send_json_error(['message' => 'Не удалось отправить заявку. Попробуйте позже или напишите нам напрямую.'], 500);
-    }
+    $customer_body = implode("\n", [
+        "Здравствуйте, {$name}!",
+        '',
+        "Ваша заявка {$request_number} получена.",
+        "Телефон: {$contact}",
+        "Email: {$email}",
+        "Форма стола: " . ($shape_name ?: '—'),
+        "Размер: {$size_text}",
+        "Количество персон: " . ($persons ?: '—'),
+        "Цвет: " . ($color_name ?: '—'),
+        "Комплектация: " . ($items_text ?: '—'),
+        "Дополнительные опции: " . (!empty($opts_list) ? implode(', ', $opts_list) : '—'),
+        '',
+        'Менеджер свяжется с вами для согласования деталей, стоимости, сроков и доставки.',
+        'Оплата пока не требуется.',
+    ]);
+    $customer_sent = loraleya_custom_order_send_customer_receipt(
+        $email,
+        "LoraLeya: заявка {$request_number} принята",
+        $customer_body
+    );
+
+    update_post_meta($request_id, '_ll_owner_email_status', $owner_sent ? 'sent' : 'failed');
+    update_post_meta($request_id, '_ll_customer_email_status', $customer_sent ? 'sent' : 'failed');
+    update_post_meta($request_id, '_ll_notifications_updated_at', current_time('mysql'));
+
+    wp_send_json_success([
+        'request_number' => $request_number,
+        'message'        => "Заявка {$request_number} принята. Мы свяжемся с вами для согласования деталей.",
+    ]);
 }
 add_action('wp_ajax_loraleya_custom_order',        'loraleya_handle_custom_order');
 add_action('wp_ajax_nopriv_loraleya_custom_order', 'loraleya_handle_custom_order');
@@ -1969,6 +2038,12 @@ require_once get_template_directory() . '/inc/category-hub.php';
 $loraleya_checkout_workflow_file = get_template_directory() . '/inc/checkout-workflow.php';
 if ( file_exists( $loraleya_checkout_workflow_file ) ) {
     require_once $loraleya_checkout_workflow_file;
+}
+
+// Постоянные заявки на индивидуальный пошив и их конвертация в WooCommerce.
+$loraleya_custom_order_workflow_file = get_template_directory() . '/inc/custom-order-workflow.php';
+if ( file_exists( $loraleya_custom_order_workflow_file ) ) {
+    require_once $loraleya_custom_order_workflow_file;
 }
 
 /**

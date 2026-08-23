@@ -162,6 +162,25 @@
     var resSuccess = document.getElementById('coResultSuccess');
     var resError   = document.getElementById('coResultError');
 
+    function createRequestToken() {
+        if (window.crypto && typeof window.crypto.randomUUID === 'function') {
+            return window.crypto.randomUUID();
+        }
+
+        if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+            var bytes = new Uint8Array(16);
+            window.crypto.getRandomValues(bytes);
+            return Array.prototype.map.call(bytes, function (byte) {
+                return byte.toString(16).padStart(2, '0');
+            }).join('');
+        }
+
+        return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
+    }
+
+    var requestToken = createRequestToken();
+    var submissionLocked = false;
+
     function showError(msg) {
         if (!resError) return;
         resError.hidden = false;
@@ -171,12 +190,26 @@
         resError.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    function showSuccess(msg) {
+    function showSuccess(requestNumber) {
         if (!resSuccess) return;
+
+        resSuccess.textContent = '';
+
+        var message = document.createElement('div');
+        message.textContent = requestNumber
+            ? 'Заявка ' + requestNumber + ' принята. Мы свяжемся с вами в течение 2 часов.'
+            : 'Заявка принята. Мы свяжемся с вами в течение 2 часов.';
+        resSuccess.appendChild(message);
+
+        var newRequestButton = document.createElement('button');
+        newRequestButton.type = 'button';
+        newRequestButton.className = 'co-btn-submit co-btn-new-request';
+        newRequestButton.textContent = 'Отправить ещё одну заявку';
+        newRequestButton.style.marginTop = '1rem';
+        newRequestButton.addEventListener('click', resetFormToInitial);
+        resSuccess.appendChild(newRequestButton);
+
         resSuccess.hidden = false;
-        if (msg) {
-            resSuccess.innerHTML = '<strong>Заявка отправлена!</strong> ' + msg;
-        }
         resSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
@@ -202,6 +235,7 @@
         var fd = new FormData();
 
         fd.append('action', 'loraleya_custom_order');
+        fd.append('request_token', requestToken);
 
         var nonceEl = form.querySelector('input[name="co_nonce"]');
         if (nonceEl) fd.append('co_nonce', nonceEl.value);
@@ -271,6 +305,7 @@
 
         form.addEventListener('submit', function (e) {
             e.preventDefault();
+            if (submissionLocked) return;
 
             var nameEl       = document.getElementById('coName');
             var contactEl    = document.getElementById('coContact');
@@ -323,6 +358,7 @@
             }
 
             // Всё ок, отправляем
+            submissionLocked = true;
             if (resError)   resError.hidden = true;
             if (resSuccess) resSuccess.hidden = true;
             if (btnSubmit)  btnSubmit.disabled = true;
@@ -340,10 +376,11 @@
             .then(function (r) { return r.json(); })
             .then(function (data) {
                 if (data && data.success) {
-                    showSuccess(data.data && data.data.message ? data.data.message : '');
+                    var requestNumber = data.data && data.data.request_number ? data.data.request_number : '';
+                    showSuccess(requestNumber);
                     if (btnSubmit) btnSubmit.textContent = 'Отправлено ✓';
-                    setTimeout(function () { resetFormToInitial(); }, 5000);
                 } else {
+                    submissionLocked = false;
                     var msg = (data && data.data && data.data.message) ? data.data.message : 'Попробуйте ещё раз.';
                     showError(msg);
                     if (btnSubmit) {
@@ -353,6 +390,7 @@
                 }
             })
             .catch(function () {
+                submissionLocked = false;
                 showError('Проблема с сетью. Проверьте подключение и попробуйте снова.');
                 if (btnSubmit) {
                     btnSubmit.disabled = false;
@@ -362,9 +400,12 @@
         });
     }
 
-    /* ── Автосброс формы в начальное состояние ── */
+    /* ── Явный сброс только для новой заявки ── */
     function resetFormToInitial() {
         if (!form) return;
+
+        requestToken = createRequestToken();
+        submissionLocked = false;
 
         if (resSuccess) resSuccess.hidden = true;
         if (resError)   resError.hidden   = true;
