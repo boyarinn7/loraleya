@@ -81,6 +81,96 @@ function loraleya_custom_order_meta( $request_id, $key, $default = '' ) {
     return '' === $value ? $default : $value;
 }
 
+function loraleya_custom_order_item_type_labels() {
+    return array(
+        'tablecloth' => 'Скатерть',
+        'runner'     => 'Дорожка',
+        'napkins'    => 'Салфетки',
+        'kuverts'    => 'Куверты',
+        'curtains'   => 'Шторы',
+        'other'      => 'Другое',
+    );
+}
+
+/** Sanitize positional items from either the public form or the manager screen. */
+function loraleya_custom_order_prepare_items( $raw_items, $include_pricing = false, $strict = true ) {
+    if ( ! is_array( $raw_items ) || ! $raw_items ) {
+        return new WP_Error( 'missing_items', 'Добавьте хотя бы одно изделие.' );
+    }
+
+    $type_labels = loraleya_custom_order_item_type_labels();
+    $items       = array();
+
+    foreach ( array_values( $raw_items ) as $index => $raw ) {
+        if ( ! is_array( $raw ) ) {
+            if ( $strict ) {
+                return new WP_Error( 'invalid_item', 'Некорректные данные изделия ' . ( $index + 1 ) . '.' );
+            }
+            continue;
+        }
+
+        $item_type = isset( $raw['item_type'] ) ? sanitize_key( $raw['item_type'] ) : '';
+        $item_name = isset( $raw['item_name'] ) ? sanitize_text_field( $raw['item_name'] ) : '';
+        if ( isset( $type_labels[ $item_type ] ) && 'other' !== $item_type && ( ! $include_pricing || '' === $item_name ) ) {
+            $item_name = $type_labels[ $item_type ];
+        }
+
+        $size       = isset( $raw['size'] ) ? sanitize_text_field( $raw['size'] ) : '';
+        $color_slug = isset( $raw['color_slug'] ) ? sanitize_title( $raw['color_slug'] ) : '';
+        $color_term = $color_slug ? get_term_by( 'slug', $color_slug, 'pa_fabric_color' ) : false;
+        $color_name = $color_term instanceof WP_Term ? $color_term->name : '';
+        $quantity   = isset( $raw['quantity'] ) ? absint( $raw['quantity'] ) : 0;
+        $comment    = isset( $raw['comment'] ) ? sanitize_textarea_field( $raw['comment'] ) : '';
+
+        $item_name = mb_substr( $item_name, 0, 120 );
+        $size      = mb_substr( $size, 0, 160 );
+        $comment   = mb_substr( $comment, 0, 2000 );
+
+        if ( $strict && ( '' === $item_type || '' === $item_name || '' === $size || ! $color_term instanceof WP_Term || $quantity < 1 ) ) {
+            return new WP_Error( 'invalid_item', 'Заполните изделие, размер, цвет и количество в позиции ' . ( $index + 1 ) . '.' );
+        }
+
+        $item = array(
+            'item_type'  => $item_type,
+            'item_name'  => $item_name,
+            'size'       => $size,
+            'color_slug' => $color_slug,
+            'color_name' => $color_name,
+            'quantity'   => max( 1, $quantity ),
+            'comment'    => $comment,
+        );
+
+        if ( $include_pricing ) {
+            $unit_price = isset( $raw['unit_price'] ) ? loraleya_custom_order_decimal( $raw['unit_price'] ) : '';
+            $unit_minor = loraleya_custom_order_minor_units( $unit_price );
+            $line_minor = null;
+            if ( null !== $unit_minor && $item['quantity'] > 0 && $unit_minor <= intdiv( PHP_INT_MAX, $item['quantity'] ) ) {
+                $line_minor = $unit_minor * $item['quantity'];
+            }
+            $item['unit_price'] = $unit_price;
+            $item['line_total'] = null !== $line_minor ? loraleya_custom_order_decimal_from_minor_units( $line_minor ) : '';
+        }
+
+        $items[] = $item;
+    }
+
+    return $items ? $items : new WP_Error( 'missing_items', 'Добавьте хотя бы одно изделие.' );
+}
+
+function loraleya_custom_order_items_summary( $items ) {
+    $lines = array();
+    foreach ( (array) $items as $item ) {
+        $parts = array_filter( array(
+            isset( $item['item_name'] ) ? $item['item_name'] : '',
+            isset( $item['size'] ) ? $item['size'] : '',
+            isset( $item['color_name'] ) ? $item['color_name'] : '',
+            isset( $item['quantity'] ) ? absint( $item['quantity'] ) . ' шт.' : '',
+        ), 'strlen' );
+        $lines[] = implode( ' — ', $parts );
+    }
+    return implode( "\n", $lines );
+}
+
 /** Acquire a database-unique WordPress option lock without putting PII in its name. */
 function loraleya_custom_order_acquire_option_lock( $option_name, $ttl = 300 ) {
     $owner = wp_generate_uuid4();
@@ -266,20 +356,14 @@ function loraleya_custom_order_create_request( $data, $request_token ) {
             throw new Exception( 'Failed to store custom request number.' );
         }
 
-        $meta = array(
+        $is_items_v2 = isset( $data['schema'], $data['items'] ) && 'items_v2' === $data['schema'] && is_array( $data['items'] );
+        $meta        = array(
             '_ll_request_number'        => $number,
             '_ll_request_status'        => 'new',
             '_ll_request_currency'      => $currency,
             '_ll_customer_name'         => $data['customer_name'],
             '_ll_phone'                 => $data['phone'],
             '_ll_email'                 => $data['email'],
-            '_ll_shape'                 => $data['shape'],
-            '_ll_length'                => $data['length'],
-            '_ll_width'                 => $data['width'],
-            '_ll_persons'               => $data['persons'],
-            '_ll_color'                 => $data['color'],
-            '_ll_items_summary'         => $data['items_summary'],
-            '_ll_options'               => $data['options'],
             '_ll_customer_notes'        => $data['customer_notes'],
             '_ll_created_at'            => $created_at,
             '_ll_privacy_consent'       => 'yes',
@@ -287,6 +371,22 @@ function loraleya_custom_order_create_request( $data, $request_token ) {
             '_ll_owner_email_status'    => 'pending',
             '_ll_customer_email_status' => 'pending',
         );
+        if ( $is_items_v2 ) {
+            $meta['_ll_request_schema']          = 'items_v2';
+            $meta['_ll_items']                   = $data['items'];
+            $meta['_ll_items_summary']           = loraleya_custom_order_items_summary( $data['items'] );
+            $meta['_ll_delivery_recipient_name'] = $data['customer_name'];
+            $meta['_ll_delivery_recipient_phone']= $data['phone'];
+            $meta['_ll_delivery_location']       = $data['delivery_address'];
+        } else {
+            $meta['_ll_shape']         = $data['shape'];
+            $meta['_ll_length']        = $data['length'];
+            $meta['_ll_width']         = $data['width'];
+            $meta['_ll_persons']       = $data['persons'];
+            $meta['_ll_color']         = $data['color'];
+            $meta['_ll_items_summary'] = $data['items_summary'];
+            $meta['_ll_options']       = $data['options'];
+        }
         foreach ( $meta as $key => $value ) {
             update_post_meta( $post_id, $key, $value );
         }
@@ -298,10 +398,16 @@ function loraleya_custom_order_create_request( $data, $request_token ) {
             '_ll_phone'            => $data['phone'],
             '_ll_email'            => $data['email'],
         );
+        if ( $is_items_v2 ) {
+            $critical_meta['_ll_request_schema'] = 'items_v2';
+        }
         foreach ( $critical_meta as $key => $expected ) {
             if ( (string) get_post_meta( $post_id, $key, true ) !== (string) $expected ) {
                 throw new Exception( 'Failed to store required custom request metadata.' );
             }
+        }
+        if ( $is_items_v2 && get_post_meta( $post_id, '_ll_items', true ) !== $data['items'] ) {
+            throw new Exception( 'Failed to store positional custom request items.' );
         }
 
         $snapshot = array(
@@ -310,18 +416,24 @@ function loraleya_custom_order_create_request( $data, $request_token ) {
             'customer_name'        => $data['customer_name'],
             'phone'                => $data['phone'],
             'email'                => $data['email'],
-            'shape'                => $data['shape'],
-            'length'               => $data['length'],
-            'width'                => $data['width'],
-            'persons'              => $data['persons'],
-            'color'                => $data['color'],
-            'items_summary'        => $data['items_summary'],
-            'options'              => $data['options'],
             'customer_notes'       => $data['customer_notes'],
             'created_at'           => $created_at,
             'privacy_consent'      => 'yes',
             'privacy_consent_time' => $created_at,
         );
+        if ( $is_items_v2 ) {
+            $snapshot['schema']           = 'items_v2';
+            $snapshot['items']            = $data['items'];
+            $snapshot['delivery_address'] = $data['delivery_address'];
+        } else {
+            $snapshot['shape']         = $data['shape'];
+            $snapshot['length']        = $data['length'];
+            $snapshot['width']         = $data['width'];
+            $snapshot['persons']       = $data['persons'];
+            $snapshot['color']         = $data['color'];
+            $snapshot['items_summary'] = $data['items_summary'];
+            $snapshot['options']       = $data['options'];
+        }
         if ( ! add_post_meta( $post_id, '_ll_initial_snapshot', $snapshot, true ) || get_post_meta( $post_id, '_ll_initial_snapshot', true ) !== $snapshot ) {
             throw new Exception( 'Failed to store initial custom request snapshot.' );
         }
@@ -459,9 +571,11 @@ function loraleya_custom_order_render_request_metabox( $post ) {
     $order_id = absint( get_post_meta( $post->ID, '_ll_wc_order_id', true ) );
     $linked_order = $order_id && function_exists( 'wc_get_order' ) ? wc_get_order( $order_id ) : false;
     $is_converted = $linked_order instanceof WC_Order && 'yes' === $linked_order->get_meta( '_ll_custom_conversion_complete' );
+    $request_items = get_post_meta( $post->ID, '_ll_items', true );
+    $is_items_v2   = 'items_v2' === get_post_meta( $post->ID, '_ll_request_schema', true ) && is_array( $request_items );
     ?>
     <style>
-        .ll-request-fields{border:0;padding:0;margin:0;min-width:0}.ll-request-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:16px}.ll-request-grid .wide{grid-column:1/-1}.ll-request-grid label{display:block;font-weight:600;margin-bottom:4px}.ll-request-grid input,.ll-request-grid select,.ll-request-grid textarea{width:100%}.ll-request-section{margin:20px 0 10px;padding-top:14px;border-top:1px solid #ddd}.ll-request-section:first-of-type{border-top:0;margin-top:0}.ll-request-help{color:#646970;font-size:12px}.ll-request-converted{padding:12px 14px;border-left:4px solid #2271b1;background:#f0f6fc}@media(max-width:782px){.ll-request-grid{grid-template-columns:1fr}}
+        .ll-request-fields{border:0;padding:0;margin:0;min-width:0}.ll-request-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:16px}.ll-request-grid .wide{grid-column:1/-1}.ll-request-grid label{display:block;font-weight:600;margin-bottom:4px}.ll-request-grid input,.ll-request-grid select,.ll-request-grid textarea{width:100%}.ll-request-section{margin:20px 0 10px;padding-top:14px;border-top:1px solid #ddd}.ll-request-section:first-of-type{border-top:0;margin-top:0}.ll-request-help{color:#646970;font-size:12px}.ll-request-converted{padding:12px 14px;border-left:4px solid #2271b1;background:#f0f6fc}.ll-request-item{margin:0 0 14px;padding:14px;border:1px solid #dcdcde;background:#fff}.ll-request-item h4{margin:0 0 12px}.ll-request-item-grid{display:grid;grid-template-columns:repeat(4,minmax(120px,1fr));gap:12px}.ll-request-item-grid .wide{grid-column:1/-1}.ll-request-total{font-size:15px;padding:10px 12px;background:#f6f7f7}@media(max-width:782px){.ll-request-grid,.ll-request-item-grid{grid-template-columns:1fr}}
     </style>
     <?php if ( $is_converted ) : ?>
         <p class="ll-request-converted"><strong>Создан WooCommerce-заказ №<?php echo esc_html( $linked_order->get_order_number() ); ?>.</strong> Дальнейшие изменения заказа выполняются в WooCommerce. <a href="<?php echo esc_url( $linked_order->get_edit_order_url() ); ?>">Открыть заказ №<?php echo esc_html( $linked_order->get_order_number() ); ?></a></p>
@@ -469,7 +583,7 @@ function loraleya_custom_order_render_request_metabox( $post ) {
     <fieldset class="ll-request-fields" <?php disabled( $is_converted ); ?>>
     <h3 class="ll-request-section">Клиент</h3>
     <div class="ll-request-grid">
-        <p><label for="ll_customer_name">Имя</label><input id="ll_customer_name" name="ll_request[customer_name]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_customer_name' ) ); ?>"></p>
+        <p><label for="ll_customer_name"><?php echo $is_items_v2 ? 'ФИО' : 'Имя'; ?></label><input id="ll_customer_name" name="ll_request[customer_name]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_customer_name' ) ); ?>"></p>
         <p><label for="ll_phone">Телефон</label><input id="ll_phone" name="ll_request[phone]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_phone' ) ); ?>"></p>
         <p><label for="ll_email">Email</label><input type="email" id="ll_email" name="ll_request[email]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_email' ) ); ?>"></p>
         <p><label for="ll_status">Статус</label><select id="ll_status" name="ll_request[status]" <?php disabled( (bool) $linked_order ); ?>>
@@ -480,6 +594,28 @@ function loraleya_custom_order_render_request_metabox( $post ) {
         </select><?php if ( $linked_order ) : ?><input type="hidden" name="ll_request[status]" value="converted"><?php endif; ?></p>
     </div>
 
+    <?php if ( $is_items_v2 ) : ?>
+    <h3 class="ll-request-section">Изделия</h3>
+    <?php foreach ( $request_items as $index => $item ) : ?>
+        <div class="ll-request-item">
+            <h4>Изделие <?php echo esc_html( $index + 1 ); ?></h4>
+            <input type="hidden" name="ll_request[items][<?php echo esc_attr( $index ); ?>][item_type]" value="<?php echo esc_attr( isset( $item['item_type'] ) ? $item['item_type'] : '' ); ?>">
+            <input type="hidden" name="ll_request[items][<?php echo esc_attr( $index ); ?>][color_slug]" value="<?php echo esc_attr( isset( $item['color_slug'] ) ? $item['color_slug'] : '' ); ?>">
+            <div class="ll-request-item-grid">
+                <p><label>Название</label><input name="ll_request[items][<?php echo esc_attr( $index ); ?>][item_name]" value="<?php echo esc_attr( isset( $item['item_name'] ) ? $item['item_name'] : '' ); ?>"></p>
+                <p><label>Размер / параметры</label><input name="ll_request[items][<?php echo esc_attr( $index ); ?>][size]" value="<?php echo esc_attr( isset( $item['size'] ) ? $item['size'] : '' ); ?>"></p>
+                <p><label>Цвет</label><input value="<?php echo esc_attr( isset( $item['color_name'] ) ? $item['color_name'] : '' ); ?>" readonly></p>
+                <p><label>Количество</label><input type="number" min="1" step="1" name="ll_request[items][<?php echo esc_attr( $index ); ?>][quantity]" value="<?php echo esc_attr( isset( $item['quantity'] ) ? $item['quantity'] : 1 ); ?>"></p>
+                <p><label>Цена за единицу (<?php echo esc_html( $currency ); ?>)</label><input type="text" inputmode="decimal" name="ll_request[items][<?php echo esc_attr( $index ); ?>][unit_price]" value="<?php echo esc_attr( isset( $item['unit_price'] ) ? $item['unit_price'] : '' ); ?>"></p>
+                <p><label>Сумма позиции</label><input value="<?php echo esc_attr( isset( $item['line_total'] ) ? $item['line_total'] : '' ); ?>" readonly><span class="ll-request-help">Цена за единицу × количество; обновится после сохранения.</span></p>
+                <p class="wide"><label>Комментарий клиента</label><textarea rows="3" name="ll_request[items][<?php echo esc_attr( $index ); ?>][comment]" ><?php echo esc_textarea( isset( $item['comment'] ) ? $item['comment'] : '' ); ?></textarea></p>
+            </div>
+        </div>
+    <?php endforeach; ?>
+    <p class="ll-request-total"><strong>Итого изделий:</strong> <?php echo '' !== loraleya_custom_order_meta( $post->ID, '_ll_agreed_products_total' ) ? wp_kses_post( wc_price( loraleya_custom_order_meta( $post->ID, '_ll_agreed_products_total' ), array( 'currency' => $currency ) ) ) : 'цены ещё не заполнены'; ?></p>
+    <h3 class="ll-request-section">Общий комментарий</h3>
+    <div class="ll-request-grid"><p class="wide"><textarea id="ll_customer_notes" rows="4" name="ll_request[customer_notes]"><?php echo esc_textarea( loraleya_custom_order_meta( $post->ID, '_ll_customer_notes' ) ); ?></textarea></p></div>
+    <?php else : ?>
     <h3 class="ll-request-section">Параметры</h3>
     <div class="ll-request-grid">
         <p><label for="ll_shape">Форма стола</label><input id="ll_shape" name="ll_request[shape]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_shape' ) ); ?>"></p>
@@ -491,10 +627,11 @@ function loraleya_custom_order_render_request_metabox( $post ) {
         <p class="wide"><label for="ll_options">Дополнительные опции</label><textarea id="ll_options" rows="2" name="ll_request[options]"><?php echo esc_textarea( loraleya_custom_order_meta( $post->ID, '_ll_options' ) ); ?></textarea></p>
         <p class="wide"><label for="ll_customer_notes">Комментарий клиента</label><textarea id="ll_customer_notes" rows="4" name="ll_request[customer_notes]"><?php echo esc_textarea( loraleya_custom_order_meta( $post->ID, '_ll_customer_notes' ) ); ?></textarea></p>
     </div>
+    <?php endif; ?>
 
     <h3 class="ll-request-section">Коммерческие условия</h3>
     <div class="ll-request-grid">
-        <p><label for="ll_products_total">Согласованная стоимость изделий (<?php echo esc_html( $currency ); ?>)</label><input type="text" inputmode="decimal" id="ll_products_total" name="ll_request[products_total]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_agreed_products_total' ) ); ?>"></p>
+        <?php if ( ! $is_items_v2 ) : ?><p><label for="ll_products_total">Согласованная стоимость изделий (<?php echo esc_html( $currency ); ?>)</label><input type="text" inputmode="decimal" id="ll_products_total" name="ll_request[products_total]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_agreed_products_total' ) ); ?>"></p><?php endif; ?>
         <p><label for="ll_production_term">Срок изготовления</label><input id="ll_production_term" name="ll_request[production_term]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_agreed_production_term' ) ); ?>" placeholder="Например: 7–14 рабочих дней"></p>
     </div>
 
@@ -662,7 +799,47 @@ function loraleya_custom_order_minor_units( $value ) {
     return (int) $minor;
 }
 
+function loraleya_custom_order_decimal_from_minor_units( $minor ) {
+    if ( ! is_int( $minor ) || $minor < 0 ) {
+        return '';
+    }
+
+    $decimals = function_exists( 'wc_get_price_decimals' ) ? wc_get_price_decimals() : 2;
+    if ( 0 === $decimals ) {
+        return (string) $minor;
+    }
+
+    $digits = str_pad( (string) $minor, $decimals + 1, '0', STR_PAD_LEFT );
+    return substr( $digits, 0, -$decimals ) . '.' . substr( $digits, -$decimals );
+}
+
 function loraleya_custom_order_confirmation_snapshot_from_data( $data ) {
+    if ( isset( $data['schema'] ) && 'items_v2' === $data['schema'] ) {
+        $snapshot_items = array();
+        foreach ( (array) $data['items'] as $item ) {
+            $snapshot_items[] = array(
+                'item_type'  => isset( $item['item_type'] ) ? (string) $item['item_type'] : '',
+                'item_name'  => isset( $item['item_name'] ) ? (string) $item['item_name'] : '',
+                'size'       => isset( $item['size'] ) ? (string) $item['size'] : '',
+                'color_slug' => isset( $item['color_slug'] ) ? (string) $item['color_slug'] : '',
+                'color_name' => isset( $item['color_name'] ) ? (string) $item['color_name'] : '',
+                'quantity'   => isset( $item['quantity'] ) ? absint( $item['quantity'] ) : 0,
+                'comment'    => isset( $item['comment'] ) ? (string) $item['comment'] : '',
+                'unit_price' => isset( $item['unit_price'] ) ? (string) loraleya_custom_order_decimal( $item['unit_price'] ) : '',
+                'line_total' => isset( $item['line_total'] ) ? (string) loraleya_custom_order_decimal( $item['line_total'] ) : '',
+            );
+        }
+
+        return array(
+            'request_number'  => (string) $data['request_number'],
+            'schema'          => 'items_v2',
+            'items'           => $snapshot_items,
+            'products_total'  => (string) loraleya_custom_order_decimal( $data['products_total'] ),
+            'currency'        => strtoupper( (string) $data['currency'] ),
+            'production_term' => (string) $data['production_term'],
+        );
+    }
+
     return array(
         'request_number'  => (string) $data['request_number'],
         'shape'           => (string) $data['shape'],
@@ -690,7 +867,42 @@ function loraleya_custom_order_validate_confirmation_terms( $request_id ) {
     if ( ! is_email( $data['email'] ) ) {
         return new WP_Error( 'invalid_email', 'Проверьте email клиента.' );
     }
-    if ( '' === trim( $data['shape'] ) || ! $data['length'] || ! $data['width'] || ! $data['persons'] || '' === trim( $data['color'] ) || '' === trim( $data['items_summary'] ) ) {
+    if ( 'items_v2' === $data['schema'] ) {
+        if ( ! is_array( $data['items'] ) || ! $data['items'] ) {
+            return new WP_Error( 'missing_product_terms', 'Добавьте хотя бы одно изделие.' );
+        }
+        $calculated_minor = 0;
+        foreach ( $data['items'] as $index => $item ) {
+            $unit_minor = loraleya_custom_order_minor_units( isset( $item['unit_price'] ) ? $item['unit_price'] : '' );
+            $quantity   = isset( $item['quantity'] ) ? absint( $item['quantity'] ) : 0;
+            $line_minor = loraleya_custom_order_minor_units( isset( $item['line_total'] ) ? $item['line_total'] : '' );
+            $expected_line_minor = null;
+            if ( null !== $unit_minor && $quantity > 0 && $unit_minor <= intdiv( PHP_INT_MAX, $quantity ) ) {
+                $expected_line_minor = $unit_minor * $quantity;
+            }
+            if (
+                empty( $item['item_name'] )
+                || empty( $item['size'] )
+                || empty( $item['color_name'] )
+                || $quantity < 1
+                || null === $unit_minor
+                || $unit_minor <= 0
+                || null === $line_minor
+                || null === $expected_line_minor
+                || $line_minor !== $expected_line_minor
+            ) {
+                return new WP_Error( 'missing_product_terms', 'Заполните параметры и цену за единицу для изделия ' . ( $index + 1 ) . '.' );
+            }
+            if ( $line_minor > PHP_INT_MAX - $calculated_minor ) {
+                return new WP_Error( 'invalid_items_total', 'Сумма позиций слишком велика.' );
+            }
+            $calculated_minor += $line_minor;
+        }
+        $stored_minor = loraleya_custom_order_minor_units( $data['products_total'] );
+        if ( null === $stored_minor || $stored_minor !== $calculated_minor ) {
+            return new WP_Error( 'invalid_items_total', 'Итог заявки не совпадает с суммой позиций. Сохраните заявку повторно.' );
+        }
+    } elseif ( '' === trim( $data['shape'] ) || ! $data['length'] || ! $data['width'] || ! $data['persons'] || '' === trim( $data['color'] ) || '' === trim( $data['items_summary'] ) ) {
         return new WP_Error( 'missing_product_terms', 'Заполните форму, размеры, количество персон, цвет и комплектацию.' );
     }
     if ( '' === trim( $data['production_term'] ) ) {
@@ -718,6 +930,28 @@ function loraleya_custom_order_confirmation_rows( $snapshot ) {
         ? wp_specialchars_decode( wp_strip_all_tags( wc_price( $snapshot['products_total'], array( 'currency' => $snapshot['currency'] ) ) ), ENT_QUOTES )
         : $snapshot['products_total'] . ' ' . $snapshot['currency'];
 
+    if ( isset( $snapshot['schema'] ) && 'items_v2' === $snapshot['schema'] ) {
+        $item_lines = array();
+        foreach ( $snapshot['items'] as $index => $item ) {
+            $unit_price = function_exists( 'wc_price' )
+                ? wp_specialchars_decode( wp_strip_all_tags( wc_price( $item['unit_price'], array( 'currency' => $snapshot['currency'] ) ) ), ENT_QUOTES )
+                : $item['unit_price'] . ' ' . $snapshot['currency'];
+            $line_total = function_exists( 'wc_price' )
+                ? wp_specialchars_decode( wp_strip_all_tags( wc_price( $item['line_total'], array( 'currency' => $snapshot['currency'] ) ) ), ENT_QUOTES )
+                : $item['line_total'] . ' ' . $snapshot['currency'];
+            $line = ( $index + 1 ) . '. ' . $item['item_name'] . ' — ' . $item['size'] . ' — ' . $item['color_name'] . ' — ' . $item['quantity'] . ' шт. × ' . $unit_price . ' = ' . $line_total;
+            if ( '' !== trim( $item['comment'] ) ) {
+                $line .= "\nКомментарий: " . $item['comment'];
+            }
+            $item_lines[] = $line;
+        }
+        return array(
+            'Изделия'            => implode( "\n\n", $item_lines ),
+            'Стоимость изделий'  => $price,
+            'Срок изготовления'  => $snapshot['production_term'],
+        );
+    }
+
     return array(
         'Форма стола'             => $snapshot['shape'],
         'Размер'                  => $snapshot['size'],
@@ -739,6 +973,13 @@ function loraleya_custom_order_confirmation_table_html( $snapshot ) {
 }
 
 function loraleya_custom_order_send_confirmation_email( $email, $subject, $customer_name, $snapshot ) {
+    $reply_to = defined( 'LORALEYA_NOTIFY_EMAIL' ) ? sanitize_email( LORALEYA_NOTIFY_EMAIL ) : 'loraleya-tex@yandex.ru';
+    if ( ! is_email( $reply_to ) ) {
+        $reply_to = 'loraleya-tex@yandex.ru';
+    }
+    $contact_phone_href    = '+79264950210';
+    $contact_phone_display = '+7 926 495 02 10';
+
     $body  = '<div style="max-width:640px;margin:0 auto;font-family:Arial,sans-serif;color:#222;line-height:1.5">';
     $body .= '<p>Здравствуйте, ' . esc_html( $customer_name ) . '!</p>';
     $body .= '<p>Мы подготовили финальные условия изготовления по вашей заявке <strong>' . esc_html( $snapshot['request_number'] ) . '</strong>.</p>';
@@ -746,17 +987,16 @@ function loraleya_custom_order_send_confirmation_email( $email, $subject, $custo
     $body .= '<h2 style="font-size:20px;margin-top:28px">Как подтвердить заказ</h2>';
     $body .= '<p>Для подтверждения заказа ответьте на это письмо и напишите:</p>';
     $body .= '<p><strong>«Подтверждаю заказ ' . esc_html( $snapshot['request_number'] ) . '»</strong></p>';
-    $body .= '<p>В этом же письме укажите данные для будущей доставки:</p>';
-    $body .= '<ul><li>ФИО получателя;</li><li>телефон получателя;</li><li>город / населённый пункт;</li><li>удобный способ получения — пункт выдачи или курьер;</li><li>если предпочитаете пункт выдачи — удобный район, улицу или ориентир;</li><li>если нужна курьерская доставка — полный адрес;</li><li>при необходимости — комментарий к доставке.</li></ul>';
+    $body .= '<h2 style="font-size:20px;margin-top:28px">Что будет дальше</h2>';
+    $body .= '<p>После получения вашего подтверждения менеджер подготовит заказ к оплате 100% стоимости изделий.</p>';
     $body .= '<p>Доставка в стоимость изделий не входит.</p>';
     $body .= '<p>После изготовления заказа мы учтём его фактические размеры и вес, подберём подходящий вариант доставки по стоимости и условиям и свяжемся с вами для окончательного согласования перед отправкой.</p>';
-    $body .= '<p>После получения вашего подтверждения менеджер подготовит заказ к оплате 100% стоимости изделий.</p>';
+    $body .= '<h2 style="font-size:20px;margin-top:28px">Остались вопросы?</h2>';
+    $body .= '<p>Если у вас остались вопросы, свяжитесь с нами по электронной почте или телефону.</p>';
+    $body .= '<p>Email: <a href="mailto:' . esc_attr( $reply_to ) . '">' . esc_html( $reply_to ) . '</a><br>';
+    $body .= 'Телефон: <a href="tel:' . esc_attr( $contact_phone_href ) . '">' . esc_html( $contact_phone_display ) . '</a></p>';
     $body .= '</div>';
 
-    $reply_to = defined( 'LORALEYA_NOTIFY_EMAIL' ) ? sanitize_email( LORALEYA_NOTIFY_EMAIL ) : 'loraleya-tex@yandex.ru';
-    if ( ! is_email( $reply_to ) ) {
-        $reply_to = 'loraleya-tex@yandex.ru';
-    }
     $headers  = array(
         'Content-Type: text/html; charset=UTF-8',
         'From: LoraLeya <noreply@loraleya.ru>',
@@ -1023,7 +1263,10 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
 
     $statuses = loraleya_custom_order_statuses();
     $services = loraleya_custom_order_delivery_services();
+    $request_schema = get_post_meta( $post_id, '_ll_request_schema', true );
     $old      = array(
+        'schema'            => $request_schema,
+        'items'             => get_post_meta( $post_id, '_ll_items', true ),
         'customer_name'     => loraleya_custom_order_meta( $post_id, '_ll_customer_name' ),
         'phone'             => loraleya_custom_order_meta( $post_id, '_ll_phone' ),
         'email'             => loraleya_custom_order_meta( $post_id, '_ll_email' ),
@@ -1120,9 +1363,32 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'internal_note'      => isset( $input['internal_note'] ) ? sanitize_textarea_field( $input['internal_note'] ) : '',
     );
 
+    if ( 'items_v2' === $request_schema ) {
+        $prepared_items = loraleya_custom_order_prepare_items( isset( $input['items'] ) ? $input['items'] : array(), true, false );
+        $new['schema']   = 'items_v2';
+        $new['items']    = is_wp_error( $prepared_items ) ? ( is_array( $old['items'] ) ? $old['items'] : array() ) : $prepared_items;
+
+        $total_minor = 0;
+        $prices_complete = (bool) $new['items'];
+        foreach ( $new['items'] as $item ) {
+            $line_minor = loraleya_custom_order_minor_units( isset( $item['line_total'] ) ? $item['line_total'] : '' );
+            if ( null === $line_minor || $line_minor <= 0 ) {
+                $prices_complete = false;
+                break;
+            }
+            if ( $line_minor > PHP_INT_MAX - $total_minor ) {
+                $prices_complete = false;
+                break;
+            }
+            $total_minor += $line_minor;
+        }
+        $new['products_total'] = $prices_complete ? loraleya_custom_order_decimal_from_minor_units( $total_minor ) : '';
+        $new['items_summary']  = loraleya_custom_order_items_summary( $new['items'] );
+    }
+
     if ( 'agreed' === $old['status'] && 'agreed' === $new['status'] ) {
         $confirmed_snapshot = get_post_meta( $post_id, '_ll_confirmed_snapshot', true );
-        $current_snapshot   = loraleya_custom_order_confirmation_snapshot_from_data( array(
+        $snapshot_data      = array(
             'request_number'  => loraleya_custom_order_number( $post_id ),
             'shape'           => $new['shape'],
             'size'            => $new['length'] && $new['width'] ? $new['length'] . ' × ' . $new['width'] . ' см' : '',
@@ -1133,7 +1399,12 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
             'products_total'  => $new['products_total'],
             'currency'        => strtoupper( loraleya_custom_order_meta( $post_id, '_ll_request_currency', function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '' ) ),
             'production_term' => $new['production_term'],
-        ) );
+        );
+        if ( 'items_v2' === $request_schema ) {
+            $snapshot_data['schema'] = 'items_v2';
+            $snapshot_data['items']  = $new['items'];
+        }
+        $current_snapshot = loraleya_custom_order_confirmation_snapshot_from_data( $snapshot_data );
         if ( ! is_array( $confirmed_snapshot ) || $confirmed_snapshot !== $current_snapshot ) {
             $new['status'] = 'in_progress';
         }
@@ -1171,6 +1442,10 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'delivery_request_note' => '_ll_delivery_request_note',
         'internal_note'      => '_ll_internal_note',
     );
+    if ( 'items_v2' === $request_schema ) {
+        $meta_map['schema'] = '_ll_request_schema';
+        $meta_map['items']  = '_ll_items';
+    }
 
     foreach ( $meta_map as $field => $meta_key ) {
         update_post_meta( $post_id, $meta_key, $new[ $field ] );
@@ -1210,6 +1485,9 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
     if ( $changed_parameters ) {
         loraleya_custom_order_add_history( $post_id, 'Изменены параметры заявки: ' . implode( ', ', $changed_parameters ) );
     }
+    if ( 'items_v2' === $request_schema && $old['items'] !== $new['items'] ) {
+        loraleya_custom_order_add_history( $post_id, 'Изменены позиции заявки или согласованные цены' );
+    }
 
     if ( (string) $old['products_total'] !== (string) $new['products_total'] ) {
         $currency = loraleya_custom_order_meta( $post_id, '_ll_request_currency', function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '' );
@@ -1244,6 +1522,8 @@ function loraleya_custom_order_request_data( $request_id ) {
     return array(
         'request_id'        => $request_id,
         'request_number'    => loraleya_custom_order_number( $request_id ),
+        'schema'            => loraleya_custom_order_meta( $request_id, '_ll_request_schema' ),
+        'items'             => get_post_meta( $request_id, '_ll_items', true ),
         'status'            => loraleya_custom_order_meta( $request_id, '_ll_request_status', 'new' ),
         'customer_name'     => loraleya_custom_order_meta( $request_id, '_ll_customer_name' ),
         'phone'             => loraleya_custom_order_meta( $request_id, '_ll_phone' ),
@@ -1355,6 +1635,24 @@ function loraleya_custom_order_add_visible_item_meta( $item, $data ) {
         }
     }
     $item->add_meta_data( '_ll_individual_line_item', 'yes', true );
+}
+
+function loraleya_custom_order_add_positional_item_meta( $order_item, $item, $production_term, $index ) {
+    $fields = array(
+        'Размер / параметры' => $item['size'],
+        'Цвет'               => $item['color_name'],
+        'Комментарий'        => $item['comment'],
+        'Срок изготовления'  => $production_term,
+    );
+    foreach ( $fields as $label => $value ) {
+        if ( '' !== trim( (string) $value ) ) {
+            $order_item->add_meta_data( $label, $value, true );
+        }
+    }
+    $order_item->add_meta_data( '_ll_individual_line_item', 'yes', true );
+    $order_item->add_meta_data( '_ll_individual_item_index', absint( $index ), true );
+    $order_item->add_meta_data( '_ll_individual_item_type', $item['item_type'], true );
+    $order_item->add_meta_data( '_ll_individual_color_slug', $item['color_slug'], true );
 }
 
 function loraleya_custom_order_restore_order_link( $request_id, $order ) {
@@ -1560,25 +1858,44 @@ function loraleya_custom_order_convert_to_order( $request_id ) {
         $order->update_meta_data( '_ll_delivery_request_note', $data['delivery_request_note'] );
         $order->update_meta_data( '_ll_privacy_consent', 'yes' );
         $order->update_meta_data( '_ll_privacy_consent_time', $data['consent_time'] );
-        $order->update_meta_data( '_ll_individual_shape', $data['shape'] );
-        $order->update_meta_data( '_ll_individual_size', $data['size'] );
-        $order->update_meta_data( '_ll_individual_persons', $data['persons'] );
-        $order->update_meta_data( '_ll_individual_color', $data['color'] );
-        $order->update_meta_data( '_ll_individual_items_summary', $data['items_summary'] );
-        $order->update_meta_data( '_ll_individual_options', $data['options'] );
+        if ( 'items_v2' === $data['schema'] ) {
+            $order->update_meta_data( '_ll_individual_schema', 'items_v2' );
+            $order->update_meta_data( '_ll_individual_items', $data['items'] );
+        } else {
+            $order->update_meta_data( '_ll_individual_shape', $data['shape'] );
+            $order->update_meta_data( '_ll_individual_size', $data['size'] );
+            $order->update_meta_data( '_ll_individual_persons', $data['persons'] );
+            $order->update_meta_data( '_ll_individual_color', $data['color'] );
+            $order->update_meta_data( '_ll_individual_items_summary', $data['items_summary'] );
+            $order->update_meta_data( '_ll_individual_options', $data['options'] );
+        }
         $order->update_meta_data( '_ll_individual_production_term', $data['production_term'] );
         $order->update_meta_data( '_ll_individual_customer_comment', $data['customer_notes'] );
         $order->update_meta_data( '_ll_individual_production_note', $data['internal_note'] );
 
-        $product_item = new WC_Order_Item_Product();
-        $product_item->set_name( 'Индивидуальный заказ — столовый текстиль' );
-        $product_item->set_product_id( 0 );
-        $product_item->set_variation_id( 0 );
-        $product_item->set_quantity( 1 );
-        $product_item->set_subtotal( $data['products_total'] );
-        $product_item->set_total( $data['products_total'] );
-        loraleya_custom_order_add_visible_item_meta( $product_item, $data );
-        $order->add_item( $product_item );
+        if ( 'items_v2' === $data['schema'] ) {
+            foreach ( $data['items'] as $index => $item_data ) {
+                $product_item = new WC_Order_Item_Product();
+                $product_item->set_name( implode( ' / ', array( $item_data['item_name'], $item_data['size'], $item_data['color_name'] ) ) );
+                $product_item->set_product_id( 0 );
+                $product_item->set_variation_id( 0 );
+                $product_item->set_quantity( $item_data['quantity'] );
+                $product_item->set_subtotal( $item_data['line_total'] );
+                $product_item->set_total( $item_data['line_total'] );
+                loraleya_custom_order_add_positional_item_meta( $product_item, $item_data, $data['production_term'], $index );
+                $order->add_item( $product_item );
+            }
+        } else {
+            $product_item = new WC_Order_Item_Product();
+            $product_item->set_name( 'Индивидуальный заказ — столовый текстиль' );
+            $product_item->set_product_id( 0 );
+            $product_item->set_variation_id( 0 );
+            $product_item->set_quantity( 1 );
+            $product_item->set_subtotal( $data['products_total'] );
+            $product_item->set_total( $data['products_total'] );
+            loraleya_custom_order_add_visible_item_meta( $product_item, $data );
+            $order->add_item( $product_item );
+        }
 
         $order->calculate_totals( false );
         $order->set_status( 'on-hold' );
@@ -1810,6 +2127,7 @@ function loraleya_custom_order_render_order_metabox( $object ) {
 
     wp_nonce_field( 'loraleya_save_individual_order', 'loraleya_individual_order_nonce' );
     $request_id = absint( $order->get_meta( '_ll_custom_request_id' ) );
+    $is_items_v2 = 'items_v2' === $order->get_meta( '_ll_individual_schema' );
     $delivery_preference        = (string) $order->get_meta( '_ll_delivery_preference' );
     $delivery_preference_labels = array(
         'pickup'  => 'Пункт выдачи',
@@ -1844,6 +2162,12 @@ function loraleya_custom_order_render_order_metabox( $object ) {
             <?php endif; ?>
         </dl>
     </div>
+    <?php if ( $is_items_v2 ) : ?>
+    <p>Каждое изделие создано отдельной позицией WooCommerce. Количество и стоимость редактируются штатными средствами заказа.</p>
+    <div class="ll-individual-order-grid">
+        <p class="wide"><label for="ll_order_production_note">Производственная заметка</label><textarea rows="4" id="ll_order_production_note" name="ll_individual_order[production_note]"><?php echo esc_textarea( $order->get_meta( '_ll_individual_production_note' ) ); ?></textarea><span>Видна только менеджеру.</span></p>
+    </div>
+    <?php else : ?>
     <p>Цена позиции и доставка редактируются штатными средствами WooCommerce. После сохранения параметры ниже синхронизируются с видимыми meta позиции заказа.</p>
     <div class="ll-individual-order-grid">
         <p><label for="ll_order_shape">Форма</label><input id="ll_order_shape" name="ll_individual_order[shape]" value="<?php echo esc_attr( $order->get_meta( '_ll_individual_shape' ) ); ?>"></p>
@@ -1854,6 +2178,7 @@ function loraleya_custom_order_render_order_metabox( $object ) {
         <p class="wide"><label for="ll_order_options">Дополнительные опции</label><textarea rows="2" id="ll_order_options" name="ll_individual_order[options]"><?php echo esc_textarea( $order->get_meta( '_ll_individual_options' ) ); ?></textarea></p>
         <p class="wide"><label for="ll_order_production_note">Производственная заметка</label><textarea rows="4" id="ll_order_production_note" name="ll_individual_order[production_note]"><?php echo esc_textarea( $order->get_meta( '_ll_individual_production_note' ) ); ?></textarea><span>Видна только менеджеру.</span></p>
     </div>
+    <?php endif; ?>
     <?php
 }
 
@@ -1874,6 +2199,18 @@ function loraleya_custom_order_save_order_metabox( $order_id, $order = null ) {
     }
 
     $input = wp_unslash( $_POST['ll_individual_order'] );
+    if ( 'items_v2' === $order->get_meta( '_ll_individual_schema' ) ) {
+        $old_note = $order->get_meta( '_ll_individual_production_note' );
+        $new_note = isset( $input['production_note'] ) ? sanitize_textarea_field( $input['production_note'] ) : '';
+        $order->update_meta_data( '_ll_individual_production_note', $new_note );
+        $order->save();
+        $request_id = absint( $order->get_meta( '_ll_custom_request_id' ) );
+        if ( (string) $old_note !== (string) $new_note && $request_id && 'll_custom_request' === get_post_type( $request_id ) ) {
+            loraleya_custom_order_add_history( $request_id, 'Производственная заметка обновлена в WooCommerce-заказе №' . $order->get_order_number() );
+        }
+        return;
+    }
+
     $old   = array(
         'shape'           => $order->get_meta( '_ll_individual_shape' ),
         'size'            => $order->get_meta( '_ll_individual_size' ),

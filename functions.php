@@ -926,7 +926,7 @@ function loraleya_handle_custom_order() {
     $consent       = !empty($_POST['consent']);
 
     if ($name === '') {
-        wp_send_json_error(['message' => 'Заполните имя.'], 400);
+        wp_send_json_error(['message' => 'Заполните ФИО.'], 400);
         return;
     }
 
@@ -945,8 +945,8 @@ function loraleya_handle_custom_order() {
         return;
     }
 
-    if (mb_strlen($name) > 100) {
-        wp_send_json_error(['message' => 'Слишком длинное значение в имени.'], 400);
+    if (mb_strlen($name) > 120) {
+        wp_send_json_error(['message' => 'Слишком длинное значение в ФИО.'], 400);
         return;
     }
 
@@ -955,29 +955,22 @@ function loraleya_handle_custom_order() {
         return;
     }
 
-    // 4. Сбор остальных полей формы (необязательные)
-    $shape_name  = isset($_POST['shape_name'])      ? sanitize_text_field(wp_unslash($_POST['shape_name']))      : '';
-    $dim_length  = isset($_POST['dim_length'])      ? absint($_POST['dim_length'])                               : 0;
-    $dim_width   = isset($_POST['dim_width'])       ? absint($_POST['dim_width'])                                : 0;
-    $persons     = isset($_POST['persons'])         ? absint($_POST['persons'])                                  : 0;
-    $color_name  = isset($_POST['color_name'])      ? sanitize_text_field(wp_unslash($_POST['color_name']))      : '';
-    $items_text  = isset($_POST['items_summary'])   ? sanitize_text_field(wp_unslash($_POST['items_summary']))   : '';
-    $opt_mono    = !empty($_POST['opt_monogram']);
-    $opt_edge    = !empty($_POST['opt_edge']);
-    $opt_rings   = !empty($_POST['opt_rings']);
-    $notes       = isset($_POST['customer_notes'])  ? sanitize_textarea_field(wp_unslash($_POST['customer_notes'])) : '';
+    // 4. Позиции и данные для будущего согласования доставки.
+    $address = isset($_POST['delivery_address']) ? sanitize_text_field(wp_unslash($_POST['delivery_address'])) : '';
+    $notes   = isset($_POST['customer_notes']) ? sanitize_textarea_field(wp_unslash($_POST['customer_notes'])) : '';
 
     if (mb_strlen($notes) > 2000) {
         $notes = mb_substr($notes, 0, 2000) . '…';
     }
 
-    // 5. Сборка тела сообщения
-    $opts_list = [];
-    if ($opt_mono)  $opts_list[] = 'Монограмма / вышивка';
-    if ($opt_edge)  $opts_list[] = 'Декоративная обработка края';
-    if ($opt_rings) $opts_list[] = 'Кольца для салфеток';
-
-    $size_text = ($dim_length && $dim_width) ? "{$dim_length} × {$dim_width} см" : 'Не указан';
+    if ($address === '') {
+        wp_send_json_error(['message' => 'Укажите адрес доставки.'], 400);
+        return;
+    }
+    if (mb_strlen($address) > 500) {
+        wp_send_json_error(['message' => 'Слишком длинное значение в адресе доставки.'], 400);
+        return;
+    }
 
     if (!function_exists('loraleya_custom_order_create_request')) {
         error_log('[LoraLeya] Custom order workflow module is unavailable.');
@@ -985,17 +978,20 @@ function loraleya_handle_custom_order() {
         return;
     }
 
+    $raw_items = isset($_POST['items']) && is_array($_POST['items']) ? wp_unslash($_POST['items']) : [];
+    $items     = loraleya_custom_order_prepare_items($raw_items, false, true);
+    if (is_wp_error($items)) {
+        wp_send_json_error(['message' => $items->get_error_message()], 400);
+        return;
+    }
+
     $request_result = loraleya_custom_order_create_request([
+        'schema'        => 'items_v2',
         'customer_name' => $name,
         'phone'          => $contact,
         'email'          => $email,
-        'shape'          => $shape_name,
-        'length'         => $dim_length,
-        'width'          => $dim_width,
-        'persons'        => $persons,
-        'color'          => $color_name,
-        'items_summary'  => $items_text,
-        'options'        => implode(', ', $opts_list),
+        'items'          => $items,
+        'delivery_address' => $address,
         'customer_notes' => $notes,
     ], $request_token);
     if (is_wp_error($request_result)) {
@@ -1020,20 +1016,24 @@ function loraleya_handle_custom_order() {
         '🪡 Новая заявка с loraleya.ru',
         '',
         "Заявка: {$request_number}",
-        "Имя: {$name}",
+        "ФИО: {$name}",
         "Телефон: {$contact}",
         "Email: {$email}",
+        "Адрес доставки: {$address}",
         '',
-        '— Параметры заказа —',
-        "Форма стола: " . ($shape_name ?: '—'),
-        "Размер: {$size_text}",
-        "Персон: " . ($persons ?: '—'),
-        "Цвет: " . ($color_name ?: '—'),
-        "Изделия: " . ($items_text ?: '—'),
+        '— Изделия —',
     ];
 
-    if (!empty($opts_list)) {
-        $lines[] = "Опции: " . implode(', ', $opts_list);
+    foreach ($items as $index => $item) {
+        $lines[] = ($index + 1) . '. ' . implode(' — ', [
+            $item['item_name'],
+            $item['size'],
+            $item['color_name'],
+            $item['quantity'] . ' шт.',
+        ]);
+        if ($item['comment'] !== '') {
+            $lines[] = '   Комментарий: ' . $item['comment'];
+        }
     }
 
     if ($notes !== '') {
@@ -1051,22 +1051,34 @@ function loraleya_handle_custom_order() {
     // 6. Email отправляются после сохранения. Их сбой не удаляет заявку.
     $owner_sent = loraleya_send_custom_order_email($subject, $body);
 
-    $customer_body = implode("\n", [
+    $customer_lines = [
         "Здравствуйте, {$name}!",
         '',
         "Ваша заявка {$request_number} получена.",
         "Телефон: {$contact}",
         "Email: {$email}",
-        "Форма стола: " . ($shape_name ?: '—'),
-        "Размер: {$size_text}",
-        "Количество персон: " . ($persons ?: '—'),
-        "Цвет: " . ($color_name ?: '—'),
-        "Комплектация: " . ($items_text ?: '—'),
-        "Дополнительные опции: " . (!empty($opts_list) ? implode(', ', $opts_list) : '—'),
+        "Адрес доставки: {$address}",
+        '',
+        'Изделия:',
+    ];
+    foreach ($items as $index => $item) {
+        $customer_lines[] = ($index + 1) . '. ' . implode(' — ', [
+            $item['item_name'],
+            $item['size'],
+            $item['color_name'],
+            $item['quantity'] . ' шт.',
+        ]);
+        if ($item['comment'] !== '') {
+            $customer_lines[] = '   Комментарий: ' . $item['comment'];
+        }
+    }
+    $customer_lines = array_merge($customer_lines, [
         '',
         'Менеджер свяжется с вами для согласования деталей, стоимости, сроков и доставки.',
+        'Только после согласования будет оформлен заказ.',
         'Оплата пока не требуется.',
     ]);
+    $customer_body = implode("\n", $customer_lines);
     $customer_sent = loraleya_custom_order_send_customer_receipt(
         $email,
         "LoraLeya: заявка {$request_number} принята",
@@ -2044,6 +2056,12 @@ if ( file_exists( $loraleya_checkout_workflow_file ) ) {
 $loraleya_custom_order_workflow_file = get_template_directory() . '/inc/custom-order-workflow.php';
 if ( file_exists( $loraleya_custom_order_workflow_file ) ) {
     require_once $loraleya_custom_order_workflow_file;
+}
+
+// Совместимость productless-позиций индивидуального заказа с маркировкой YooKassa.
+$loraleya_yookassa_individual_marking_file = get_template_directory() . '/inc/yookassa-individual-marking.php';
+if ( file_exists( $loraleya_yookassa_individual_marking_file ) ) {
+    require_once $loraleya_yookassa_individual_marking_file;
 }
 
 /**

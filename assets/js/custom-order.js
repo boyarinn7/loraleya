@@ -1,27 +1,35 @@
-/* Custom Order Page — front-end logic */
+/* Custom Order Page — positional request form */
 (function () {
     'use strict';
 
-    /* ── Inline-сообщение об ошибках формы ── */
+    var form = document.getElementById('customOrderForm');
+    if (!form) return;
+
+    var productList = document.getElementById('coProductList');
+    var productTemplate = document.getElementById('coProductTemplate');
+    var addProductButton = document.getElementById('coAddProduct');
+    var summaryItems = document.getElementById('coSumItems');
+    var btnSubmit = form.querySelector('.co-btn-submit');
+    var resSuccess = document.getElementById('coResultSuccess');
+    var resError = document.getElementById('coResultError');
     var formErrorEl = null;
+    var submissionLocked = false;
+
     function ensureFormErrorEl() {
         if (formErrorEl) return formErrorEl;
         formErrorEl = document.createElement('div');
         formErrorEl.className = 'co-form-error';
         formErrorEl.hidden = true;
-        var btn = document.querySelector('.co-btn-submit');
-        if (btn && btn.parentNode) {
-            btn.parentNode.appendChild(formErrorEl);
-        }
+        if (btnSubmit && btnSubmit.parentNode) btnSubmit.parentNode.appendChild(formErrorEl);
         return formErrorEl;
     }
 
-    function showFormError(msg, scrollTarget) {
-        var el = ensureFormErrorEl();
-        el.textContent = msg;
-        el.hidden = false;
-        if (scrollTarget && scrollTarget.scrollIntoView) {
-            scrollTarget.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    function showFormError(message, target) {
+        var error = ensureFormErrorEl();
+        error.textContent = message;
+        error.hidden = false;
+        if (target && target.scrollIntoView) {
+            target.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     }
 
@@ -29,144 +37,181 @@
         if (formErrorEl) formErrorEl.hidden = true;
     }
 
-    /* Снимать ошибочную подсветку с блока согласия как только клиент поставил галочку */
-    var initialConsentEl = document.getElementById('coConsent');
-    var initialConsentBlock = document.querySelector('.co-consent');
-    if (initialConsentEl && initialConsentBlock) {
-        initialConsentEl.addEventListener('change', function () {
-            if (initialConsentEl.checked) {
-                initialConsentBlock.classList.remove('co-consent--error');
-                hideFormError();
+    function clearFieldError(element) {
+        if (!element) return;
+        element.classList.remove('co-ct-input--error', 'co-item-colors--error');
+        if (!form.querySelector('.co-ct-input--error, .co-item-colors--error, .co-consent--error')) {
+            hideFormError();
+        }
+    }
+
+    function cards() {
+        return productList ? Array.prototype.slice.call(productList.querySelectorAll('[data-item-card]')) : [];
+    }
+
+    function renumberCards() {
+        cards().forEach(function (card, index) {
+            var number = card.querySelector('[data-item-number]');
+            var remove = card.querySelector('[data-remove-item]');
+            if (number) number.textContent = String(index + 1);
+            if (remove) remove.hidden = index === 0;
+        });
+    }
+
+    function selectedColor(card) {
+        return card ? card.querySelector('.co-item-swatch--on') : null;
+    }
+
+    function itemFromCard(card) {
+        var typeSelect = card.querySelector('[data-item-field="item_type"]');
+        var customName = card.querySelector('[data-item-field="item_name"]');
+        var size = card.querySelector('[data-item-field="size"]');
+        var quantity = card.querySelector('[data-item-field="quantity"]');
+        var comment = card.querySelector('[data-item-field="comment"]');
+        var color = selectedColor(card);
+        var type = typeSelect ? typeSelect.value : '';
+        var option = typeSelect && typeSelect.selectedIndex >= 0 ? typeSelect.options[typeSelect.selectedIndex] : null;
+        var name = type === 'other'
+            ? (customName ? customName.value.trim() : '')
+            : (option && type ? option.textContent.trim() : '');
+
+        return {
+            item_type: type,
+            item_name: name,
+            size: size ? size.value.trim() : '',
+            color_slug: color ? (color.dataset.colorSlug || '') : '',
+            color_name: color ? (color.dataset.colorName || '') : '',
+            quantity: quantity ? parseInt(quantity.value, 10) : 0,
+            comment: comment ? comment.value.trim() : ''
+        };
+    }
+
+    function updateOtherName(card) {
+        var typeSelect = card.querySelector('[data-item-field="item_type"]');
+        var otherBlock = card.querySelector('[data-other-name]');
+        var otherInput = card.querySelector('[data-item-field="item_name"]');
+        var isOther = typeSelect && typeSelect.value === 'other';
+        if (otherBlock) otherBlock.hidden = !isOther;
+        if (otherInput) {
+            otherInput.required = !!isOther;
+            if (!isOther) {
+                otherInput.value = '';
+                clearFieldError(otherInput);
+            }
+        }
+    }
+
+    function updateSummary() {
+        if (!summaryItems) return;
+        summaryItems.textContent = '';
+        var hasContent = false;
+
+        cards().forEach(function (card) {
+            var item = itemFromCard(card);
+            if (!item.item_name && !item.size && !item.color_name) return;
+
+            var parts = [item.item_name || 'Изделие не выбрано'];
+            if (item.size) parts.push(item.size);
+            if (item.color_name) parts.push(item.color_name);
+            parts.push((item.quantity >= 1 ? item.quantity : 1) + ' шт.');
+
+            var line = document.createElement('div');
+            line.className = 'co-sum-item';
+            line.textContent = parts.join(' — ');
+            summaryItems.appendChild(line);
+            hasContent = true;
+        });
+
+        if (!hasContent) {
+            var empty = document.createElement('div');
+            empty.className = 'co-sum-empty';
+            empty.textContent = 'Заполните первую позицию выше.';
+            summaryItems.appendChild(empty);
+        }
+    }
+
+    function addProductCard() {
+        if (!productList || !productTemplate || !productTemplate.content.firstElementChild) return;
+        var card = productTemplate.content.firstElementChild.cloneNode(true);
+        productList.appendChild(card);
+        renumberCards();
+        updateOtherName(card);
+        updateSummary();
+        var firstField = card.querySelector('[data-item-field="item_type"]');
+        if (firstField) firstField.focus();
+    }
+
+    if (addProductButton) addProductButton.addEventListener('click', addProductCard);
+
+    if (productList) {
+        productList.addEventListener('click', function (event) {
+            var remove = event.target.closest('[data-remove-item]');
+            if (remove) {
+                var currentCards = cards();
+                var removeCard = remove.closest('[data-item-card]');
+                if (removeCard && currentCards.length > 1) removeCard.remove();
+                renumberCards();
+                updateSummary();
+                return;
+            }
+
+            var color = event.target.closest('.co-item-swatch');
+            if (color) {
+                var colorCard = color.closest('[data-item-card]');
+                colorCard.querySelectorAll('.co-item-swatch').forEach(function (swatch) {
+                    var isSelected = swatch === color;
+                    swatch.classList.toggle('co-item-swatch--on', isSelected);
+                    swatch.setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+                });
+                clearFieldError(colorCard.querySelector('[data-item-colors]'));
+                updateSummary();
+                return;
+            }
+
+            var qtyButton = event.target.closest('[data-qty-delta]');
+            if (qtyButton) {
+                var qtyInput = qtyButton.closest('.co-qty').querySelector('[data-item-field="quantity"]');
+                var current = parseInt(qtyInput.value, 10);
+                var delta = parseInt(qtyButton.dataset.qtyDelta, 10);
+                qtyInput.value = String(Math.max(1, (Number.isInteger(current) ? current : 1) + delta));
+                clearFieldError(qtyInput);
+                updateSummary();
+            }
+        });
+
+        productList.addEventListener('input', function (event) {
+            if (event.target.matches('[data-item-field]')) {
+                clearFieldError(event.target);
+                updateSummary();
+            }
+        });
+
+        productList.addEventListener('change', function (event) {
+            if (event.target.matches('[data-item-field="item_type"]')) {
+                updateOtherName(event.target.closest('[data-item-card]'));
+            }
+            if (event.target.matches('[data-item-field]')) {
+                clearFieldError(event.target);
+                updateSummary();
             }
         });
     }
 
-    /* На старте: затемнить .co-qty в строках где тоггл выключен */
-    document.querySelectorAll('.co-item-row').forEach(function (row) {
-        var toggle = row.querySelector('.co-toggle');
-        var qty    = row.querySelector('.co-qty');
-        if (toggle && qty && toggle.dataset.on !== '1') {
-            qty.style.opacity = '0.3';
-        }
-    });
-
-    /* ── Shape selector ── */
-    var shapes = document.querySelectorAll('.co-shape');
-    var sumShape = document.getElementById('coSumShape');
-    shapes.forEach(function (el) {
-        el.addEventListener('click', function () {
-            shapes.forEach(function (s) { s.classList.remove('co-shape--on'); });
-            el.classList.add('co-shape--on');
-            if (sumShape) sumShape.textContent = el.dataset.name || '';
-        });
-    });
-
-    /* ── Persons selector ── */
-    var persons = document.querySelectorAll('.co-per');
-    var sumPers = document.getElementById('coSumPers');
-    persons.forEach(function (el) {
-        el.addEventListener('click', function () {
-            persons.forEach(function (p) { p.classList.remove('co-per--on'); });
-            el.classList.add('co-per--on');
-            if (sumPers) sumPers.textContent = el.dataset.value || '';
-        });
-    });
-
-    /* ── Color swatch selector ── */
-    var swatches = document.querySelectorAll('.co-sw');
-    var colorLabel = document.getElementById('coColorLabel');
-    var sumColor = document.getElementById('coSumColor');
-    swatches.forEach(function (el) {
-        el.addEventListener('click', function () {
-            swatches.forEach(function (s) { s.classList.remove('co-sw--on'); });
-            el.classList.add('co-sw--on');
-            if (sumColor) sumColor.textContent = el.dataset.name || '';
-        });
-    });
-
-    /* ── Dimensions → summary ── */
-    var dimL   = document.getElementById('coDimL');
-    var dimW   = document.getElementById('coDimW');
-    var sumSize = document.getElementById('coSumSize');
-    function updateSize() {
-        if (!sumSize) return;
-        var l = (dimL && dimL.value) ? dimL.value : '';
-        var w = (dimW && dimW.value) ? dimW.value : '';
-        if (l && w) {
-            sumSize.textContent = l + ' × ' + w + ' см';
-        } else if (l) {
-            sumSize.textContent = l + ' × …';
-        } else {
-            sumSize.textContent = 'Укажите выше';
-        }
-    }
-    if (dimL) dimL.addEventListener('input', updateSize);
-    if (dimW) dimW.addEventListener('input', updateSize);
-
-    /* ── Toggle + qty ── */
-    function updateItemsSummary() {
-        var sumItems = document.getElementById('coSumItems');
-        if (!sumItems) return;
-        var parts = [];
-        document.querySelectorAll('.co-item-row').forEach(function (row) {
-            var toggle = row.querySelector('.co-toggle');
-            if (!toggle || toggle.dataset.on !== '1') return;
-            var name = row.dataset.name || '';
-            var qty  = parseInt(row.querySelector('.co-qty-val').textContent, 10);
-            parts.push(qty > 1 ? name + ' ×' + qty : name);
-        });
-        sumItems.textContent = parts.length ? parts.join(', ') : 'Ничего не выбрано';
-    }
-
-    document.querySelectorAll('.co-toggle').forEach(function (toggle) {
-        toggle.addEventListener('click', function () {
-            var row = toggle.closest('.co-item-row');
-            var on  = toggle.dataset.on === '1';
-            toggle.dataset.on = on ? '0' : '1';
-            toggle.classList.toggle('co-toggle--on', !on);
-            var qtyBlock = row ? row.querySelector('.co-qty') : null;
-            if (qtyBlock) qtyBlock.style.opacity = on ? '0.3' : '';
-            updateItemsSummary();
-        });
-    });
-
-    document.querySelectorAll('.co-qty-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-            var qtyEl = btn.closest('.co-qty').querySelector('.co-qty-val');
-            if (!qtyEl) return;
-            var val = parseInt(qtyEl.textContent, 10);
-            var delta = parseInt(btn.dataset.delta, 10);
-            val = Math.max(1, Math.min(12, val + delta));
-            qtyEl.textContent = val;
-            updateItemsSummary();
-        });
-    });
-
-    updateItemsSummary();
-
-    /* ── FAQ accordion ── */
-    document.querySelectorAll('.co-faq-q').forEach(function (q) {
-        q.addEventListener('click', function () {
-            var faq    = q.closest('.co-faq');
+    document.querySelectorAll('.co-faq-q').forEach(function (question) {
+        question.addEventListener('click', function () {
+            var faq = question.closest('.co-faq');
             var isOpen = faq.classList.contains('co-faq--open');
-            document.querySelectorAll('.co-faq').forEach(function (f) {
-                f.classList.remove('co-faq--open');
+            document.querySelectorAll('.co-faq').forEach(function (item) {
+                item.classList.remove('co-faq--open');
             });
             if (!isOpen) faq.classList.add('co-faq--open');
         });
     });
 
-    /* ── Submit (реальная отправка через AJAX) ── */
-    var form       = document.getElementById('customOrderForm');
-    var btnSubmit  = form ? form.querySelector('.co-btn-submit') : null;
-    var resSuccess = document.getElementById('coResultSuccess');
-    var resError   = document.getElementById('coResultError');
-
     function createRequestToken() {
         if (window.crypto && typeof window.crypto.randomUUID === 'function') {
             return window.crypto.randomUUID();
         }
-
         if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
             var bytes = new Uint8Array(16);
             window.crypto.getRandomValues(bytes);
@@ -174,31 +219,108 @@
                 return byte.toString(16).padStart(2, '0');
             }).join('');
         }
-
         return Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2);
     }
 
     var requestToken = createRequestToken();
-    var submissionLocked = false;
 
-    function showError(msg) {
-        if (!resError) return;
-        resError.hidden = false;
-        if (msg) {
-            resError.innerHTML = '<strong>Ошибка отправки.</strong> ' + msg;
+    function normalizeRussianPhone(value) {
+        var phone = String(value || '').trim();
+        if (!phone || !/^\+?[\d\s().\-–—]+$/.test(phone)) return '';
+        var digits = phone.replace(/\D/g, '');
+        if (phone.charAt(0) === '+') return /^7\d{10}$/.test(digits) ? '+' + digits : '';
+        if (/^8\d{10}$/.test(digits)) return '+7' + digits.slice(1);
+        return /^7\d{10}$/.test(digits) ? '+' + digits : '';
+    }
+
+    function isValidEmail(value) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
+    }
+
+    function validateItems() {
+        var result = [];
+        var cardList = cards();
+        for (var index = 0; index < cardList.length; index += 1) {
+            var card = cardList[index];
+            var item = itemFromCard(card);
+            var itemNumber = index + 1;
+            var type = card.querySelector('[data-item-field="item_type"]');
+            var customName = card.querySelector('[data-item-field="item_name"]');
+            var size = card.querySelector('[data-item-field="size"]');
+            var quantity = card.querySelector('[data-item-field="quantity"]');
+            var colors = card.querySelector('[data-item-colors]');
+
+            if (!item.item_type) {
+                type.classList.add('co-ct-input--error');
+                return { message: 'Выберите изделие в позиции ' + itemNumber + '.', target: type };
+            }
+            if (!item.item_name) {
+                customName.classList.add('co-ct-input--error');
+                return { message: 'Укажите название изделия в позиции ' + itemNumber + '.', target: customName };
+            }
+            if (!item.size) {
+                size.classList.add('co-ct-input--error');
+                return { message: 'Укажите размер или параметры позиции ' + itemNumber + '.', target: size };
+            }
+            if (!item.color_slug) {
+                colors.classList.add('co-item-colors--error');
+                return { message: 'Выберите цвет позиции ' + itemNumber + '.', target: colors };
+            }
+            if (!Number.isInteger(item.quantity) || item.quantity < 1) {
+                quantity.classList.add('co-ct-input--error');
+                return { message: 'Количество в позиции ' + itemNumber + ' должно быть целым числом от 1.', target: quantity };
+            }
+            result.push(item);
         }
+        return { items: result };
+    }
+
+    function appendItems(formData, items) {
+        items.forEach(function (item, index) {
+            Object.keys(item).forEach(function (field) {
+                formData.append('items[' + index + '][' + field + ']', String(item[field]));
+            });
+        });
+    }
+
+    function collectFormData(items) {
+        var formData = new FormData();
+        formData.append('action', 'loraleya_custom_order');
+        formData.append('request_token', requestToken);
+
+        var nonce = form.querySelector('input[name="co_nonce"]');
+        var honey = form.querySelector('input[name="website"]');
+        if (nonce) formData.append('co_nonce', nonce.value);
+        if (honey) formData.append('website', honey.value);
+
+        formData.append('customer_name', document.getElementById('coName').value.trim());
+        formData.append('customer_contact', document.getElementById('coContact').value.trim());
+        formData.append('customer_email', document.getElementById('coEmail').value.trim());
+        formData.append('delivery_address', document.getElementById('coDeliveryAddress').value.trim());
+        formData.append('customer_notes', document.getElementById('coNotes').value.trim());
+        if (document.getElementById('coConsent').checked) formData.append('consent', '1');
+        appendItems(formData, items);
+        return formData;
+    }
+
+    function showError(message) {
+        if (!resError) return;
+        resError.textContent = '';
+        var strong = document.createElement('strong');
+        strong.textContent = 'Ошибка отправки. ';
+        resError.appendChild(strong);
+        resError.appendChild(document.createTextNode(message || 'Попробуйте ещё раз.'));
+        resError.hidden = false;
         resError.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
     function showSuccess(requestNumber) {
         if (!resSuccess) return;
-
         resSuccess.textContent = '';
-
         var message = document.createElement('div');
         message.textContent = requestNumber
-            ? 'Заявка ' + requestNumber + ' принята. Мы свяжемся с вами в течение 2 часов.'
-            : 'Заявка принята. Мы свяжемся с вами в течение 2 часов.';
+            ? 'Заявка ' + requestNumber + ' принята. Мы свяжемся с вами для согласования деталей.'
+            : 'Заявка принята. Мы свяжемся с вами для согласования деталей.';
         resSuccess.appendChild(message);
 
         var newRequestButton = document.createElement('button');
@@ -208,275 +330,146 @@
         newRequestButton.style.marginTop = '1rem';
         newRequestButton.addEventListener('click', resetFormToInitial);
         resSuccess.appendChild(newRequestButton);
-
         resSuccess.hidden = false;
         resSuccess.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 
-    function normalizeRussianPhone(value) {
-        var phone = String(value || '').trim();
-        if (!phone || !/^\+?[\d\s().\-–—]+$/.test(phone)) return '';
-
-        var digits = phone.replace(/\D/g, '');
-        if (phone.charAt(0) === '+') {
-            return /^7\d{10}$/.test(digits) ? '+' + digits : '';
-        }
-        if (/^8\d{10}$/.test(digits)) {
-            return '+7' + digits.slice(1);
-        }
-        return /^7\d{10}$/.test(digits) ? '+' + digits : '';
-    }
-
-    function isValidEmail(value) {
-        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(value || '').trim());
-    }
-
-    function collectFormData() {
-        var fd = new FormData();
-
-        fd.append('action', 'loraleya_custom_order');
-        fd.append('request_token', requestToken);
-
-        var nonceEl = form.querySelector('input[name="co_nonce"]');
-        if (nonceEl) fd.append('co_nonce', nonceEl.value);
-
-        var honey = form.querySelector('input[name="website"]');
-        if (honey) fd.append('website', honey.value);
-
-        fd.append('customer_name',    document.getElementById('coName').value.trim());
-        fd.append('customer_contact', document.getElementById('coContact').value.trim());
-        fd.append('customer_email',   document.getElementById('coEmail').value.trim());
-        fd.append('customer_notes',   document.getElementById('coNotes').value.trim());
-
-        if (document.getElementById('coConsent').checked) fd.append('consent', '1');
-
-        var shapeOn = document.querySelector('.co-shape.co-shape--on');
-        if (shapeOn) {
-            fd.append('shape',      shapeOn.dataset.value || '');
-            fd.append('shape_name', shapeOn.dataset.name  || '');
-        }
-
-        fd.append('dim_length', document.getElementById('coDimL').value || '');
-        fd.append('dim_width',  document.getElementById('coDimW').value || '');
-
-        var persOn = document.querySelector('.co-per.co-per--on');
-        if (persOn) fd.append('persons', persOn.dataset.value || '');
-
-        var colorOn = document.querySelector('.co-sw.co-sw--on');
-        if (colorOn) {
-            fd.append('color',      colorOn.dataset.value || '');
-            fd.append('color_name', colorOn.dataset.name  || '');
-        }
-
-        var itemsEl = document.getElementById('coSumItems');
-        if (itemsEl) fd.append('items_summary', itemsEl.textContent.trim());
-
-        if (document.getElementById('coOptMono').checked)  fd.append('opt_monogram', '1');
-        if (document.getElementById('coOptEdge').checked)  fd.append('opt_edge',     '1');
-        if (document.getElementById('coOptRings').checked) fd.append('opt_rings',    '1');
-
-        return fd;
-    }
-
-    if (form) {
-        var contactInput = document.getElementById('coContact');
-        if (contactInput) {
-            contactInput.addEventListener('input', function () {
-                if (normalizeRussianPhone(contactInput.value)) {
-                    contactInput.classList.remove('co-ct-input--error');
-                    if (!document.querySelector('.co-ct-input--error, .co-consent--error')) {
-                        hideFormError();
-                    }
-                }
-            });
-        }
-
-        var emailInput = document.getElementById('coEmail');
-        if (emailInput) {
-            emailInput.addEventListener('input', function () {
-                if (isValidEmail(emailInput.value)) {
-                    emailInput.classList.remove('co-ct-input--error');
-                    if (!document.querySelector('.co-ct-input--error, .co-consent--error')) {
-                        hideFormError();
-                    }
-                }
-            });
-        }
-
-        form.addEventListener('submit', function (e) {
-            e.preventDefault();
-            if (submissionLocked) return;
-
-            var nameEl       = document.getElementById('coName');
-            var contactEl    = document.getElementById('coContact');
-            var emailEl      = document.getElementById('coEmail');
-            var consentEl    = document.getElementById('coConsent');
-            var consentBlock = document.querySelector('.co-consent');
-
-            // Сбрасываем предыдущие визуальные ошибки
-            hideFormError();
-            if (consentBlock) consentBlock.classList.remove('co-consent--error');
-            [nameEl, contactEl, emailEl].forEach(function (el) {
-                if (el) el.classList.remove('co-ct-input--error');
-            });
-
-            // Валидация имени и телефона
-            if (!nameEl || !nameEl.value.trim()) {
-                if (nameEl) nameEl.classList.add('co-ct-input--error');
-                showFormError('Заполните имя.', nameEl);
-                return;
+    var consent = document.getElementById('coConsent');
+    var consentBlock = document.querySelector('.co-consent');
+    if (consent && consentBlock) {
+        consent.addEventListener('change', function () {
+            if (consent.checked) {
+                consentBlock.classList.remove('co-consent--error');
+                clearFieldError(consentBlock);
             }
-
-            var normalizedPhone = contactEl ? normalizeRussianPhone(contactEl.value) : '';
-            if (!normalizedPhone) {
-                if (contactEl) contactEl.classList.add('co-ct-input--error');
-                showFormError('Введите номер телефона, например +79991234567', contactEl);
-                return;
-            }
-            contactEl.value = normalizedPhone;
-
-            if (!emailEl || !emailEl.value.trim()) {
-                if (emailEl) emailEl.classList.add('co-ct-input--error');
-                showFormError('Введите электронную почту.', emailEl);
-                return;
-            }
-            if (!isValidEmail(emailEl.value)) {
-                emailEl.classList.add('co-ct-input--error');
-                showFormError('Введите корректный адрес электронной почты.', emailEl);
-                return;
-            }
-            emailEl.value = emailEl.value.trim();
-
-            // Валидация согласия с ПД
-            if (!consentEl || !consentEl.checked) {
-                if (consentBlock) consentBlock.classList.add('co-consent--error');
-                showFormError(
-                    'Чтобы отправить заявку, отметьте согласие с политикой обработки персональных данных.',
-                    consentBlock
-                );
-                return;
-            }
-
-            // Всё ок, отправляем
-            submissionLocked = true;
-            if (resError)   resError.hidden = true;
-            if (resSuccess) resSuccess.hidden = true;
-            if (btnSubmit)  btnSubmit.disabled = true;
-            if (btnSubmit)  btnSubmit.textContent = 'Отправляется…';
-
-            var ajaxUrl = (window.loraleya && window.loraleya.ajax_url)
-                ? window.loraleya.ajax_url
-                : form.action;
-
-            fetch(ajaxUrl, {
-                method: 'POST',
-                credentials: 'same-origin',
-                body: collectFormData()
-            })
-            .then(function (r) { return r.json(); })
-            .then(function (data) {
-                if (data && data.success) {
-                    var requestNumber = data.data && data.data.request_number ? data.data.request_number : '';
-                    showSuccess(requestNumber);
-                    if (btnSubmit) btnSubmit.textContent = 'Отправлено ✓';
-                } else {
-                    submissionLocked = false;
-                    var msg = (data && data.data && data.data.message) ? data.data.message : 'Попробуйте ещё раз.';
-                    showError(msg);
-                    if (btnSubmit) {
-                        btnSubmit.disabled = false;
-                        btnSubmit.textContent = 'Отправить заявку →';
-                    }
-                }
-            })
-            .catch(function () {
-                submissionLocked = false;
-                showError('Проблема с сетью. Проверьте подключение и попробуйте снова.');
-                if (btnSubmit) {
-                    btnSubmit.disabled = false;
-                    btnSubmit.textContent = 'Отправить заявку →';
-                }
-            });
         });
     }
 
-    /* ── Явный сброс только для новой заявки ── */
-    function resetFormToInitial() {
-        if (!form) return;
+    ['coName', 'coContact', 'coEmail', 'coDeliveryAddress'].forEach(function (id) {
+        var input = document.getElementById(id);
+        if (input) input.addEventListener('input', function () { clearFieldError(input); });
+    });
 
-        requestToken = createRequestToken();
-        submissionLocked = false;
+    form.addEventListener('submit', function (event) {
+        event.preventDefault();
+        if (submissionLocked) return;
 
-        if (resSuccess) resSuccess.hidden = true;
-        if (resError)   resError.hidden   = true;
         hideFormError();
-
-        if (btnSubmit) {
-            btnSubmit.disabled    = false;
-            btnSubmit.textContent = 'Отправить заявку →';
-        }
-
-        ['coName', 'coContact', 'coEmail', 'coNotes', 'coDimL', 'coDimW'].forEach(function (id) {
-            var el = document.getElementById(id);
-            if (el) {
-                el.value = '';
-                el.classList.remove('co-ct-input--error');
-            }
-        });
-
-        ['coOptMono', 'coOptEdge', 'coOptRings', 'coConsent'].forEach(function (id) {
-            var el = document.getElementById(id);
-            if (el) el.checked = false;
-        });
-
-        var consentBlock = document.querySelector('.co-consent');
         if (consentBlock) consentBlock.classList.remove('co-consent--error');
 
-        var allShapes = document.querySelectorAll('.co-shape');
-        allShapes.forEach(function (s) { s.classList.remove('co-shape--on'); });
-        if (allShapes.length) {
-            allShapes[0].classList.add('co-shape--on');
-            var sumShape = document.getElementById('coSumShape');
-            if (sumShape) sumShape.textContent = allShapes[0].dataset.name || '';
+        var itemValidation = validateItems();
+        if (!itemValidation.items) {
+            showFormError(itemValidation.message, itemValidation.target);
+            return;
         }
 
-        var allPers = document.querySelectorAll('.co-per');
-        allPers.forEach(function (p) { p.classList.remove('co-per--on'); });
-        if (allPers.length) {
-            allPers[0].classList.add('co-per--on');
-            var sumPers = document.getElementById('coSumPers');
-            if (sumPers) sumPers.textContent = allPers[0].dataset.value || '';
+        var name = document.getElementById('coName');
+        var contact = document.getElementById('coContact');
+        var email = document.getElementById('coEmail');
+        var address = document.getElementById('coDeliveryAddress');
+
+        if (!name.value.trim()) {
+            name.classList.add('co-ct-input--error');
+            showFormError('Заполните ФИО.', name);
+            return;
+        }
+        var normalizedPhone = normalizeRussianPhone(contact.value);
+        if (!normalizedPhone) {
+            contact.classList.add('co-ct-input--error');
+            showFormError('Введите номер телефона, например +79991234567', contact);
+            return;
+        }
+        contact.value = normalizedPhone;
+        if (!isValidEmail(email.value)) {
+            email.classList.add('co-ct-input--error');
+            showFormError(email.value.trim() ? 'Введите корректный адрес электронной почты.' : 'Введите электронную почту.', email);
+            return;
+        }
+        email.value = email.value.trim();
+        if (!address.value.trim()) {
+            address.classList.add('co-ct-input--error');
+            showFormError('Укажите адрес доставки.', address);
+            return;
+        }
+        if (!consent || !consent.checked) {
+            if (consentBlock) consentBlock.classList.add('co-consent--error');
+            showFormError('Чтобы отправить заявку, отметьте согласие с политикой обработки персональных данных.', consentBlock);
+            return;
         }
 
-        var allSw = document.querySelectorAll('.co-sw');
-        allSw.forEach(function (s) { s.classList.remove('co-sw--on'); });
-        if (allSw.length) {
-            allSw[0].classList.add('co-sw--on');
-            var sumColor = document.getElementById('coSumColor');
-            if (sumColor) sumColor.textContent = allSw[0].dataset.name || '';
+        submissionLocked = true;
+        if (resError) resError.hidden = true;
+        if (resSuccess) resSuccess.hidden = true;
+        if (btnSubmit) {
+            btnSubmit.disabled = true;
+            btnSubmit.textContent = 'Отправляется…';
         }
 
-        document.querySelectorAll('.co-item-row').forEach(function (row) {
-            var toggle   = row.querySelector('.co-toggle');
-            var qty      = row.querySelector('.co-qty-val');
-            var qtyBlock = row.querySelector('.co-qty');
-            if (toggle) {
-                toggle.dataset.on = '0';
-                toggle.classList.remove('co-toggle--on');
+        var ajaxUrl = window.loraleya && window.loraleya.ajax_url ? window.loraleya.ajax_url : form.action;
+        fetch(ajaxUrl, {
+            method: 'POST',
+            credentials: 'same-origin',
+            body: collectFormData(itemValidation.items)
+        })
+        .then(function (response) { return response.json(); })
+        .then(function (data) {
+            if (data && data.success) {
+                var requestNumber = data.data && data.data.request_number ? data.data.request_number : '';
+                showSuccess(requestNumber);
+                if (btnSubmit) btnSubmit.textContent = 'Отправлено ✓';
+                return;
             }
-            if (qty) qty.textContent = '1';
-            if (qtyBlock) qtyBlock.style.opacity = '0.3';
+            submissionLocked = false;
+            var message = data && data.data && data.data.message ? data.data.message : 'Попробуйте ещё раз.';
+            showError(message);
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Отправить заявку';
+            }
+        })
+        .catch(function () {
+            submissionLocked = false;
+            showError('Проблема с сетью. Проверьте подключение и попробуйте снова.');
+            if (btnSubmit) {
+                btnSubmit.disabled = false;
+                btnSubmit.textContent = 'Отправить заявку';
+            }
         });
+    });
 
-        var sumSize = document.getElementById('coSumSize');
-        if (sumSize) sumSize.textContent = 'Укажите выше';
-
-        updateItemsSummary();
-
-        var configSection = document.querySelector('.co-config');
-        if (configSection) {
-            configSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
+    function resetCard(card) {
+        card.querySelectorAll('.co-item-swatch').forEach(function (swatch) {
+            swatch.classList.remove('co-item-swatch--on');
+            swatch.setAttribute('aria-pressed', 'false');
+        });
+        card.querySelectorAll('.co-ct-input--error, .co-item-colors--error').forEach(function (element) {
+            element.classList.remove('co-ct-input--error', 'co-item-colors--error');
+        });
+        updateOtherName(card);
     }
 
+    function resetFormToInitial() {
+        requestToken = createRequestToken();
+        submissionLocked = false;
+        form.reset();
+        var cardList = cards();
+        cardList.slice(1).forEach(function (card) { card.remove(); });
+        if (cardList[0]) resetCard(cardList[0]);
+        renumberCards();
+        updateSummary();
+        hideFormError();
+        if (consentBlock) consentBlock.classList.remove('co-consent--error');
+        if (resSuccess) resSuccess.hidden = true;
+        if (resError) resError.hidden = true;
+        if (btnSubmit) {
+            btnSubmit.disabled = false;
+            btnSubmit.textContent = 'Отправить заявку';
+        }
+        var configSection = document.querySelector('.co-config');
+        if (configSection) configSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+
+    renumberCards();
+    cards().forEach(updateOtherName);
+    updateSummary();
 })();

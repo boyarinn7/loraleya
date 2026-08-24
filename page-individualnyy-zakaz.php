@@ -8,262 +8,149 @@
 
 get_header();
 
-// Получаем 17 цветов из таксономии pa_fabric_color
 $colors = get_terms([
     'taxonomy'   => 'pa_fabric_color',
     'hide_empty' => false,
     'orderby'    => 'name',
 ]);
+
+$item_types = [
+    'tablecloth' => 'Скатерть',
+    'runner'     => 'Дорожка',
+    'napkins'    => 'Салфетки',
+    'kuverts'    => 'Куверты',
+    'curtains'   => 'Шторы',
+    'other'      => 'Другое',
+];
+
+$render_item_card = static function ($is_template = false) use ($colors, $item_types) {
+    ?>
+    <article class="co-product-card" data-item-card>
+        <div class="co-product-card-head">
+            <h3 class="co-product-title">Изделие <span data-item-number>1</span></h3>
+            <button type="button" class="co-product-remove" data-remove-item <?php echo $is_template ? '' : 'hidden'; ?>>Удалить</button>
+        </div>
+
+        <div class="co-product-grid">
+            <div class="co-ct-field">
+                <label class="co-ct-label">Изделие</label>
+                <select class="co-ct-input" data-item-field="item_type" required>
+                    <option value="">Выберите изделие</option>
+                    <?php foreach ($item_types as $value => $label) : ?>
+                        <option value="<?php echo esc_attr($value); ?>"><?php echo esc_html($label); ?></option>
+                    <?php endforeach; ?>
+                </select>
+            </div>
+            <div class="co-ct-field co-other-name" data-other-name hidden>
+                <label class="co-ct-label">Название изделия</label>
+                <input type="text" class="co-ct-input" data-item-field="item_name" maxlength="120" placeholder="Например: подхват для штор">
+            </div>
+            <div class="co-ct-field co-product-size">
+                <label class="co-ct-label">Размер / параметры</label>
+                <input type="text" class="co-ct-input" data-item-field="size" maxlength="160" placeholder="Например: 140×40 см, 150×250 см, 150×270 см" required>
+            </div>
+        </div>
+
+        <div class="co-product-field">
+            <div class="co-ct-label">Цвет</div>
+            <div class="co-item-swatches" data-item-colors>
+                <?php if (!empty($colors) && !is_wp_error($colors)) : ?>
+                    <?php foreach ($colors as $color) : ?>
+                        <?php
+                        $hex = get_term_meta($color->term_id, 'color_hex', true) ?: '#888';
+                        $swatch_url = function_exists('loraleya_color_swatch_url')
+                            ? loraleya_color_swatch_url($color->slug)
+                            : '';
+                        $bg_style = $swatch_url
+                            ? 'background-image:url(' . esc_url($swatch_url) . ');background-color:' . esc_attr($hex) . ';'
+                            : 'background:' . esc_attr($hex) . ';';
+                        ?>
+                        <button
+                            type="button"
+                            class="co-item-swatch"
+                            data-color-slug="<?php echo esc_attr($color->slug); ?>"
+                            data-color-name="<?php echo esc_attr($color->name); ?>"
+                            aria-pressed="false"
+                        >
+                            <span class="co-item-swatch-chip" style="<?php echo $bg_style; ?>"></span>
+                            <span class="co-item-swatch-name"><?php echo esc_html($color->name); ?></span>
+                        </button>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <div class="co-product-grid co-product-grid--bottom">
+            <div class="co-ct-field">
+                <label class="co-ct-label">Количество</label>
+                <div class="co-qty">
+                    <button type="button" class="co-qty-btn" data-qty-delta="-1" aria-label="Уменьшить количество">−</button>
+                    <input type="number" class="co-qty-val" data-item-field="quantity" value="1" min="1" step="1" inputmode="numeric" required>
+                    <button type="button" class="co-qty-btn" data-qty-delta="1" aria-label="Увеличить количество">+</button>
+                </div>
+            </div>
+            <div class="co-ct-field co-product-comment">
+                <label class="co-ct-label">Комментарий к изделию</label>
+                <textarea class="co-ct-input" data-item-field="comment" maxlength="2000" placeholder="Особенности пошива, отделка, крепление и другие пожелания"></textarea>
+            </div>
+        </div>
+    </article>
+    <?php
+};
 ?>
 
-<!-- HERO -->
 <section class="co-hero">
     <div class="co-container">
         <div class="co-eyebrow">Индивидуальный заказ</div>
-        <h1 class="co-h1">Создадим текстиль <em>под ваш стол</em></h1>
-        <p class="co-hero-desc">Нестандартный размер стола, особый цвет, монограмма — мы сошьём именно то, что нужно. Расскажите нам о вашем столе, а мы рассчитаем стоимость и сроки.</p>
+        <h1 class="co-h1">Создадим текстиль <em>специально для вас</em></h1>
+        <p class="co-hero-desc">Добавьте одно или несколько изделий в заявку, укажите размер, цвет, количество и пожелания. Мы свяжемся с вами, согласуем детали, стоимость, сроки и доставку — и только после этого оформим заказ.</p>
 
         <div class="co-features">
             <div class="co-feature">
                 <div class="co-feature-icon">✂</div>
-                <div class="co-feature-text">
-                    <strong>Любой размер</strong>
-                    Пошив под точные размеры вашего стола
-                </div>
+                <div class="co-feature-text"><strong>Любые изделия</strong>Скатерти, дорожки, салфетки, куверты, шторы и многое другое</div>
             </div>
             <div class="co-feature">
                 <div class="co-feature-icon">◇</div>
-                <div class="co-feature-text">
-                    <strong>Монограмма</strong>
-                    Инициалы или логотип на изделии
-                </div>
+                <div class="co-feature-text"><strong>Каждое изделие — отдельно</strong>Укажите свой размер, цвет, количество и пожелания</div>
             </div>
             <div class="co-feature">
-                <div class="co-feature-icon">⟳</div>
-                <div class="co-feature-text">
-                    <strong>7–14 дней</strong>
-                    Срок изготовления
-                </div>
+                <div class="co-feature-icon">✓</div>
+                <div class="co-feature-text"><strong>Сначала согласуем</strong>Уточним состав, стоимость, сроки и доставку до оформления заказа</div>
             </div>
         </div>
     </div>
 </section>
 
-<!-- CONFIGURATOR -->
 <section class="co-config">
     <div class="co-container">
         <div class="co-config-box">
             <form id="customOrderForm" method="post" action="<?php echo esc_url(admin_url('admin-ajax.php')); ?>" novalidate>
                 <input type="hidden" name="action" value="loraleya_custom_order">
 
-                <!-- 1. Форма стола -->
                 <div class="co-step">
                     <div class="co-step-head">
                         <div class="co-step-num">1</div>
-                        <div class="co-step-title">Форма стола</div>
+                        <div class="co-step-title">Изделия</div>
                     </div>
-                    <div class="co-step-hint">Выберите форму вашего стола — от этого зависит крой скатерти</div>
-                    <div class="co-shapes" data-field="shape">
-                        <div class="co-shape co-shape--on" data-value="rect" data-name="Прямоугольный">
-                            <svg viewBox="0 0 60 40"><rect x="5" y="5" width="50" height="30" rx="2"/></svg>
-                            <div class="co-shape-label">Прямоугольный</div>
-                        </div>
-                        <div class="co-shape" data-value="oval" data-name="Овальный">
-                            <svg viewBox="0 0 60 40"><ellipse cx="30" cy="20" rx="27" ry="15"/></svg>
-                            <div class="co-shape-label">Овальный</div>
-                        </div>
-                        <div class="co-shape" data-value="round" data-name="Круглый">
-                            <svg viewBox="0 0 60 40"><ellipse cx="30" cy="20" rx="18" ry="18"/></svg>
-                            <div class="co-shape-label">Круглый</div>
-                        </div>
-                        <div class="co-shape" data-value="square" data-name="Квадратный">
-                            <svg viewBox="0 0 60 40"><rect x="12" y="3" width="36" height="34" rx="2"/></svg>
-                            <div class="co-shape-label">Квадратный</div>
-                        </div>
+                    <div class="co-step-hint">Если изделия отличаются по размеру, цвету или другим параметрам, добавьте их отдельными позициями.</div>
+                    <div class="co-product-list" id="coProductList">
+                        <?php $render_item_card(false); ?>
                     </div>
+                    <button type="button" class="co-add-product" id="coAddProduct"><span class="co-add-product-plus" aria-hidden="true">+</span><span>Добавить ещё изделие</span></button>
+                    <template id="coProductTemplate"><?php $render_item_card(true); ?></template>
                 </div>
 
-                <!-- 2. Размеры -->
                 <div class="co-step">
                     <div class="co-step-head">
                         <div class="co-step-num">2</div>
-                        <div class="co-step-title">Размеры стола</div>
-                    </div>
-                    <div class="co-step-hint">Укажите длину и ширину столешницы в сантиметрах</div>
-                    <div class="co-dims">
-                        <div class="co-dim-field">
-                            <label class="co-dim-label" for="coDimL">Длина (см)</label>
-                            <input type="number" id="coDimL" name="dim_length" class="co-dim-input" placeholder="180" min="30" max="500">
-                        </div>
-                        <div class="co-dim-x">×</div>
-                        <div class="co-dim-field">
-                            <label class="co-dim-label" for="coDimW">Ширина (см)</label>
-                            <input type="number" id="coDimW" name="dim_width" class="co-dim-input" placeholder="90" min="30" max="500">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 3. Персоны -->
-                <div class="co-step">
-                    <div class="co-step-head">
-                        <div class="co-step-num">3</div>
-                        <div class="co-step-title">Количество персон</div>
-                    </div>
-                    <div class="co-persons" data-field="persons">
-                        <button type="button" class="co-per co-per--on" data-value="2">2</button>
-                        <button type="button" class="co-per" data-value="4">4</button>
-                        <button type="button" class="co-per" data-value="6">6</button>
-                        <button type="button" class="co-per" data-value="8">8</button>
-                        <button type="button" class="co-per" data-value="10">10</button>
-                        <button type="button" class="co-per" data-value="12">12</button>
-                    </div>
-                </div>
-
-                <!-- 4. Цвет -->
-                <div class="co-step">
-                    <div class="co-step-head">
-                        <div class="co-step-num">4</div>
-                        <div class="co-step-title">Цвет</div>
-                    </div>
-                    <div class="co-step-hint">Выберите из палитры или опишите желаемый оттенок в комментарии</div>
-                    <div class="co-swatches" data-field="color">
-                        <?php
-                        if (!empty($colors) && !is_wp_error($colors)) {
-                            $first = true;
-                            foreach ($colors as $color) {
-                                $hex = get_term_meta($color->term_id, 'color_hex', true) ?: '#888';
-                                $swatch_url = function_exists('loraleya_color_swatch_url')
-                                    ? loraleya_color_swatch_url($color->slug)
-                                    : '';
-                                $bg_style = $swatch_url
-                                    ? 'background-image:url(' . esc_url($swatch_url) . ');background-color:' . esc_attr($hex) . ';'
-                                    : 'background:' . esc_attr($hex) . ';';
-                                $cls = 'co-sw' . ($first ? ' co-sw--on' : '');
-                                printf(
-                                    '<div class="%s" data-value="%s" data-name="%s" style="%s" title="%s"><span class="co-sw-label">%s</span></div>',
-                                    esc_attr($cls),
-                                    esc_attr($color->slug),
-                                    esc_attr($color->name),
-                                    $bg_style,
-                                    esc_attr($color->name),
-                                    esc_html($color->name)
-                                );
-                                $first = false;
-                            }
-                        }
-                        ?>
-                    </div>
-                </div>
-
-                <!-- 5. Изделия -->
-                <div class="co-step">
-                    <div class="co-step-head">
-                        <div class="co-step-num">5</div>
-                        <div class="co-step-title">Что шьём</div>
-                    </div>
-                    <div class="co-step-hint">Включите нужные изделия и укажите количество</div>
-                    <div class="co-items">
-                        <div class="co-item-row" data-item="tablecloth" data-name="Скатерть">
-                            <div>
-                                <div class="co-item-name">Скатерть</div>
-                                <div class="co-item-size">По размерам вашего стола</div>
-                            </div>
-                            <div class="co-item-right">
-                                <div class="co-toggle" data-on="0"><div class="co-toggle-dot"></div></div>
-                                <div class="co-qty">
-                                    <button type="button" class="co-qty-btn" data-delta="-1">−</button>
-                                    <span class="co-qty-val">1</span>
-                                    <button type="button" class="co-qty-btn" data-delta="1">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="co-item-row" data-item="runner" data-name="Дорожка">
-                            <div>
-                                <div class="co-item-name">Дорожка</div>
-                                <div class="co-item-size">По длине стола</div>
-                            </div>
-                            <div class="co-item-right">
-                                <div class="co-toggle" data-on="0"><div class="co-toggle-dot"></div></div>
-                                <div class="co-qty">
-                                    <button type="button" class="co-qty-btn" data-delta="-1">−</button>
-                                    <span class="co-qty-val">1</span>
-                                    <button type="button" class="co-qty-btn" data-delta="1">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="co-item-row" data-item="napkins" data-name="Салфетки">
-                            <div>
-                                <div class="co-item-name">Салфетки</div>
-                                <div class="co-item-size">40 × 40 см</div>
-                            </div>
-                            <div class="co-item-right">
-                                <div class="co-toggle" data-on="0"><div class="co-toggle-dot"></div></div>
-                                <div class="co-qty">
-                                    <button type="button" class="co-qty-btn" data-delta="-1">−</button>
-                                    <span class="co-qty-val">1</span>
-                                    <button type="button" class="co-qty-btn" data-delta="1">+</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="co-item-row" data-item="kuverts" data-name="Куверты">
-                            <div>
-                                <div class="co-item-name">Куверты</div>
-                                <div class="co-item-size">9 × 24 см</div>
-                            </div>
-                            <div class="co-item-right">
-                                <div class="co-toggle" data-on="0"><div class="co-toggle-dot"></div></div>
-                                <div class="co-qty">
-                                    <button type="button" class="co-qty-btn" data-delta="-1">−</button>
-                                    <span class="co-qty-val">1</span>
-                                    <button type="button" class="co-qty-btn" data-delta="1">+</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 6. Опции -->
-                <div class="co-step">
-                    <div class="co-step-head">
-                        <div class="co-step-num">6</div>
-                        <div class="co-step-title">Дополнительные опции</div>
-                    </div>
-                    <div class="co-options">
-                        <div class="co-opt-row">
-                            <input type="checkbox" class="co-opt-cb" id="coOptMono" name="opt_monogram" value="1">
-                            <label for="coOptMono">
-                                <div class="co-opt-label">Монограмма / вышивка</div>
-                                <div class="co-opt-hint">Инициалы, логотип или рисунок на изделии</div>
-                            </label>
-                        </div>
-                        <div class="co-opt-row">
-                            <input type="checkbox" class="co-opt-cb" id="coOptEdge" name="opt_edge" value="1">
-                            <label for="coOptEdge">
-                                <div class="co-opt-label">Декоративная обработка края</div>
-                                <div class="co-opt-hint">Бахрома, оверлок контрастной нитью</div>
-                            </label>
-                        </div>
-                        <div class="co-opt-row">
-                            <input type="checkbox" class="co-opt-cb" id="coOptRings" name="opt_rings" value="1">
-                            <label for="coOptRings">
-                                <div class="co-opt-label">Кольца для салфеток</div>
-                                <div class="co-opt-hint">Золото или серебро, в комплект к салфеткам</div>
-                            </label>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- 7. Контакты -->
-                <div class="co-step">
-                    <div class="co-step-head">
-                        <div class="co-step-num">7</div>
                         <div class="co-step-title">Контактные данные</div>
                     </div>
                     <div class="co-contact">
                         <div class="co-ct-row">
                             <div class="co-ct-field">
-                                <label class="co-ct-label" for="coName">Имя</label>
-                                <input type="text" id="coName" name="customer_name" class="co-ct-input" placeholder="Как к вам обращаться" required>
+                                <label class="co-ct-label" for="coName">ФИО</label>
+                                <input type="text" id="coName" name="customer_name" class="co-ct-input" placeholder="Фамилия, имя и отчество" maxlength="120" autocomplete="name" required>
                             </div>
                             <div class="co-ct-field">
                                 <label class="co-ct-label" for="coContact">Телефон</label>
@@ -272,64 +159,55 @@ $colors = get_terms([
                         </div>
                         <div class="co-ct-row">
                             <div class="co-ct-field">
-                                <label class="co-ct-label" for="coEmail">Электронная почта</label>
+                                <label class="co-ct-label" for="coEmail">Email</label>
                                 <input type="email" id="coEmail" name="customer_email" class="co-ct-input" placeholder="name@example.ru" autocomplete="email" required>
                             </div>
                             <div class="co-ct-field">
-                                <label class="co-ct-label" for="coNotes">Комментарий</label>
-                                <textarea id="coNotes" name="customer_notes" class="co-ct-input" placeholder="Опишите пожелания, особенности стола, или задайте вопрос"></textarea>
+                                <label class="co-ct-label" for="coDeliveryAddress">Адрес доставки</label>
+                                <input type="text" id="coDeliveryAddress" name="delivery_address" class="co-ct-input" placeholder="Город, улица, дом, квартира" maxlength="500" autocomplete="street-address" required>
+                                <span class="co-field-hint">Используем для будущего согласования доставки. Стоимость сейчас не рассчитывается.</span>
                             </div>
-                        </div>
-
-                        <!-- Honeypot — скрытое поле для отлова ботов -->
-                        <input type="text" name="website" class="co-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
-
-                        <!-- WordPress nonce для защиты от CSRF -->
-                        <?php wp_nonce_field('loraleya_custom_order', 'co_nonce'); ?>
-
-                        <!-- Согласие на обработку ПД -->
-                        <div class="co-consent">
-                            <input type="checkbox" class="co-opt-cb" id="coConsent" name="consent" value="1" required>
-                            <label for="coConsent">
-                                <div class="co-opt-label">Согласен с <a href="<?php echo esc_url(get_privacy_policy_url() ?: home_url('/privacy-policy/')); ?>" target="_blank">политикой обработки персональных данных</a></div>
-                            </label>
                         </div>
                     </div>
                 </div>
 
-                <!-- SUMMARY -->
                 <div class="co-summary" id="coSummary">
                     <div class="co-sum-title">Ваша заявка</div>
-                    <div class="co-sum-row"><span class="co-sl">Форма стола</span><span class="co-sv" id="coSumShape">Прямоугольный</span></div>
-                    <div class="co-sum-row"><span class="co-sl">Размер</span><span class="co-sv" id="coSumSize">Укажите выше</span></div>
-                    <div class="co-sum-row"><span class="co-sl">Персоны</span><span class="co-sv" id="coSumPers">2</span></div>
-                    <div class="co-sum-row"><span class="co-sl">Цвет</span><span class="co-sv" id="coSumColor"><?php echo !empty($colors) && !is_wp_error($colors) ? esc_html($colors[0]->name) : ''; ?></span></div>
-                    <div class="co-sum-row"><span class="co-sl">Изделия</span><span class="co-sv" id="coSumItems">Скатерть, салфетки ×4, куверты ×4</span></div>
-                    <div class="co-sum-note">Точную стоимость рассчитаем и сообщим в течение 2 часов после получения заявки. 100% оплата стоимости изделия после согласования заказа, срок изготовления 7–14 рабочих дней.</div>
+                    <div class="co-sum-items" id="coSumItems" aria-live="polite"></div>
                 </div>
 
-                <!-- SUBMIT -->
+                <div class="co-order-comment">
+                    <div class="co-step-title">Комментарий к заказу</div>
+                    <div class="co-ct-field">
+                        <label class="co-ct-label" for="coNotes">Общий комментарий</label>
+                        <textarea id="coNotes" name="customer_notes" class="co-ct-input" maxlength="2000" placeholder="Пожелания ко всему заказу или дополнительная информация"></textarea>
+                    </div>
+                </div>
+
+                <input type="text" name="website" class="co-honeypot" tabindex="-1" autocomplete="off" aria-hidden="true">
+                <?php wp_nonce_field('loraleya_custom_order', 'co_nonce'); ?>
+
+                <div class="co-consent">
+                    <input type="checkbox" class="co-opt-cb" id="coConsent" name="consent" value="1" required>
+                    <label for="coConsent">
+                        <div class="co-opt-label">Согласен с <a href="<?php echo esc_url(get_privacy_policy_url() ?: home_url('/privacy-policy/')); ?>" target="_blank" rel="noopener">политикой обработки персональных данных</a></div>
+                    </label>
+                </div>
+
                 <div class="co-submit-area">
-                    <div class="co-submit-info">Заявка будет отправлена на почту. Мы свяжемся с вами в течение 2 часов для уточнения деталей и расчёта стоимости.</div>
-                    <button type="submit" class="co-btn-submit">
-                        Отправить заявку →
-                    </button>
+                    <div class="co-submit-info">После отправки заявки мы свяжемся с вами, уточним детали, стоимость, сроки и доставку. Заказ будет оформлен только после согласования.</div>
+                    <button type="submit" class="co-btn-submit">Отправить заявку</button>
                 </div>
 
-                <!-- Сообщения после отправки -->
-                <div class="co-result co-result--success" id="coResultSuccess" hidden>
-                    <strong>Заявка отправлена!</strong> Мы свяжемся с вами в течение 2 часов.
-                </div>
+                <div class="co-result co-result--success" id="coResultSuccess" hidden></div>
                 <div class="co-result co-result--error" id="coResultError" hidden>
                     <strong>Ошибка отправки.</strong> Попробуйте ещё раз или напишите нам напрямую.
                 </div>
-
             </form>
         </div>
     </div>
 </section>
 
-<!-- FAQ -->
 <section class="co-faq-sec">
     <div class="co-container">
         <h2 class="co-faq-title">Частые вопросы</h2>
