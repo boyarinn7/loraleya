@@ -8,11 +8,12 @@ defined( 'ABSPATH' ) || exit;
 
 function loraleya_custom_order_statuses() {
     return array(
-        'new'         => 'Новая',
-        'in_progress' => 'В работе',
-        'agreed'      => 'Согласована',
-        'converted'   => 'Создан заказ',
-        'cancelled'   => 'Отменена',
+        'new'                            => 'Новая',
+        'in_progress'                    => 'В работе',
+        'awaiting_customer_confirmation' => 'Ожидает подтверждения клиента',
+        'agreed'                         => 'Согласована',
+        'converted'                      => 'Создан заказ',
+        'cancelled'                      => 'Отменена',
     );
 }
 
@@ -444,6 +445,7 @@ add_filter( 'bulk_actions-edit-ll_custom_request', 'loraleya_custom_order_limit_
 
 function loraleya_custom_order_add_request_metaboxes() {
     add_meta_box( 'll_custom_request_details', 'Заявка и согласование', 'loraleya_custom_order_render_request_metabox', 'll_custom_request', 'normal', 'high' );
+    add_meta_box( 'll_custom_request_confirmation', 'Подтверждение клиента', 'loraleya_custom_order_render_confirmation_metabox', 'll_custom_request', 'side', 'high' );
     add_meta_box( 'll_custom_request_conversion', 'WooCommerce-заказ', 'loraleya_custom_order_render_conversion_metabox', 'll_custom_request', 'side', 'high' );
     add_meta_box( 'll_custom_request_history', 'История заявки', 'loraleya_custom_order_render_history_metabox', 'll_custom_request', 'normal', 'default' );
 }
@@ -452,10 +454,7 @@ add_action( 'add_meta_boxes_ll_custom_request', 'loraleya_custom_order_add_reque
 function loraleya_custom_order_render_request_metabox( $post ) {
     wp_nonce_field( 'loraleya_save_custom_request', 'loraleya_custom_request_nonce' );
     $statuses = loraleya_custom_order_statuses();
-    $services = loraleya_custom_order_delivery_services();
     $status   = loraleya_custom_order_meta( $post->ID, '_ll_request_status', 'new' );
-    $service  = loraleya_custom_order_meta( $post->ID, '_ll_delivery_service' );
-    $mode     = loraleya_custom_order_meta( $post->ID, '_ll_delivery_mode' );
     $currency = loraleya_custom_order_meta( $post->ID, '_ll_request_currency', function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '' );
     $order_id = absint( get_post_meta( $post->ID, '_ll_wc_order_id', true ) );
     $linked_order = $order_id && function_exists( 'wc_get_order' ) ? wc_get_order( $order_id ) : false;
@@ -475,7 +474,8 @@ function loraleya_custom_order_render_request_metabox( $post ) {
         <p><label for="ll_email">Email</label><input type="email" id="ll_email" name="ll_request[email]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_email' ) ); ?>"></p>
         <p><label for="ll_status">Статус</label><select id="ll_status" name="ll_request[status]" <?php disabled( (bool) $linked_order ); ?>>
             <?php foreach ( $statuses as $key => $label ) : ?>
-                <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $status, $key ); ?>><?php echo esc_html( $label ); ?></option>
+                <?php $protected_status = in_array( $key, array( 'awaiting_customer_confirmation', 'agreed' ), true ) && $status !== $key; ?>
+                <option value="<?php echo esc_attr( $key ); ?>" <?php selected( $status, $key ); ?> <?php disabled( $protected_status ); ?>><?php echo esc_html( $label ); ?></option>
             <?php endforeach; ?>
         </select><?php if ( $linked_order ) : ?><input type="hidden" name="ll_request[status]" value="converted"><?php endif; ?></p>
     </div>
@@ -492,21 +492,20 @@ function loraleya_custom_order_render_request_metabox( $post ) {
         <p class="wide"><label for="ll_customer_notes">Комментарий клиента</label><textarea id="ll_customer_notes" rows="4" name="ll_request[customer_notes]"><?php echo esc_textarea( loraleya_custom_order_meta( $post->ID, '_ll_customer_notes' ) ); ?></textarea></p>
     </div>
 
-    <h3 class="ll-request-section">Коммерческие условия и доставка</h3>
+    <h3 class="ll-request-section">Коммерческие условия</h3>
     <div class="ll-request-grid">
         <p><label for="ll_products_total">Согласованная стоимость изделий (<?php echo esc_html( $currency ); ?>)</label><input type="text" inputmode="decimal" id="ll_products_total" name="ll_request[products_total]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_agreed_products_total' ) ); ?>"></p>
-        <p><label for="ll_delivery_cost">Стоимость доставки (<?php echo esc_html( $currency ); ?>)</label><input type="text" inputmode="decimal" id="ll_delivery_cost" name="ll_request[delivery_cost]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_cost' ) ); ?>"><span class="ll-request-help">Можно указать 0.</span></p>
-        <p><label for="ll_delivery_service">Сервис доставки</label><select id="ll_delivery_service" name="ll_request[delivery_service]"><option value="">— Выберите —</option>
-            <?php foreach ( $services as $key => $label ) : ?><option value="<?php echo esc_attr( $key ); ?>" <?php selected( $service, $key ); ?>><?php echo esc_html( $label ); ?></option><?php endforeach; ?>
-        </select></p>
-        <p><label for="ll_delivery_mode">Способ получения</label><select id="ll_delivery_mode" name="ll_request[delivery_mode]"><option value="">— Выберите —</option><option value="pvz" <?php selected( $mode, 'pvz' ); ?>>ПВЗ</option><option value="courier" <?php selected( $mode, 'courier' ); ?>>Курьер</option></select></p>
-        <p><label for="ll_delivery_state">Регион</label><input id="ll_delivery_state" name="ll_request[delivery_state]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_state' ) ); ?>"></p>
-        <p><label for="ll_delivery_city">Город</label><input id="ll_delivery_city" name="ll_request[delivery_city]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_city' ) ); ?>"></p>
-        <p class="wide"><label for="ll_pickup_address">ПВЗ</label><input id="ll_pickup_address" name="ll_request[pickup_address]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_pickup_address' ) ); ?>"></p>
-        <p class="wide"><label for="ll_fivepost_point_id">Код / ID ПВЗ 5Post</label><input id="ll_fivepost_point_id" name="ll_request[fivepost_point_id]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_request_fivepost_point_id' ) ); ?>"><span class="ll-request-help">Обязателен только для 5Post.</span></p>
-        <p class="wide"><label for="ll_delivery_address_1">Адрес</label><input id="ll_delivery_address_1" name="ll_request[delivery_address_1]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_address_1' ) ); ?>"></p>
-        <p><label for="ll_delivery_address_2">Квартира / офис</label><input id="ll_delivery_address_2" name="ll_request[delivery_address_2]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_address_2' ) ); ?>"></p>
-        <p><label for="ll_delivery_postcode">Индекс</label><input id="ll_delivery_postcode" name="ll_request[delivery_postcode]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_postcode' ) ); ?>"></p>
+        <p><label for="ll_production_term">Срок изготовления</label><input id="ll_production_term" name="ll_request[production_term]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_agreed_production_term' ) ); ?>" placeholder="Например: 7–14 рабочих дней"></p>
+    </div>
+
+    <h3 class="ll-request-section">Данные для будущей доставки</h3>
+    <div class="ll-request-grid">
+        <p><label for="ll_delivery_recipient_name">ФИО получателя</label><input id="ll_delivery_recipient_name" name="ll_request[delivery_recipient_name]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_recipient_name' ) ); ?>"></p>
+        <p><label for="ll_delivery_recipient_phone">Телефон получателя</label><input id="ll_delivery_recipient_phone" name="ll_request[delivery_recipient_phone]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_recipient_phone' ) ); ?>"></p>
+        <p><label for="ll_delivery_city">Город / населённый пункт</label><input id="ll_delivery_city" name="ll_request[delivery_city]" value="<?php echo esc_attr( loraleya_custom_order_meta( $post->ID, '_ll_delivery_city' ) ); ?>"></p>
+        <p><label for="ll_delivery_preference">Способ получения</label><select id="ll_delivery_preference" name="ll_request[delivery_preference]"><option value="">— Выберите —</option><option value="pickup" <?php selected( loraleya_custom_order_meta( $post->ID, '_ll_delivery_preference' ), 'pickup' ); ?>>Пункт выдачи</option><option value="courier" <?php selected( loraleya_custom_order_meta( $post->ID, '_ll_delivery_preference' ), 'courier' ); ?>>Курьер</option></select></p>
+        <p class="wide"><label for="ll_delivery_location">Адрес / район / ориентир</label><textarea id="ll_delivery_location" rows="3" name="ll_request[delivery_location]"><?php echo esc_textarea( loraleya_custom_order_meta( $post->ID, '_ll_delivery_location' ) ); ?></textarea><span class="ll-request-help">Для пункта выдачи — удобный район, улица или ориентир. Для курьера — полный адрес доставки.</span></p>
+        <p class="wide"><label for="ll_delivery_request_note">Комментарий к доставке / исходная заметка клиента</label><textarea id="ll_delivery_request_note" rows="4" name="ll_request[delivery_request_note]"><?php echo esc_textarea( loraleya_custom_order_meta( $post->ID, '_ll_delivery_request_note' ) ); ?></textarea></p>
     </div>
 
     <h3 class="ll-request-section">Внутренняя заметка</h3>
@@ -515,9 +514,62 @@ function loraleya_custom_order_render_request_metabox( $post ) {
     <?php
 }
 
+function loraleya_custom_order_render_confirmation_metabox( $post ) {
+    $status       = loraleya_custom_order_meta( $post->ID, '_ll_request_status', 'new' );
+    $sent_at      = get_post_meta( $post->ID, '_ll_confirmation_sent_at', true );
+    $confirmed_at = get_post_meta( $post->ID, '_ll_customer_confirmed_at', true );
+    $order_id     = absint( get_post_meta( $post->ID, '_ll_wc_order_id', true ) );
+    $order        = $order_id && function_exists( 'wc_get_order' ) ? wc_get_order( $order_id ) : false;
+
+    if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_custom_conversion_complete' ) ) {
+        echo '<p>Условия подтверждены; заявка уже конвертирована.</p>';
+        return;
+    }
+    if ( 'cancelled' === $status ) {
+        echo '<p>Для отменённой заявки отправка недоступна.</p>';
+        return;
+    }
+    if ( 'agreed' === $status && $confirmed_at ) {
+        echo '<p><strong>Подтверждено клиентом:</strong><br>' . esc_html( $confirmed_at ) . '</p>';
+        return;
+    }
+
+    $validation    = loraleya_custom_order_validate_confirmation_terms( $post->ID );
+    $sent_snapshot = get_post_meta( $post->ID, '_ll_confirmation_snapshot', true );
+    if ( 'awaiting_customer_confirmation' === $status ) {
+        $current_snapshot = loraleya_custom_order_confirmation_snapshot_from_data( loraleya_custom_order_request_data( $post->ID ) );
+        if ( ! is_array( $sent_snapshot ) || $sent_snapshot !== $current_snapshot ) {
+            echo '<p><strong>Условия заявки изменились после отправки клиенту.</strong> Сначала отправьте клиенту обновлённые условия.</p>';
+        }
+        if ( $sent_at ) {
+            echo '<p><strong>Последняя отправка:</strong><br>' . esc_html( $sent_at ) . '</p>';
+        }
+        echo '<p class="description">Нажмите после того, как клиент подтвердит заказ ответом на письмо.</p>';
+        echo '<input type="hidden" name="request_id" value="' . esc_attr( $post->ID ) . '">';
+        wp_nonce_field( 'loraleya_record_custom_request_confirmation_' . $post->ID, 'loraleya_confirmation_received_nonce' );
+        echo '<p><button type="submit" name="action" value="loraleya_record_custom_request_confirmation" class="button button-primary" formaction="' . esc_url( admin_url( 'admin-post.php' ) ) . '" formmethod="post" formnovalidate>Подтверждение клиента получено</button></p>';
+        echo '<hr>';
+    } elseif ( $sent_at ) {
+        echo '<p><strong>Последняя отправка:</strong><br>' . esc_html( $sent_at ) . '</p>';
+    }
+
+    if ( is_wp_error( $validation ) ) {
+        echo '<p>' . esc_html( $validation->get_error_message() ) . '</p>';
+        echo '<p class="description">Сохраните обязательные условия изделия перед отправкой.</p>';
+        return;
+    }
+
+    echo '<input type="hidden" name="request_id" value="' . esc_attr( $post->ID ) . '">';
+    wp_nonce_field( 'loraleya_send_custom_request_confirmation_' . $post->ID, 'loraleya_confirmation_send_nonce' );
+    $label = $sent_at ? 'Отправить условия повторно' : 'Отправить условия клиенту';
+    echo '<p><button type="submit" name="action" value="loraleya_send_custom_request_confirmation" class="button button-primary" formaction="' . esc_url( admin_url( 'admin-post.php' ) ) . '" formmethod="post" formnovalidate>' . esc_html( $label ) . '</button></p>';
+    echo '<p class="description">Отправляется подтверждение условий изделия, не запрос оплаты.</p>';
+}
+
 function loraleya_custom_order_render_conversion_metabox( $post ) {
     $order_id = absint( get_post_meta( $post->ID, '_ll_wc_order_id', true ) );
     $order    = $order_id && function_exists( 'wc_get_order' ) ? wc_get_order( $order_id ) : false;
+    $status   = get_post_meta( $post->ID, '_ll_request_status', true );
 
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_custom_conversion_complete' ) ) {
         echo '<p><strong>Заказ WooCommerce №' . esc_html( $order->get_order_number() ) . '</strong></p>';
@@ -525,16 +577,30 @@ function loraleya_custom_order_render_conversion_metabox( $post ) {
         return;
     }
 
+    if ( 'converted' === $status ) {
+        echo '<p>Связь с ранее созданным WooCommerce-заказом не найдена. Восстановление проверит существующие заказы; новый заказ создан не будет.</p>';
+        echo '<input type="hidden" name="request_id" value="' . esc_attr( $post->ID ) . '">';
+        wp_nonce_field( 'loraleya_convert_custom_request_' . $post->ID, 'loraleya_conversion_nonce' );
+        echo '<p><button type="submit" name="action" value="loraleya_convert_custom_request" class="button button-primary" formaction="' . esc_url( admin_url( 'admin-post.php' ) ) . '" formmethod="post" formnovalidate>Восстановить связь с заказом</button></p>';
+        return;
+    }
+
     if ( $order instanceof WC_Order ) {
         echo '<p><strong>Найден незавершённый WooCommerce-заказ.</strong> При повторной конвертации он будет безопасно проверен и удалён перед созданием нового.</p>';
     }
 
-    if ( 'cancelled' === get_post_meta( $post->ID, '_ll_request_status', true ) ) {
+    if ( 'cancelled' === $status ) {
         echo '<p>Отменённую заявку нельзя конвертировать.</p>';
         return;
     }
 
-    echo '<p>Перед созданием заказа сохраните согласованные данные заявки.</p>';
+    $confirmation = loraleya_custom_order_validate_customer_confirmation( $post->ID );
+    if ( is_wp_error( $confirmation ) ) {
+        echo '<p>Заказ можно создать только после подтверждения актуальных условий клиентом.</p>';
+        return;
+    }
+
+    echo '<p>Клиент подтвердил актуальные условия изделия.</p>';
     echo '<input type="hidden" name="request_id" value="' . esc_attr( $post->ID ) . '">';
     wp_nonce_field( 'loraleya_convert_custom_request_' . $post->ID, 'loraleya_conversion_nonce' );
     echo '<p><button type="submit" name="action" value="loraleya_convert_custom_request" class="button button-primary" formaction="' . esc_url( admin_url( 'admin-post.php' ) ) . '" formmethod="post" formnovalidate>Создать заказ WooCommerce</button></p>';
@@ -596,6 +662,336 @@ function loraleya_custom_order_minor_units( $value ) {
     return (int) $minor;
 }
 
+function loraleya_custom_order_confirmation_snapshot_from_data( $data ) {
+    return array(
+        'request_number'  => (string) $data['request_number'],
+        'shape'           => (string) $data['shape'],
+        'size'            => (string) $data['size'],
+        'persons'         => absint( $data['persons'] ),
+        'color'           => (string) $data['color'],
+        'items_summary'   => (string) $data['items_summary'],
+        'options'         => (string) $data['options'],
+        'products_total'  => (string) loraleya_custom_order_decimal( $data['products_total'] ),
+        'currency'        => strtoupper( (string) $data['currency'] ),
+        'production_term' => (string) $data['production_term'],
+    );
+}
+
+function loraleya_custom_order_validate_confirmation_terms( $request_id ) {
+    $post = get_post( $request_id );
+    if ( ! $post || 'll_custom_request' !== $post->post_type ) {
+        return new WP_Error( 'invalid_request', 'Заявка не найдена.' );
+    }
+
+    $data = loraleya_custom_order_request_data( $request_id );
+    if ( '' === trim( $data['customer_name'] ) ) {
+        return new WP_Error( 'missing_name', 'Заполните имя клиента.' );
+    }
+    if ( ! is_email( $data['email'] ) ) {
+        return new WP_Error( 'invalid_email', 'Проверьте email клиента.' );
+    }
+    if ( '' === trim( $data['shape'] ) || ! $data['length'] || ! $data['width'] || ! $data['persons'] || '' === trim( $data['color'] ) || '' === trim( $data['items_summary'] ) ) {
+        return new WP_Error( 'missing_product_terms', 'Заполните форму, размеры, количество персон, цвет и комплектацию.' );
+    }
+    if ( '' === trim( $data['production_term'] ) ) {
+        return new WP_Error( 'missing_production_term', 'Укажите срок изготовления.' );
+    }
+
+    $products_minor = loraleya_custom_order_minor_units( $data['products_total'] );
+    if ( null === $products_minor || $products_minor <= 0 ) {
+        return new WP_Error( 'missing_price', 'Укажите согласованную стоимость изделий больше 0.' );
+    }
+    if ( ! preg_match( '/^[A-Z]{3}$/', $data['currency'] ) ) {
+        return new WP_Error( 'invalid_currency', 'Не удалось определить валюту заявки.' );
+    }
+
+    $data['products_total'] = loraleya_custom_order_decimal( $data['products_total'] );
+    return array(
+        'data'     => $data,
+        'snapshot' => loraleya_custom_order_confirmation_snapshot_from_data( $data ),
+    );
+}
+
+function loraleya_custom_order_confirmation_rows( $snapshot ) {
+    $options = '' !== trim( (string) $snapshot['options'] ) ? $snapshot['options'] : 'Нет';
+    $price   = function_exists( 'wc_price' )
+        ? wp_specialchars_decode( wp_strip_all_tags( wc_price( $snapshot['products_total'], array( 'currency' => $snapshot['currency'] ) ) ), ENT_QUOTES )
+        : $snapshot['products_total'] . ' ' . $snapshot['currency'];
+
+    return array(
+        'Форма стола'             => $snapshot['shape'],
+        'Размер'                  => $snapshot['size'],
+        'Количество персон'       => $snapshot['persons'],
+        'Цвет'                    => $snapshot['color'],
+        'Комплектация'            => $snapshot['items_summary'],
+        'Дополнительные опции'    => $options,
+        'Стоимость изделий'       => $price,
+        'Срок изготовления'       => $snapshot['production_term'],
+    );
+}
+
+function loraleya_custom_order_confirmation_table_html( $snapshot ) {
+    $html = '<table role="presentation" cellspacing="0" cellpadding="8" style="width:100%;border-collapse:collapse;margin:20px 0">';
+    foreach ( loraleya_custom_order_confirmation_rows( $snapshot ) as $label => $value ) {
+        $html .= '<tr><th scope="row" style="width:40%;text-align:left;vertical-align:top;border:1px solid #ddd;background:#f7f7f7">' . esc_html( $label ) . '</th><td style="border:1px solid #ddd;white-space:pre-line">' . esc_html( $value ) . '</td></tr>';
+    }
+    return $html . '</table>';
+}
+
+function loraleya_custom_order_send_confirmation_email( $email, $subject, $customer_name, $snapshot ) {
+    $body  = '<div style="max-width:640px;margin:0 auto;font-family:Arial,sans-serif;color:#222;line-height:1.5">';
+    $body .= '<p>Здравствуйте, ' . esc_html( $customer_name ) . '!</p>';
+    $body .= '<p>Мы подготовили финальные условия изготовления по вашей заявке <strong>' . esc_html( $snapshot['request_number'] ) . '</strong>.</p>';
+    $body .= loraleya_custom_order_confirmation_table_html( $snapshot );
+    $body .= '<h2 style="font-size:20px;margin-top:28px">Как подтвердить заказ</h2>';
+    $body .= '<p>Для подтверждения заказа ответьте на это письмо и напишите:</p>';
+    $body .= '<p><strong>«Подтверждаю заказ ' . esc_html( $snapshot['request_number'] ) . '»</strong></p>';
+    $body .= '<p>В этом же письме укажите данные для будущей доставки:</p>';
+    $body .= '<ul><li>ФИО получателя;</li><li>телефон получателя;</li><li>город / населённый пункт;</li><li>удобный способ получения — пункт выдачи или курьер;</li><li>если предпочитаете пункт выдачи — удобный район, улицу или ориентир;</li><li>если нужна курьерская доставка — полный адрес;</li><li>при необходимости — комментарий к доставке.</li></ul>';
+    $body .= '<p>Доставка в стоимость изделий не входит.</p>';
+    $body .= '<p>После изготовления заказа мы учтём его фактические размеры и вес, подберём подходящий вариант доставки по стоимости и условиям и свяжемся с вами для окончательного согласования перед отправкой.</p>';
+    $body .= '<p>После получения вашего подтверждения менеджер подготовит заказ к оплате 100% стоимости изделий.</p>';
+    $body .= '</div>';
+
+    $reply_to = defined( 'LORALEYA_NOTIFY_EMAIL' ) ? sanitize_email( LORALEYA_NOTIFY_EMAIL ) : 'loraleya-tex@yandex.ru';
+    if ( ! is_email( $reply_to ) ) {
+        $reply_to = 'loraleya-tex@yandex.ru';
+    }
+    $headers  = array(
+        'Content-Type: text/html; charset=UTF-8',
+        'From: LoraLeya <noreply@loraleya.ru>',
+        'Reply-To: LoraLeya <' . $reply_to . '>',
+    );
+
+    $sent = wp_mail( $email, $subject, $body, $headers );
+    if ( ! $sent ) {
+        error_log( '[LoraLeya] Custom request confirmation email failed for request ' . sanitize_text_field( $snapshot['request_number'] ) . '.' );
+    }
+    return $sent;
+}
+
+function loraleya_custom_order_validate_customer_confirmation( $request_id ) {
+    $validation = loraleya_custom_order_validate_confirmation_terms( $request_id );
+    if ( is_wp_error( $validation ) ) {
+        return $validation;
+    }
+    if ( 'agreed' !== $validation['data']['status'] || ! get_post_meta( $request_id, '_ll_customer_confirmed_at', true ) ) {
+        return new WP_Error( 'missing_customer_confirmation', 'Клиент ещё не подтвердил условия.' );
+    }
+
+    $confirmed_snapshot = get_post_meta( $request_id, '_ll_confirmed_snapshot', true );
+    if ( ! is_array( $confirmed_snapshot ) || $confirmed_snapshot !== $validation['snapshot'] ) {
+        return new WP_Error( 'confirmation_changed', 'Условия изменились после подтверждения клиента.' );
+    }
+    return $validation;
+}
+
+function loraleya_custom_order_confirmation_redirect( $request_id, $notice ) {
+    wp_safe_redirect( add_query_arg( array(
+        'post'                   => absint( $request_id ),
+        'action'                 => 'edit',
+        'll_custom_order_notice' => sanitize_key( $notice ),
+    ), admin_url( 'post.php' ) ) );
+    exit;
+}
+
+function loraleya_custom_order_send_confirmation_action() {
+    if ( ! current_user_can( 'manage_woocommerce' ) ) {
+        wp_die( 'Недостаточно прав.' );
+    }
+    if ( ! isset( $_SERVER['REQUEST_METHOD'] ) || 'POST' !== strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) ) {
+        wp_die( 'Для отправки условий требуется POST-запрос.' );
+    }
+
+    $request_id = isset( $_POST['request_id'] ) ? absint( $_POST['request_id'] ) : 0;
+    check_admin_referer( 'loraleya_send_custom_request_confirmation_' . $request_id, 'loraleya_confirmation_send_nonce' );
+
+    $validation = loraleya_custom_order_validate_confirmation_terms( $request_id );
+    if ( is_wp_error( $validation ) ) {
+        loraleya_custom_order_confirmation_redirect( $request_id, $validation->get_error_code() );
+    }
+    if (
+        in_array( $validation['data']['status'], array( 'converted', 'cancelled' ), true )
+        || ( 'agreed' === $validation['data']['status'] && get_post_meta( $request_id, '_ll_customer_confirmed_at', true ) )
+    ) {
+        loraleya_custom_order_confirmation_redirect( $request_id, 'confirmation_send_unavailable' );
+    }
+
+    $lock_name = 'll_custom_confirmation_lock_' . absint( $request_id );
+    $lock      = loraleya_custom_order_acquire_option_lock( $lock_name );
+    if ( is_wp_error( $lock ) ) {
+        loraleya_custom_order_confirmation_redirect( $request_id, 'confirmation_locked' );
+    }
+
+    $notice = 'confirmation_send_failed';
+    try {
+        $was_sent   = (bool) get_post_meta( $request_id, '_ll_confirmation_sent_at', true );
+        $old_status = $validation['data']['status'];
+        $sent_at    = current_time( 'mysql' );
+
+        update_post_meta( $request_id, '_ll_confirmation_snapshot', $validation['snapshot'] );
+        update_post_meta( $request_id, '_ll_confirmation_sent_at', $sent_at );
+        update_post_meta( $request_id, '_ll_request_status', 'awaiting_customer_confirmation' );
+        delete_post_meta( $request_id, '_ll_customer_confirmed_at' );
+        delete_post_meta( $request_id, '_ll_confirmed_snapshot' );
+        delete_post_meta( $request_id, '_ll_customer_confirmation_source' );
+
+        if ( 'awaiting_customer_confirmation' !== get_post_meta( $request_id, '_ll_request_status', true ) || $sent_at !== get_post_meta( $request_id, '_ll_confirmation_sent_at', true ) || $validation['snapshot'] !== get_post_meta( $request_id, '_ll_confirmation_snapshot', true ) ) {
+            throw new Exception( 'Failed to persist customer confirmation state.' );
+        }
+
+        $statuses = loraleya_custom_order_statuses();
+        if ( 'awaiting_customer_confirmation' !== $old_status ) {
+            $from = isset( $statuses[ $old_status ] ) ? $statuses[ $old_status ] : $old_status;
+            loraleya_custom_order_add_history( $request_id, 'Статус изменён: ' . $from . ' → ' . $statuses['awaiting_customer_confirmation'] );
+        }
+        loraleya_custom_order_add_history( $request_id, $was_sent ? 'Условия повторно отправлены клиенту' : 'Условия отправлены клиенту' );
+
+        $subject = 'LoraLeya: подтвердите условия заявки ' . $validation['data']['request_number'];
+        $sent    = loraleya_custom_order_send_confirmation_email( $validation['data']['email'], $subject, $validation['data']['customer_name'], $validation['snapshot'] );
+        $notice  = $sent ? 'confirmation_sent' : 'confirmation_email_failed';
+    } catch ( Throwable $exception ) {
+        error_log( '[LoraLeya] Custom request confirmation send failed: ' . $exception->getMessage() );
+    }
+    loraleya_custom_order_release_option_lock( $lock_name, $lock );
+    loraleya_custom_order_confirmation_redirect( $request_id, $notice );
+}
+add_action( 'admin_post_loraleya_send_custom_request_confirmation', 'loraleya_custom_order_send_confirmation_action' );
+
+function loraleya_custom_order_record_email_confirmation_action() {
+    if ( ! current_user_can( 'manage_woocommerce' ) ) {
+        wp_die( 'Недостаточно прав.' );
+    }
+    if ( ! isset( $_SERVER['REQUEST_METHOD'] ) || 'POST' !== strtoupper( (string) $_SERVER['REQUEST_METHOD'] ) ) {
+        wp_die( 'Для фиксации подтверждения требуется POST-запрос.' );
+    }
+
+    $request_id = isset( $_POST['request_id'] ) ? absint( $_POST['request_id'] ) : 0;
+    check_admin_referer( 'loraleya_record_custom_request_confirmation_' . $request_id, 'loraleya_confirmation_received_nonce' );
+
+    $post = get_post( $request_id );
+    if ( ! $post || 'll_custom_request' !== $post->post_type ) {
+        loraleya_custom_order_confirmation_redirect( $request_id, 'invalid_request' );
+    }
+
+    $status = get_post_meta( $request_id, '_ll_request_status', true );
+    if (
+        'agreed' === $status
+        && 'email' === get_post_meta( $request_id, '_ll_customer_confirmation_source', true )
+        && get_post_meta( $request_id, '_ll_customer_confirmed_at', true )
+        && is_array( get_post_meta( $request_id, '_ll_confirmed_snapshot', true ) )
+    ) {
+        loraleya_custom_order_confirmation_redirect( $request_id, 'customer_confirmation_recorded' );
+    }
+    if ( 'awaiting_customer_confirmation' !== $status ) {
+        loraleya_custom_order_confirmation_redirect( $request_id, 'confirmation_status_invalid' );
+    }
+
+    $lock_name = 'll_custom_confirmation_lock_' . absint( $request_id );
+    $lock      = loraleya_custom_order_acquire_option_lock( $lock_name );
+    if ( is_wp_error( $lock ) ) {
+        loraleya_custom_order_confirmation_redirect( $request_id, 'confirmation_locked' );
+    }
+
+    $notice = 'confirmation_record_failed';
+    try {
+        $status = get_post_meta( $request_id, '_ll_request_status', true );
+        if (
+            'agreed' === $status
+            && 'email' === get_post_meta( $request_id, '_ll_customer_confirmation_source', true )
+            && get_post_meta( $request_id, '_ll_customer_confirmed_at', true )
+            && is_array( get_post_meta( $request_id, '_ll_confirmed_snapshot', true ) )
+        ) {
+            $notice = 'customer_confirmation_recorded';
+        } elseif ( 'awaiting_customer_confirmation' !== $status ) {
+            $notice = 'confirmation_status_invalid';
+        } else {
+            $sent_snapshot    = get_post_meta( $request_id, '_ll_confirmation_snapshot', true );
+            $current_snapshot = loraleya_custom_order_confirmation_snapshot_from_data( loraleya_custom_order_request_data( $request_id ) );
+            if ( ! is_array( $sent_snapshot ) ) {
+                $notice = 'confirmation_snapshot_missing';
+            } elseif ( $sent_snapshot !== $current_snapshot ) {
+                $notice = 'confirmation_terms_changed';
+            } else {
+                $request_input    = isset( $_POST['ll_request'] ) && is_array( $_POST['ll_request'] ) ? wp_unslash( $_POST['ll_request'] ) : array();
+                $old_delivery_data = array(
+                    'recipient_name'  => loraleya_custom_order_meta( $request_id, '_ll_delivery_recipient_name' ),
+                    'recipient_phone' => loraleya_custom_order_meta( $request_id, '_ll_delivery_recipient_phone' ),
+                    'city'            => loraleya_custom_order_meta( $request_id, '_ll_delivery_city' ),
+                    'preference'      => loraleya_custom_order_meta( $request_id, '_ll_delivery_preference' ),
+                    'location'        => loraleya_custom_order_meta( $request_id, '_ll_delivery_location' ),
+                    'note'            => loraleya_custom_order_meta( $request_id, '_ll_delivery_request_note' ),
+                );
+                $delivery_data = array(
+                    'recipient_name'  => isset( $request_input['delivery_recipient_name'] ) ? sanitize_text_field( $request_input['delivery_recipient_name'] ) : $old_delivery_data['recipient_name'],
+                    'recipient_phone' => isset( $request_input['delivery_recipient_phone'] ) ? sanitize_text_field( $request_input['delivery_recipient_phone'] ) : $old_delivery_data['recipient_phone'],
+                    'city'            => isset( $request_input['delivery_city'] ) ? sanitize_text_field( $request_input['delivery_city'] ) : $old_delivery_data['city'],
+                    'preference'      => isset( $request_input['delivery_preference'] ) ? sanitize_key( $request_input['delivery_preference'] ) : $old_delivery_data['preference'],
+                    'location'        => isset( $request_input['delivery_location'] ) ? sanitize_textarea_field( $request_input['delivery_location'] ) : $old_delivery_data['location'],
+                    'note'            => isset( $request_input['delivery_request_note'] ) ? sanitize_textarea_field( $request_input['delivery_request_note'] ) : $old_delivery_data['note'],
+                );
+
+                if (
+                    '' === trim( $delivery_data['recipient_name'] )
+                    || '' === trim( $delivery_data['recipient_phone'] )
+                    || '' === trim( $delivery_data['city'] )
+                    || ! in_array( $delivery_data['preference'], array( 'pickup', 'courier' ), true )
+                    || '' === trim( $delivery_data['location'] )
+                ) {
+                    $notice = 'confirmation_delivery_missing';
+                } else {
+                    $delivery_meta = array(
+                        'recipient_name'  => '_ll_delivery_recipient_name',
+                        'recipient_phone' => '_ll_delivery_recipient_phone',
+                        'city'            => '_ll_delivery_city',
+                        'preference'      => '_ll_delivery_preference',
+                        'location'        => '_ll_delivery_location',
+                        'note'            => '_ll_delivery_request_note',
+                    );
+                    foreach ( $delivery_meta as $field => $meta_key ) {
+                        update_post_meta( $request_id, $meta_key, $delivery_data[ $field ] );
+                        if ( (string) get_post_meta( $request_id, $meta_key, true ) !== (string) $delivery_data[ $field ] ) {
+                            throw new Exception( 'Failed to persist future delivery data.' );
+                        }
+                    }
+
+                    $confirmed_at = current_time( 'mysql' );
+                    update_post_meta( $request_id, '_ll_confirmed_snapshot', $sent_snapshot );
+                    update_post_meta( $request_id, '_ll_customer_confirmed_at', $confirmed_at );
+                    update_post_meta( $request_id, '_ll_customer_confirmation_source', 'email' );
+                    update_post_meta( $request_id, '_ll_request_status', 'agreed' );
+
+                    if (
+                        'agreed' !== get_post_meta( $request_id, '_ll_request_status', true )
+                        || 'email' !== get_post_meta( $request_id, '_ll_customer_confirmation_source', true )
+                        || $confirmed_at !== get_post_meta( $request_id, '_ll_customer_confirmed_at', true )
+                        || $sent_snapshot !== get_post_meta( $request_id, '_ll_confirmed_snapshot', true )
+                    ) {
+                        update_post_meta( $request_id, '_ll_request_status', 'awaiting_customer_confirmation' );
+                        delete_post_meta( $request_id, '_ll_customer_confirmed_at' );
+                        delete_post_meta( $request_id, '_ll_confirmed_snapshot' );
+                        delete_post_meta( $request_id, '_ll_customer_confirmation_source' );
+                        throw new Exception( 'Failed to persist email customer confirmation.' );
+                    }
+
+                    loraleya_custom_order_add_history( $request_id, 'Статус изменён: Ожидает подтверждения клиента → Согласована' );
+                    loraleya_custom_order_add_history( $request_id, 'Подтверждение клиента получено по email' );
+                    if ( $old_delivery_data !== $delivery_data ) {
+                        loraleya_custom_order_add_history( $request_id, 'Обновлены данные клиента для будущей доставки' );
+                    }
+                    $notice = 'customer_confirmation_recorded';
+                }
+            }
+        }
+    } catch ( Throwable $exception ) {
+        error_log( '[LoraLeya] Email customer confirmation failed: ' . $exception->getMessage() );
+    }
+
+    loraleya_custom_order_release_option_lock( $lock_name, $lock );
+    loraleya_custom_order_confirmation_redirect( $request_id, $notice );
+}
+add_action( 'admin_post_loraleya_record_custom_request_confirmation', 'loraleya_custom_order_record_email_confirmation_action' );
+
 function loraleya_custom_order_save_request( $post_id, $post ) {
     static $saving = false;
 
@@ -641,6 +1037,11 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'options'           => loraleya_custom_order_meta( $post_id, '_ll_options' ),
         'customer_notes'    => loraleya_custom_order_meta( $post_id, '_ll_customer_notes' ),
         'products_total'    => loraleya_custom_order_meta( $post_id, '_ll_agreed_products_total' ),
+        'production_term'   => loraleya_custom_order_meta( $post_id, '_ll_agreed_production_term' ),
+        'delivery_recipient_name' => loraleya_custom_order_meta( $post_id, '_ll_delivery_recipient_name' ),
+        'delivery_recipient_phone' => loraleya_custom_order_meta( $post_id, '_ll_delivery_recipient_phone' ),
+        'delivery_preference' => loraleya_custom_order_meta( $post_id, '_ll_delivery_preference' ),
+        'delivery_location' => loraleya_custom_order_meta( $post_id, '_ll_delivery_location' ),
         'delivery_service'  => loraleya_custom_order_meta( $post_id, '_ll_delivery_service' ),
         'delivery_cost'     => loraleya_custom_order_meta( $post_id, '_ll_delivery_cost' ),
         'delivery_state'    => loraleya_custom_order_meta( $post_id, '_ll_delivery_state' ),
@@ -651,6 +1052,7 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'delivery_address_1'=> loraleya_custom_order_meta( $post_id, '_ll_delivery_address_1' ),
         'delivery_address_2'=> loraleya_custom_order_meta( $post_id, '_ll_delivery_address_2' ),
         'delivery_postcode' => loraleya_custom_order_meta( $post_id, '_ll_delivery_postcode' ),
+        'delivery_request_note' => loraleya_custom_order_meta( $post_id, '_ll_delivery_request_note' ),
         'internal_note'     => loraleya_custom_order_meta( $post_id, '_ll_internal_note' ),
     );
 
@@ -658,10 +1060,14 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
     $phone       = function_exists( 'loraleya_normalize_custom_order_phone' ) ? loraleya_normalize_custom_order_phone( $phone_input ) : $phone_input;
     $email       = isset( $input['email'] ) ? sanitize_email( $input['email'] ) : '';
     $status      = isset( $input['status'] ) ? sanitize_key( $input['status'] ) : $old['status'];
-    $service     = isset( $input['delivery_service'] ) ? sanitize_key( $input['delivery_service'] ) : '';
-    $mode        = isset( $input['delivery_mode'] ) ? sanitize_key( $input['delivery_mode'] ) : '';
+    $service     = isset( $input['delivery_service'] ) ? sanitize_key( $input['delivery_service'] ) : $old['delivery_service'];
+    $mode        = isset( $input['delivery_mode'] ) ? sanitize_key( $input['delivery_mode'] ) : $old['delivery_mode'];
+    $preference  = isset( $input['delivery_preference'] ) ? sanitize_key( $input['delivery_preference'] ) : '';
 
     if ( ! isset( $statuses[ $status ] ) || ( 'converted' === $status && ! get_post_meta( $post_id, '_ll_wc_order_id', true ) ) ) {
+        $status = $old['status'];
+    }
+    if ( in_array( $status, array( 'awaiting_customer_confirmation', 'agreed' ), true ) && $status !== $old['status'] ) {
         $status = $old['status'];
     }
     $linked_order_id = absint( get_post_meta( $post_id, '_ll_wc_order_id', true ) );
@@ -671,11 +1077,14 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
             $status = 'converted';
         }
     }
-    if ( ! isset( $services[ $service ] ) ) {
+    if ( isset( $input['delivery_service'] ) && ! isset( $services[ $service ] ) ) {
         $service = '';
     }
-    if ( ! in_array( $mode, array( 'pvz', 'courier' ), true ) ) {
+    if ( isset( $input['delivery_mode'] ) && ! in_array( $mode, array( 'pvz', 'courier' ), true ) ) {
         $mode = '';
+    }
+    if ( ! in_array( $preference, array( 'pickup', 'courier' ), true ) ) {
+        $preference = '';
     }
 
     $new = array(
@@ -692,18 +1101,43 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'options'            => isset( $input['options'] ) ? sanitize_textarea_field( $input['options'] ) : '',
         'customer_notes'     => isset( $input['customer_notes'] ) ? sanitize_textarea_field( $input['customer_notes'] ) : '',
         'products_total'     => loraleya_custom_order_decimal( isset( $input['products_total'] ) ? $input['products_total'] : '' ),
+        'production_term'    => isset( $input['production_term'] ) ? sanitize_text_field( $input['production_term'] ) : '',
+        'delivery_recipient_name' => isset( $input['delivery_recipient_name'] ) ? sanitize_text_field( $input['delivery_recipient_name'] ) : '',
+        'delivery_recipient_phone' => isset( $input['delivery_recipient_phone'] ) ? sanitize_text_field( $input['delivery_recipient_phone'] ) : '',
+        'delivery_preference' => $preference,
+        'delivery_location'  => isset( $input['delivery_location'] ) ? sanitize_textarea_field( $input['delivery_location'] ) : '',
         'delivery_service'   => $service,
-        'delivery_cost'      => loraleya_custom_order_decimal( isset( $input['delivery_cost'] ) ? $input['delivery_cost'] : '' ),
-        'delivery_state'     => isset( $input['delivery_state'] ) ? sanitize_text_field( $input['delivery_state'] ) : '',
+        'delivery_cost'      => isset( $input['delivery_cost'] ) ? loraleya_custom_order_decimal( $input['delivery_cost'] ) : $old['delivery_cost'],
+        'delivery_state'     => isset( $input['delivery_state'] ) ? sanitize_text_field( $input['delivery_state'] ) : $old['delivery_state'],
         'delivery_city'      => isset( $input['delivery_city'] ) ? sanitize_text_field( $input['delivery_city'] ) : '',
         'delivery_mode'      => $mode,
-        'pickup_address'     => isset( $input['pickup_address'] ) ? sanitize_text_field( $input['pickup_address'] ) : '',
-        'fivepost_point_id'  => isset( $input['fivepost_point_id'] ) ? sanitize_text_field( $input['fivepost_point_id'] ) : '',
-        'delivery_address_1' => isset( $input['delivery_address_1'] ) ? sanitize_text_field( $input['delivery_address_1'] ) : '',
-        'delivery_address_2' => isset( $input['delivery_address_2'] ) ? sanitize_text_field( $input['delivery_address_2'] ) : '',
-        'delivery_postcode'  => isset( $input['delivery_postcode'] ) ? sanitize_text_field( $input['delivery_postcode'] ) : '',
+        'pickup_address'     => isset( $input['pickup_address'] ) ? sanitize_text_field( $input['pickup_address'] ) : $old['pickup_address'],
+        'fivepost_point_id'  => isset( $input['fivepost_point_id'] ) ? sanitize_text_field( $input['fivepost_point_id'] ) : $old['fivepost_point_id'],
+        'delivery_address_1' => isset( $input['delivery_address_1'] ) ? sanitize_text_field( $input['delivery_address_1'] ) : $old['delivery_address_1'],
+        'delivery_address_2' => isset( $input['delivery_address_2'] ) ? sanitize_text_field( $input['delivery_address_2'] ) : $old['delivery_address_2'],
+        'delivery_postcode'  => isset( $input['delivery_postcode'] ) ? sanitize_text_field( $input['delivery_postcode'] ) : $old['delivery_postcode'],
+        'delivery_request_note' => isset( $input['delivery_request_note'] ) ? sanitize_textarea_field( $input['delivery_request_note'] ) : '',
         'internal_note'      => isset( $input['internal_note'] ) ? sanitize_textarea_field( $input['internal_note'] ) : '',
     );
+
+    if ( 'agreed' === $old['status'] && 'agreed' === $new['status'] ) {
+        $confirmed_snapshot = get_post_meta( $post_id, '_ll_confirmed_snapshot', true );
+        $current_snapshot   = loraleya_custom_order_confirmation_snapshot_from_data( array(
+            'request_number'  => loraleya_custom_order_number( $post_id ),
+            'shape'           => $new['shape'],
+            'size'            => $new['length'] && $new['width'] ? $new['length'] . ' × ' . $new['width'] . ' см' : '',
+            'persons'         => $new['persons'],
+            'color'           => $new['color'],
+            'items_summary'   => $new['items_summary'],
+            'options'         => $new['options'],
+            'products_total'  => $new['products_total'],
+            'currency'        => strtoupper( loraleya_custom_order_meta( $post_id, '_ll_request_currency', function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '' ) ),
+            'production_term' => $new['production_term'],
+        ) );
+        if ( ! is_array( $confirmed_snapshot ) || $confirmed_snapshot !== $current_snapshot ) {
+            $new['status'] = 'in_progress';
+        }
+    }
 
     $meta_map = array(
         'customer_name'      => '_ll_customer_name',
@@ -719,6 +1153,11 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'options'            => '_ll_options',
         'customer_notes'     => '_ll_customer_notes',
         'products_total'     => '_ll_agreed_products_total',
+        'production_term'    => '_ll_agreed_production_term',
+        'delivery_recipient_name' => '_ll_delivery_recipient_name',
+        'delivery_recipient_phone' => '_ll_delivery_recipient_phone',
+        'delivery_preference' => '_ll_delivery_preference',
+        'delivery_location'  => '_ll_delivery_location',
         'delivery_service'   => '_ll_delivery_service',
         'delivery_cost'      => '_ll_delivery_cost',
         'delivery_state'     => '_ll_delivery_state',
@@ -729,6 +1168,7 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'delivery_address_1' => '_ll_delivery_address_1',
         'delivery_address_2' => '_ll_delivery_address_2',
         'delivery_postcode'  => '_ll_delivery_postcode',
+        'delivery_request_note' => '_ll_delivery_request_note',
         'internal_note'      => '_ll_internal_note',
     );
 
@@ -759,6 +1199,7 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         'items_summary'  => 'комплектация',
         'options'        => 'дополнительные опции',
         'customer_notes' => 'комментарий клиента',
+        'production_term'=> 'срок изготовления',
     );
     $changed_parameters = array();
     foreach ( $parameter_labels as $field => $label ) {
@@ -776,7 +1217,7 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
         loraleya_custom_order_add_history( $post_id, 'Согласованная стоимость изделий: ' . $price );
     }
 
-    $delivery_fields = array( 'delivery_service', 'delivery_cost', 'delivery_state', 'delivery_city', 'delivery_mode', 'pickup_address', 'fivepost_point_id', 'delivery_address_1', 'delivery_address_2', 'delivery_postcode' );
+    $delivery_fields = array( 'delivery_recipient_name', 'delivery_recipient_phone', 'delivery_city', 'delivery_preference', 'delivery_location', 'delivery_service', 'delivery_cost', 'delivery_state', 'delivery_mode', 'pickup_address', 'fivepost_point_id', 'delivery_address_1', 'delivery_address_2', 'delivery_postcode' );
     foreach ( $delivery_fields as $field ) {
         if ( (string) $old[ $field ] !== (string) $new[ $field ] ) {
             loraleya_custom_order_add_history( $post_id, 'Изменены условия доставки' );
@@ -786,6 +1227,10 @@ function loraleya_custom_order_save_request( $post_id, $post ) {
 
     if ( (string) $old['internal_note'] !== (string) $new['internal_note'] ) {
         loraleya_custom_order_add_history( $post_id, 'Изменена внутренняя заметка' );
+    }
+
+    if ( (string) $old['delivery_request_note'] !== (string) $new['delivery_request_note'] ) {
+        loraleya_custom_order_add_history( $post_id, 'Обновлены данные клиента для будущей доставки' );
     }
 
     $saving = false;
@@ -815,6 +1260,12 @@ function loraleya_custom_order_request_data( $request_id ) {
         'internal_note'     => loraleya_custom_order_meta( $request_id, '_ll_internal_note' ),
         'currency'          => strtoupper( loraleya_custom_order_meta( $request_id, '_ll_request_currency', function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : '' ) ),
         'products_total'    => loraleya_custom_order_meta( $request_id, '_ll_agreed_products_total' ),
+        'production_term'   => loraleya_custom_order_meta( $request_id, '_ll_agreed_production_term' ),
+        'delivery_recipient_name' => loraleya_custom_order_meta( $request_id, '_ll_delivery_recipient_name' ),
+        'delivery_recipient_phone' => loraleya_custom_order_meta( $request_id, '_ll_delivery_recipient_phone' ),
+        'delivery_preference' => loraleya_custom_order_meta( $request_id, '_ll_delivery_preference' ),
+        'delivery_location' => loraleya_custom_order_meta( $request_id, '_ll_delivery_location' ),
+        'delivery_request_note' => loraleya_custom_order_meta( $request_id, '_ll_delivery_request_note' ),
         'delivery_service'  => loraleya_custom_order_meta( $request_id, '_ll_delivery_service' ),
         'delivery_cost'     => loraleya_custom_order_meta( $request_id, '_ll_delivery_cost' ),
         'delivery_state'    => loraleya_custom_order_meta( $request_id, '_ll_delivery_state' ),
@@ -834,14 +1285,15 @@ function loraleya_custom_order_validate_conversion( $request_id ) {
     if ( ! $post || 'll_custom_request' !== $post->post_type ) {
         return new WP_Error( 'invalid_request', 'Заявка не найдена.' );
     }
-    if ( ! function_exists( 'wc_create_order' ) || ! class_exists( 'WC_Order_Item_Product' ) || ! class_exists( 'WC_Order_Item_Shipping' ) ) {
+    if ( ! function_exists( 'wc_create_order' ) || ! class_exists( 'WC_Order_Item_Product' ) ) {
         return new WP_Error( 'woocommerce_unavailable', 'WooCommerce недоступен.' );
     }
 
-    $data = loraleya_custom_order_request_data( $request_id );
-    if ( 'agreed' !== $data['status'] ) {
-        return new WP_Error( 'request_not_agreed', 'Создать новый заказ можно только из согласованной заявки.' );
+    $confirmation = loraleya_custom_order_validate_customer_confirmation( $request_id );
+    if ( is_wp_error( $confirmation ) ) {
+        return $confirmation;
     }
+    $data = $confirmation['data'];
     if ( '' === trim( $data['customer_name'] ) ) {
         return new WP_Error( 'missing_name', 'Заполните имя клиента.' );
     }
@@ -860,29 +1312,6 @@ function loraleya_custom_order_validate_conversion( $request_id ) {
     if ( ! preg_match( '/^[A-Z]{3}$/', $data['currency'] ) ) {
         return new WP_Error( 'invalid_currency', 'Не удалось определить валюту заявки.' );
     }
-    $services = loraleya_custom_order_delivery_services();
-    if ( ! isset( $services[ $data['delivery_service'] ] ) ) {
-        return new WP_Error( 'missing_delivery_service', 'Выберите сервис доставки.' );
-    }
-    if ( ! $data['delivery_state'] || ! $data['delivery_city'] ) {
-        return new WP_Error( 'missing_delivery_location', 'Укажите регион и город доставки.' );
-    }
-    if ( ! in_array( $data['delivery_mode'], array( 'pvz', 'courier' ), true ) ) {
-        return new WP_Error( 'missing_delivery_mode', 'Выберите ПВЗ или курьерскую доставку.' );
-    }
-    if ( 'fivepost' === $data['delivery_service'] && 'pvz' !== $data['delivery_mode'] ) {
-        return new WP_Error( 'invalid_fivepost_mode', 'Для 5Post выберите получение в ПВЗ.' );
-    }
-    if ( 'pvz' === $data['delivery_mode'] && ! $data['pickup_address'] ) {
-        return new WP_Error( 'missing_pickup', 'Укажите пункт выдачи.' );
-    }
-    if ( 'fivepost' === $data['delivery_service'] && ! $data['fivepost_point_id'] ) {
-        return new WP_Error( 'missing_fivepost_point_id', 'Укажите код или ID ПВЗ 5Post.' );
-    }
-    if ( 'courier' === $data['delivery_mode'] && ( ! $data['delivery_address_1'] || ! $data['delivery_postcode'] ) ) {
-        return new WP_Error( 'missing_courier_address', 'Для курьерской доставки укажите адрес и индекс.' );
-    }
-
     $data['phone'] = $phone;
     return $data;
 }
@@ -917,6 +1346,7 @@ function loraleya_custom_order_add_visible_item_meta( $item, $data ) {
         'Цвет'                 => $data['color'],
         'Комплектация'         => $data['items_summary'],
         'Дополнительные опции' => $data['options'],
+        'Срок изготовления'     => $data['production_term'],
     );
 
     foreach ( $fields as $label => $value ) {
@@ -1072,6 +1502,9 @@ function loraleya_custom_order_convert_to_order( $request_id ) {
         if ( $reconciled ) {
             return $reconciled;
         }
+        if ( 'converted' === $old_status ) {
+            return new WP_Error( 'converted_order_not_found', 'Ранее созданный WooCommerce-заказ не найден. Новый заказ не создан.' );
+        }
 
         $data = loraleya_custom_order_validate_conversion( $request_id );
         if ( is_wp_error( $data ) ) {
@@ -1112,34 +1545,30 @@ function loraleya_custom_order_convert_to_order( $request_id ) {
         $order->set_billing_phone( $data['phone'] );
         $order->set_billing_email( $data['email'] );
         $order->set_billing_country( 'RU' );
-        $order->set_billing_state( $data['delivery_state'] );
-        $order->set_billing_city( $data['delivery_city'] );
-        $order->set_billing_address_1( 'pvz' === $data['delivery_mode'] ? $data['pickup_address'] : $data['delivery_address_1'] );
-        $order->set_billing_address_2( $data['delivery_address_2'] );
-        $order->set_billing_postcode( $data['delivery_postcode'] );
         $order->set_currency( $data['currency'] );
         $order->set_payment_method( 'll_manager_confirmation' );
         $order->set_payment_method_title( 'Подтверждение заказа менеджером' );
 
         $order->update_meta_data( '_ll_manager_confirmation_required', 'yes' );
-        $order->update_meta_data( '_ll_delivery_service', $data['delivery_service'] );
-        $order->update_meta_data( '_ll_delivery_mode', $data['delivery_mode'] );
-        $order->update_meta_data( '_ll_pickup_address', $data['pickup_address'] );
-        $order->update_meta_data( '_ll_fivepost_point_id', 'fivepost' === $data['delivery_service'] ? $data['fivepost_point_id'] : '' );
+        $order->update_meta_data( '_ll_customer_confirmed_at', get_post_meta( $request_id, '_ll_customer_confirmed_at', true ) );
+        $order->update_meta_data( '_ll_confirmed_snapshot', get_post_meta( $request_id, '_ll_confirmed_snapshot', true ) );
+        $order->update_meta_data( '_ll_delivery_recipient_name', $data['delivery_recipient_name'] );
+        $order->update_meta_data( '_ll_delivery_recipient_phone', $data['delivery_recipient_phone'] );
+        $order->update_meta_data( '_ll_delivery_city', $data['delivery_city'] );
+        $order->update_meta_data( '_ll_delivery_preference', $data['delivery_preference'] );
+        $order->update_meta_data( '_ll_delivery_location', $data['delivery_location'] );
+        $order->update_meta_data( '_ll_delivery_request_note', $data['delivery_request_note'] );
         $order->update_meta_data( '_ll_privacy_consent', 'yes' );
         $order->update_meta_data( '_ll_privacy_consent_time', $data['consent_time'] );
-        $order->update_meta_data( '_ll_preliminary_shipping_cost', 'fivepost' === $data['delivery_service'] ? 'informational' : 'manager' );
         $order->update_meta_data( '_ll_individual_shape', $data['shape'] );
         $order->update_meta_data( '_ll_individual_size', $data['size'] );
         $order->update_meta_data( '_ll_individual_persons', $data['persons'] );
         $order->update_meta_data( '_ll_individual_color', $data['color'] );
         $order->update_meta_data( '_ll_individual_items_summary', $data['items_summary'] );
         $order->update_meta_data( '_ll_individual_options', $data['options'] );
+        $order->update_meta_data( '_ll_individual_production_term', $data['production_term'] );
         $order->update_meta_data( '_ll_individual_customer_comment', $data['customer_notes'] );
         $order->update_meta_data( '_ll_individual_production_note', $data['internal_note'] );
-
-        $method = loraleya_custom_order_shipping_method_data( $data['delivery_service'] );
-        $order->update_meta_data( '_ll_delivery_rate_id', $method['rate_id'] );
 
         $product_item = new WC_Order_Item_Product();
         $product_item->set_name( 'Индивидуальный заказ — столовый текстиль' );
@@ -1150,13 +1579,6 @@ function loraleya_custom_order_convert_to_order( $request_id ) {
         $product_item->set_total( $data['products_total'] );
         loraleya_custom_order_add_visible_item_meta( $product_item, $data );
         $order->add_item( $product_item );
-
-        $shipping_item = new WC_Order_Item_Shipping();
-        $shipping_item->set_method_title( $method['title'] );
-        $shipping_item->set_method_id( $method['method'] );
-        $shipping_item->set_total( '0' );
-        $shipping_item->set_taxes( array() );
-        $order->add_item( $shipping_item );
 
         $order->calculate_totals( false );
         $order->set_status( 'on-hold' );
@@ -1249,6 +1671,17 @@ function loraleya_custom_order_admin_notice() {
     $code     = sanitize_key( wp_unslash( $_GET['ll_custom_order_notice'] ) );
     $messages = array(
         'converted'                 => 'WooCommerce-заказ создан или уже был создан ранее.',
+        'confirmation_sent'         => 'Условия изделия отправлены клиенту для подтверждения.',
+        'confirmation_email_failed' => 'Условия сохранены, но письмо не отправлено. Проверьте почту сайта и повторите отправку.',
+        'confirmation_send_failed'  => 'Не удалось подготовить отправку условий. Техническая ошибка записана в журнал.',
+        'confirmation_send_unavailable' => 'Для этой заявки отправка условий недоступна.',
+        'confirmation_locked'       => 'Операция с подтверждением уже выполняется. Обновите страницу.',
+        'customer_confirmation_recorded' => 'Подтверждение клиента зафиксировано. Заявка согласована и готова к созданию заказа WooCommerce.',
+        'confirmation_terms_changed' => 'Условия заявки изменились после отправки клиенту. Сначала отправьте клиенту обновлённые условия.',
+        'confirmation_snapshot_missing' => 'Отправленные условия не найдены. Сначала отправьте условия клиенту.',
+        'confirmation_delivery_missing' => 'Заполните данные получателя и будущей доставки из ответного письма клиента.',
+        'confirmation_status_invalid' => 'Подтверждение можно зафиксировать только для заявки, ожидающей ответа клиента.',
+        'confirmation_record_failed' => 'Не удалось зафиксировать подтверждение клиента. Техническая ошибка записана в журнал.',
         'invalid_request'            => 'Заявка не найдена.',
         'woocommerce_unavailable'    => 'WooCommerce недоступен.',
         'request_not_agreed'         => 'Создать новый заказ можно только из заявки со статусом «Согласовано».',
@@ -1256,6 +1689,10 @@ function loraleya_custom_order_admin_notice() {
         'invalid_phone'              => 'Проверьте телефон клиента.',
         'invalid_email'              => 'Проверьте email клиента.',
         'missing_price'              => 'Укажите согласованную стоимость изделий больше 0.',
+        'missing_product_terms'      => 'Заполните форму, размеры, количество персон, цвет и комплектацию.',
+        'missing_production_term'    => 'Укажите срок изготовления.',
+        'missing_customer_confirmation' => 'Клиент ещё не подтвердил условия.',
+        'confirmation_changed'       => 'Условия изменились после подтверждения клиента. Отправьте их повторно.',
         'invalid_currency'           => 'Не удалось определить валюту заявки.',
         'missing_delivery_service'   => 'Выберите сервис доставки.',
         'missing_delivery_location'  => 'Укажите регион и город доставки.',
@@ -1267,16 +1704,26 @@ function loraleya_custom_order_admin_notice() {
         'conversion_locked'          => 'Создание заказа уже выполняется. Обновите страницу.',
         'incomplete_order_cleanup_failed' => 'Незавершённый заказ не удалось удалить. Новый заказ не создан; проверьте журнал.',
         'conversion_link_failed'     => 'Не удалось восстановить связь с WooCommerce-заказом.',
+        'converted_order_not_found'  => 'Ранее созданный WooCommerce-заказ не найден. Новый заказ не создан.',
         'conversion_failed'          => 'Не удалось полностью создать заказ. Техническая ошибка записана в журнал.',
     );
     if ( ! isset( $messages[ $code ] ) ) {
         return;
     }
 
-    $class = 'converted' === $code ? 'notice notice-success is-dismissible' : 'notice notice-error';
+    $class = in_array( $code, array( 'converted', 'confirmation_sent', 'customer_confirmation_recorded' ), true ) ? 'notice notice-success is-dismissible' : 'notice notice-error';
     echo '<div class="' . esc_attr( $class ) . '"><p>' . esc_html( $messages[ $code ] ) . '</p></div>';
 }
 add_action( 'admin_notices', 'loraleya_custom_order_admin_notice' );
+
+/** Suppress the standard admin new-order email for converted individual orders. */
+function loraleya_custom_order_disable_new_order_email( $enabled, $order ) {
+    if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_individual_order' ) ) {
+        return false;
+    }
+    return $enabled;
+}
+add_filter( 'woocommerce_email_enabled_new_order', 'loraleya_custom_order_disable_new_order_email', 20, 2 );
 
 /** Suppress only the misleading on-hold customer email for converted requests. */
 function loraleya_custom_order_disable_on_hold_email( $enabled, $order ) {
@@ -1363,13 +1810,40 @@ function loraleya_custom_order_render_order_metabox( $object ) {
 
     wp_nonce_field( 'loraleya_save_individual_order', 'loraleya_individual_order_nonce' );
     $request_id = absint( $order->get_meta( '_ll_custom_request_id' ) );
+    $delivery_preference        = (string) $order->get_meta( '_ll_delivery_preference' );
+    $delivery_preference_labels = array(
+        'pickup'  => 'Пункт выдачи',
+        'courier' => 'Курьер',
+    );
+    $delivery_rows              = array(
+        'ФИО получателя'   => $order->get_meta( '_ll_delivery_recipient_name' ),
+        'Телефон'          => $order->get_meta( '_ll_delivery_recipient_phone' ),
+        'Город'            => $order->get_meta( '_ll_delivery_city' ),
+        'Получение'        => isset( $delivery_preference_labels[ $delivery_preference ] ) ? $delivery_preference_labels[ $delivery_preference ] : $delivery_preference,
+        'Адрес / ориентир' => $order->get_meta( '_ll_delivery_location' ),
+    );
+    $delivery_request_note      = (string) $order->get_meta( '_ll_delivery_request_note' );
     ?>
     <style>
         .ll-individual-order-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:14px}.ll-individual-order-grid .wide{grid-column:1/-1}.ll-individual-order-grid label{display:block;font-weight:600;margin-bottom:4px}.ll-individual-order-grid input,.ll-individual-order-grid textarea{width:100%}@media(max-width:782px){.ll-individual-order-grid{grid-template-columns:1fr}}
+        .ll-future-delivery{margin:16px 0;padding:14px 16px;border-left:4px solid #2271b1;background:#f0f6fc}.ll-future-delivery h3{margin:0 0 10px}.ll-future-delivery dl{display:grid;grid-template-columns:minmax(160px,220px) 1fr;gap:7px 14px;margin:0}.ll-future-delivery dt{font-weight:600}.ll-future-delivery dd{margin:0}@media(max-width:782px){.ll-future-delivery dl{grid-template-columns:1fr;gap:3px}.ll-future-delivery dd{margin-bottom:7px}}
     </style>
     <?php if ( $request_id && 'll_custom_request' === get_post_type( $request_id ) ) : ?>
         <p><strong>Индивидуальная заявка <?php echo esc_html( loraleya_custom_order_number( $request_id ) ); ?></strong> — <a href="<?php echo esc_url( get_edit_post_link( $request_id ) ); ?>">открыть заявку</a></p>
     <?php endif; ?>
+    <div class="ll-future-delivery">
+        <h3>Данные для будущей доставки</h3>
+        <dl>
+            <?php foreach ( $delivery_rows as $label => $value ) : ?>
+                <dt><?php echo esc_html( $label ); ?></dt>
+                <dd><?php echo '' !== trim( (string) $value ) ? nl2br( esc_html( $value ) ) : '—'; ?></dd>
+            <?php endforeach; ?>
+            <?php if ( '' !== trim( $delivery_request_note ) ) : ?>
+                <dt>Комментарий</dt>
+                <dd><?php echo nl2br( esc_html( $delivery_request_note ) ); ?></dd>
+            <?php endif; ?>
+        </dl>
+    </div>
     <p>Цена позиции и доставка редактируются штатными средствами WooCommerce. После сохранения параметры ниже синхронизируются с видимыми meta позиции заказа.</p>
     <div class="ll-individual-order-grid">
         <p><label for="ll_order_shape">Форма</label><input id="ll_order_shape" name="ll_individual_order[shape]" value="<?php echo esc_attr( $order->get_meta( '_ll_individual_shape' ) ); ?>"></p>

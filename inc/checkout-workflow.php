@@ -666,18 +666,41 @@ function loraleya_checkout_is_manager_invoice_email( $order, $email ) {
         && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' );
 }
 
-function loraleya_checkout_manager_invoice_intro_context( $active = null ) {
-    static $is_active = false;
-
-    if ( null !== $active ) {
-        $is_active = (bool) $active;
+function loraleya_checkout_individual_request_number( $order ) {
+    if ( ! $order instanceof WC_Order || 'yes' !== $order->get_meta( '_ll_individual_order' ) ) {
+        return '';
     }
 
-    return $is_active;
+    $request_id = absint( $order->get_meta( '_ll_custom_request_id' ) );
+    $request    = $request_id ? get_post( $request_id ) : false;
+    if ( ! $request instanceof WP_Post || 'll_custom_request' !== $request->post_type ) {
+        return '';
+    }
+
+    $request_number = trim( (string) $order->get_meta( '_ll_custom_request_number' ) );
+    if ( '' === $request_number && function_exists( 'loraleya_custom_order_number' ) ) {
+        $request_number = loraleya_custom_order_number( $request_id );
+    }
+    if ( '' === $request_number ) {
+        return '';
+    }
+
+    return 0 === strpos( $request_number, 'ИЗ-' ) ? $request_number : 'ИЗ-' . $request_number;
+}
+
+function loraleya_checkout_manager_invoice_intro_context( $context = null ) {
+    static $current_context = false;
+
+    if ( null !== $context ) {
+        $current_context = $context;
+    }
+
+    return $current_context;
 }
 
 function loraleya_checkout_manager_invoice_intro_text( $translation, $text, $domain ) {
-    if ( ! loraleya_checkout_manager_invoice_intro_context() || 'woocommerce' !== $domain ) {
+    $order = loraleya_checkout_manager_invoice_intro_context();
+    if ( ! $order instanceof WC_Order || 'woocommerce' !== $domain ) {
         return $translation;
     }
 
@@ -687,9 +710,16 @@ function loraleya_checkout_manager_invoice_intro_text( $translation, $text, $dom
         "An order has been created for you on %s. The order details are as follows, with a link to make payment when you're ready: %s",
     );
 
-    return in_array( $text, $invoice_texts, true )
-        ? 'Ваш заказ согласован и готов к оплате. Для оплаты перейдите по ссылке: %2$s'
-        : $translation;
+    if ( ! in_array( $text, $invoice_texts, true ) ) {
+        return $translation;
+    }
+
+    $request_number = loraleya_checkout_individual_request_number( $order );
+    if ( $request_number ) {
+        return 'По вашей индивидуальной заявке ' . $request_number . ' создан заказ №' . $order->get_order_number() . '. Условия подтверждены, заказ готов к оплате. Для оплаты перейдите по ссылке: %2$s';
+    }
+
+    return 'Ваш заказ согласован и готов к оплате. Для оплаты перейдите по ссылке: %2$s';
 }
 add_filter( 'gettext', 'loraleya_checkout_manager_invoice_intro_text', 20, 3 );
 
@@ -1324,6 +1354,10 @@ add_filter( 'woocommerce_email_order_details_heading', static function ( $headin
 
 add_filter( 'woocommerce_email_subject_customer_invoice', static function ( $subject, $order ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
+        $request_number = loraleya_checkout_individual_request_number( $order );
+        if ( $request_number ) {
+            return 'Заказ №' . $order->get_order_number() . ' по заявке ' . $request_number . ' подтверждён — можно оплатить';
+        }
         return 'Заказ №' . $order->get_order_number() . ' подтверждён и готов к оплате';
     }
     return $subject;
@@ -1331,11 +1365,29 @@ add_filter( 'woocommerce_email_subject_customer_invoice', static function ( $sub
 
 add_filter( 'woocommerce_email_heading_customer_invoice', static function ( $heading, $order ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
-        loraleya_checkout_manager_invoice_intro_context( true );
+        loraleya_checkout_manager_invoice_intro_context( $order );
         return 'Заказ подтверждён — можно оплатить';
     }
     return $heading;
 }, 20, 2 );
+
+add_action( 'woocommerce_email_order_meta', static function ( $order, $sent_to_admin, $plain_text, $email ) {
+    if ( $sent_to_admin || ! loraleya_checkout_is_manager_invoice_email( $order, $email ) ) {
+        return;
+    }
+
+    $request_number = loraleya_checkout_individual_request_number( $order );
+    if ( ! $request_number ) {
+        return;
+    }
+
+    if ( $plain_text ) {
+        echo "Индивидуальная заявка: " . esc_html( $request_number ) . "\n";
+        return;
+    }
+
+    echo '<p><strong>Индивидуальная заявка:</strong> ' . esc_html( $request_number ) . '</p>';
+}, 20, 4 );
 
 add_filter( 'woocommerce_email_subject_customer_processing_order', static function ( $subject, $order, $email ) {
     if ( loraleya_checkout_is_manager_processing_email( $order, $email ) ) {
