@@ -2064,6 +2064,12 @@ if ( file_exists( $loraleya_yookassa_individual_marking_file ) ) {
     require_once $loraleya_yookassa_individual_marking_file;
 }
 
+// Отдельные счета на доставку для индивидуальных заказов.
+$loraleya_individual_delivery_payment_file = get_template_directory() . '/inc/individual-delivery-payment.php';
+if ( file_exists( $loraleya_individual_delivery_payment_file ) ) {
+    require_once $loraleya_individual_delivery_payment_file;
+}
+
 /**
  * Страница оплаты заказа: в строке «Доставка» показываем только сумму.
  */

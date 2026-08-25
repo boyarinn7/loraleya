@@ -97,3 +97,44 @@
 - `product_id = 0` остаётся неизменным.
 - Финальный вывод КИЗ из оборота и фактический второй чек отложены до production-safe теста, поскольку по тестовому платежу №946 был запрошен возврат.
 - Раннее отображение `+` до статуса `Обработка` сейчас считается не блокирующим нюансом и отдельно не исправляется.
+
+## 2026-08-24 — Staging как источник истины для production
+
+Это решение заменяет любые прежние предположения о том, что production нельзя полностью заменить staging-БД или что production потребуется вручную доводить параллельно второй раз.
+
+Решение:
+
+- staging `/test/` является источником истины и будущей финальной версией production;
+- пока на старом production отсутствуют реальные заказы, финальная миграция выполняется как полный перенос протестированного staging-сайта, включая БД, в корень домена;
+- сложный merge staging и production БД не выполняется;
+- production не дорабатывается вручную параллельно; исключения — environment-specific проверки и настройки после миграции;
+- до миграции `/test/` закрыт от индексации, причём защита не должна опираться только на `robots.txt`;
+- существующие production URLs и slug сохраняются для SEO; новые версии страниц заменяют старые на тех же URL;
+- URL replacement `/test/` → production выполняется serialized-safe инструментом, а не слепым SQL replace;
+- перед открытием production обязательно проверяются отсутствие `noindex`, корректные robots, canonical, sitemap и внутренние ссылки;
+- staging test data очищаются или архивируются до финального переноса после определения полного списка объектов и зависимостей;
+- после миграции `/test/` закрывается, удаляется или архивируется и не остаётся публичной индексируемой копией;
+- боевой YooKassa callback не меняется ради staging;
+- финальный second receipt и фактический вывод КИЗ из оборота проверяются одним controlled production acceptance order.
+
+Фазовая модель:
+
+1. **Finish staging:** SEO protection, analytics, legal/business texts, email, privacy, quantity > 1 marking, mobile и normal-order regression, versions/settings, credentials и test-data cleanup.
+2. **Freeze:** final regression, final checkpoint, полный production backup.
+3. **One-time migration:** полный staging → production перенос, serialized-safe URL replacement, environment и SEO checks.
+4. **Production acceptance:** небольшой реальный заказ, webhook, чеки, marking/КИЗ, second receipt, вывод из оборота и аналитика.
+
+Partial refund маркированного заказа остаётся отдельной известной задачей и не блокирует rollout при условии, что непроверенный automatic partial refund не используется как подтверждённый workflow.
+
+## 2026-08-25 — Финальная модель доставки individual order
+
+- Основной Woo individual order является источником истины по актуальным данным и фактическим условиям доставки; ИЗ-заявка сохраняет первоначальные данные как историю.
+- Оплата доставки имеет состояния `free`, `invoice`, `buyer` и техническое временное `undecided`.
+- При `invoice` создаётся отдельный Woo order только с `WC_Order_Item_Shipping`; product lines и КИЗ в него не копируются.
+- Поздняя доставка никогда не изменяет product total основного individual order.
+- Настоящие Woo ID delivery orders сохраняются техническими. Публичная нумерация строится от основного заказа: `№YYY/Д`, `№YYY/Д-2`, `№YYY/Д-3`.
+- Technical delivery payment orders с `_ll_delivery_payment_order=yes` скрываются из обычного клиентского списка My Account, но остаются доступны admin, customer invoice, прямому order-pay и YooKassa.
+- Active unpaid delivery invoice блокирует delivery data и финансовые условия. После paid разрешена коррекция только ФИО и телефона; доплаты/refunds являются отдельным будущим workflow.
+- Основной individual order нельзя штатно переводить в Completed при `undecided` или неоплаченном `invoice`; `free` и `buyer` завершение не блокируют.
+- Customer-facing surfaces не показывают внутреннюю формулировку manager confirmation и method `ll_manager_confirmation`; internal/admin data не меняются.
+- Individual-order development на staging считается завершённым. По этому workflow остаются только production acceptance реальной оплаты delivery invoice через боевой callback, second receipt / вывод КИЗ из оборота и marking quantity больше одного.

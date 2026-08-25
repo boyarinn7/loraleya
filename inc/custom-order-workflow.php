@@ -2035,7 +2035,13 @@ add_action( 'admin_notices', 'loraleya_custom_order_admin_notice' );
 
 /** Suppress the standard admin new-order email for converted individual orders. */
 function loraleya_custom_order_disable_new_order_email( $enabled, $order ) {
-    if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_individual_order' ) ) {
+    if (
+        $order instanceof WC_Order
+        && (
+            'yes' === $order->get_meta( '_ll_individual_order' )
+            || 'yes' === $order->get_meta( '_ll_delivery_payment_order' )
+        )
+    ) {
         return false;
     }
     return $enabled;
@@ -2071,7 +2077,13 @@ function loraleya_custom_order_disable_fivepost_admin_metabox( $screen_id = '', 
     if ( ! $order ) {
         $order = loraleya_custom_order_resolve_order( $screen_id );
     }
-    if ( ! $order || 'yes' !== $order->get_meta( '_ll_individual_order' ) ) {
+    if (
+        ! $order
+        || (
+            'yes' !== $order->get_meta( '_ll_individual_order' )
+            && 'yes' !== $order->get_meta( '_ll_delivery_payment_order' )
+        )
+    ) {
         return;
     }
 
@@ -2128,40 +2140,16 @@ function loraleya_custom_order_render_order_metabox( $object ) {
     wp_nonce_field( 'loraleya_save_individual_order', 'loraleya_individual_order_nonce' );
     $request_id = absint( $order->get_meta( '_ll_custom_request_id' ) );
     $is_items_v2 = 'items_v2' === $order->get_meta( '_ll_individual_schema' );
-    $delivery_preference        = (string) $order->get_meta( '_ll_delivery_preference' );
-    $delivery_preference_labels = array(
-        'pickup'  => 'Пункт выдачи',
-        'courier' => 'Курьер',
-    );
-    $delivery_rows              = array(
-        'ФИО получателя'   => $order->get_meta( '_ll_delivery_recipient_name' ),
-        'Телефон'          => $order->get_meta( '_ll_delivery_recipient_phone' ),
-        'Город'            => $order->get_meta( '_ll_delivery_city' ),
-        'Получение'        => isset( $delivery_preference_labels[ $delivery_preference ] ) ? $delivery_preference_labels[ $delivery_preference ] : $delivery_preference,
-        'Адрес / ориентир' => $order->get_meta( '_ll_delivery_location' ),
-    );
-    $delivery_request_note      = (string) $order->get_meta( '_ll_delivery_request_note' );
     ?>
     <style>
         .ll-individual-order-grid{display:grid;grid-template-columns:repeat(2,minmax(240px,1fr));gap:14px}.ll-individual-order-grid .wide{grid-column:1/-1}.ll-individual-order-grid label{display:block;font-weight:600;margin-bottom:4px}.ll-individual-order-grid input,.ll-individual-order-grid textarea{width:100%}@media(max-width:782px){.ll-individual-order-grid{grid-template-columns:1fr}}
-        .ll-future-delivery{margin:16px 0;padding:14px 16px;border-left:4px solid #2271b1;background:#f0f6fc}.ll-future-delivery h3{margin:0 0 10px}.ll-future-delivery dl{display:grid;grid-template-columns:minmax(160px,220px) 1fr;gap:7px 14px;margin:0}.ll-future-delivery dt{font-weight:600}.ll-future-delivery dd{margin:0}@media(max-width:782px){.ll-future-delivery dl{grid-template-columns:1fr;gap:3px}.ll-future-delivery dd{margin-bottom:7px}}
     </style>
     <?php if ( $request_id && 'll_custom_request' === get_post_type( $request_id ) ) : ?>
         <p><strong>Индивидуальная заявка <?php echo esc_html( loraleya_custom_order_number( $request_id ) ); ?></strong> — <a href="<?php echo esc_url( get_edit_post_link( $request_id ) ); ?>">открыть заявку</a></p>
     <?php endif; ?>
-    <div class="ll-future-delivery">
-        <h3>Данные для будущей доставки</h3>
-        <dl>
-            <?php foreach ( $delivery_rows as $label => $value ) : ?>
-                <dt><?php echo esc_html( $label ); ?></dt>
-                <dd><?php echo '' !== trim( (string) $value ) ? nl2br( esc_html( $value ) ) : '—'; ?></dd>
-            <?php endforeach; ?>
-            <?php if ( '' !== trim( $delivery_request_note ) ) : ?>
-                <dt>Комментарий</dt>
-                <dd><?php echo nl2br( esc_html( $delivery_request_note ) ); ?></dd>
-            <?php endif; ?>
-        </dl>
-    </div>
+    <?php if ( function_exists( 'loraleya_individual_delivery_render_admin_block' ) ) : ?>
+        <?php loraleya_individual_delivery_render_admin_block( $order ); ?>
+    <?php endif; ?>
     <?php if ( $is_items_v2 ) : ?>
     <p>Каждое изделие создано отдельной позицией WooCommerce. Количество и стоимость редактируются штатными средствами заказа.</p>
     <div class="ll-individual-order-grid">

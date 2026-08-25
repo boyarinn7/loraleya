@@ -1,6 +1,6 @@
 # LoraLeya — текущее состояние проекта
 
-Дата состояния: 2026-08-24
+Дата состояния: 2026-08-25
 
 ## Среда
 
@@ -144,6 +144,81 @@ YooKassa 2.16.3 прекращала обработку individual line item и�
 
 Известный не блокирующий нюанс: у individual items `+` может отображаться раньше статуса `Обработка`. Сейчас не исправлять; вернуться только при необходимости после production regression.
 
+### Доставка individual order — финальная staging-модель
+
+Основной Woo individual order является источником истины по фактической доставке. ИЗ-заявка сохраняет первоначальные данные как историю, а в основном Woo order менеджер поддерживает актуальные:
+
+- ФИО и телефон получателя;
+- город;
+- получение в ПВЗ или курьером;
+- адрес / ПВЗ / ориентир;
+- комментарий по доставке;
+- перевозчика;
+- условие и сумму оплаты доставки;
+- активный delivery invoice и историю всех delivery invoices.
+
+Используются существующие meta `_ll_delivery_recipient_name`, `_ll_delivery_recipient_phone`, `_ll_delivery_city`, `_ll_delivery_preference`, `_ll_delivery_location`, `_ll_delivery_request_note`. Дублирующие meta для тех же данных не создаются.
+
+Состояния оплаты доставки:
+
+1. `undecided` / «Не определено» — временное техническое состояние.
+2. `free` / «Бесплатная» — клиент ничего не платит LoraLeya.
+3. `invoice` / «Выставить к оплате» — создаётся отдельный Woo delivery payment order.
+4. `buyer` / «За счёт покупателя» — клиент платит перевозчику напрямую; invoice LoraLeya не создаётся.
+
+Проверенные defaults:
+
+- 5Post для Москвы и Московской области: `free`, `0 ₽`;
+- 5Post для другого региона: `invoice`, `250 ₽`;
+- СДЭК и Яндекс Доставка: `buyer`;
+- до создания active invoice менеджер может переопределить условие.
+
+При `invoice` и сумме больше нуля создаётся отдельный Woo order только с `WC_Order_Item_Shipping`. Основной товарный total не изменяется. Delivery order не содержит product lines и КИЗ, не является основным individual order, не получает manager-confirmation workflow и не участвует в individual marking. Billing/customer data копируются из основного заказа; оплата выполняется стандартным order-pay через YooKassa. YooKassa 2.16.3 штатно включает shipping line в чек без `product_id` и КИЗ; vendor не изменялся.
+
+Публичная нумерация не меняет настоящий Woo ID:
+
+- основной Woo №949;
+- первый delivery invoice №949/Д;
+- следующий №949/Д-2, затем №949/Д-3 и далее.
+
+Проверенная staging-цепочка: `ИЗ-948 → Woo №949 → №949/Д (technical №950, cancelled) → №949/Д-2 (technical №951, cancelled) → №949/Д-3 (technical №952)`. История в основном order показывает display number, сумму, status, technical Woo ID и ссылку.
+
+Защита workflow:
+
+- одновременно существует только один active unpaid delivery invoice;
+- option-lock использует owner, TTL `120 sec`, `try/finally` cleanup и stale recovery;
+- zero/negative invoice не создаётся;
+- unpaid invoice можно отменить, но он физически сохраняется;
+- после отмены поля снова доступны;
+- active unpaid invoice блокирует delivery data и финансовые условия;
+- после оплаты разрешена коррекция только ФИО и телефона; изменение carrier/city/address/condition/amount требует ручного согласования, автоматические доплаты/refunds не реализуются.
+
+Completed guard блокирует основной individual order при `undecided` или при `invoice` без оплаты. Для `free` и `buyer` блокировки нет. Guard выполняется до YooKassa second-receipt callback; post-status rollback не используется.
+
+Customer-facing cleanup завершён:
+
+- основной individual order показывает клиенту «Ожидает оплаты», не меняя internal/admin status;
+- technical delivery payment orders скрыты из обычного списка My Account;
+- `ll_manager_confirmation` не показывается клиенту как способ оплаты;
+- delivery email использует compact block, display number и кнопку «Оплатить доставку» без пустой product table и subtotal `0 ₽`;
+- order-pay показывает `Оплатить доставку №YYY/Д-N`, доставку и итог без нулевого product subtotal.
+
+Manual staging regression доставки, invoice cancellation/recreation, истории, display numbering, редактирования актуальных данных, email, order-pay и customer-facing cleanup — PASS.
+
+### Individual order — CLOSED ON STAGING
+
+Individual-order workflow на staging функционально закрыт. Не возвращаться к его разработке до production acceptance, если не обнаружен новый реальный defect.
+
+На staging подтверждены: позиционная форма, одна/несколько позиций, независимые размеры/цвета, quantity/unit price/total, customer data и preview, отправка заявки, согласование и письмо, подтверждение ответом, Woo conversion, отдельные line items, 100% product payment и первый чек, доставка вне product total, marking UI для `product_id = 0`, сохранение КИЗ, актуальные delivery data, полный delivery condition workflow, отдельные delivery invoices, cancellation/history/display number, delivery email, order-pay, My Account cleanup и `customer_note`.
+
+По individual order остаются только production acceptance:
+
+1. Реальная оплата delivery invoice через боевой YooKassa callback с синхронизацией paid status в основном order.
+2. `КИЗ → Completed → second receipt → фактический вывод КИЗ из оборота`.
+3. Marking quantity больше одного и несколько КИЗ.
+
+Боевой callback `https://loraleya.ru/?yookassa=callback` ради staging не менять.
+
 ## Индивидуальный заказ — правило оплаты
 
 Утверждённое правило:
@@ -170,30 +245,119 @@ YooKassa 2.16.3 прекращала обработку individual line item и�
 
 Production этими изменениями ещё не обновлён.
 
-## Пока НЕ завершено
+## Оставшиеся pre-production задачи
 
-- production-safe проверка автоматической смены статуса после `payment.succeeded` через боевой callback;
-- финальный тест `КИЗ → Выполнен → второй чек → фактический вывод КИЗ из оборота`;
-- `customer_note` для индивидуальных заказов;
-- проверка customer-facing названий статусов;
-- аудит направлений передачи персональных данных и соответствия фразе «Трансграничная передача персональных данных Оператором не осуществляется»;
-- credential cleanup / revoke Fivepost;
-- полный staging regression;
-- admin cosmetics в самом конце;
-- production rollout только после отдельного подтверждения.
+Следующий этап — подготовка всего `/test/` к полной миграции:
+
+1. SEO-защита `/test/` без переноса `noindex` на production.
+2. Яндекс.Метрика без загрязнения production analytics.
+3. Финальная сверка оферты, оплаты, доставки и возвратов с фактическими workflow.
+4. Privacy/data-flow minimum audit.
+5. Production acceptance marking / second receipt и quantity больше одного.
+6. Mobile regression ключевых страниц и individual form.
+7. Финальный regression обычного заказа.
+8. Проверка PHP, WordPress, WooCommerce, YooKassa 2.16.3, 5Post и других критичных версий.
+9. Credentials cleanup, включая Fivepost и временные/test credentials.
+10. Полный аудит и очистка test data.
+11. Final regression и freeze перед migration.
+
+Production rollout выполняется только после отдельного подтверждения.
+
+## Стратегия staging → production
+
+Принятое решение заменяет любые прежние предположения о параллельной ручной доработке production или сложном merge двух рабочих баз.
+
+- `/test/` является источником истины и будущей финальной версией сайта.
+- Функционал, оферта, доставка, возвраты, privacy, клиентские тексты, письма, настройки и обязательный к запуску SEO-контент доводятся и проверяются на `/test/`.
+- Production не переделывается вручную второй раз и не развивается параллельно со staging.
+- На текущем production нет реальных заказов, поэтому допустим и предпочтителен полный перенос протестированного staging-сайта, включая БД, вместо сложного слияния баз.
+- Итоговый путь: `finish /test/ → freeze → backup production → полный перенос staging в корень loraleya.ru → production acceptance`.
+- Исключение составляют только environment-specific проверки и настройки после миграции.
+
+### Этап A — Finish staging
+
+До переноса обязательно завершить:
+
+1. **SEO-защита `/test/`.** Проверить WordPress search engine visibility, meta robots и `X-Robots-Tag`; не полагаться только на `robots.txt`. Staging не должен индексироваться, а production после миграции не должен унаследовать `noindex`.
+2. **Яндекс.Метрика.** Определить место подключения боевого счётчика и исключить загрязнение production-статистики трафиком `/test/`. Расширенные цели и воронки можно настраивать после запуска.
+3. **Оферта.** Привести staging-оферту к действующей логике, включая 100% оплату стоимости изделий individual order после согласования; удалить оставшиеся противоречия со старой схемой 50%.
+4. **Оплата и доставка.** Сверить публичные тексты с фактическими workflow обычных и индивидуальных заказов, 5Post, СДЭК, Яндекс и других реально доступных способов. Доставка individual order не входит в первоначальную оплату и согласуется отдельно.
+5. **Возврат и обмен.** Сверить публичные условия с реальным workflow и особенностями маркированных товаров.
+6. **Privacy/data-flow minimum audit.** Проверить согласие, ссылку и содержание политики для ФИО, телефона, email и адреса доставки; исключить публичный вывод персональных и служебных meta.
+7. **Клиентские письма.** Проверить обычные и individual-письма на отсутствие старых 50%, прежней схемы доставки и web-confirm flow.
+8. **Marking quantity > 1.** Убедиться, что individual line item с quantity `4` создаёт четыре поля КИЗ. Реальные КИЗ и вывод из оборота для этого pre-production теста не обязательны.
+9. **Mobile regression.** Проверить главную, каталог, товар, корзину, checkout, individual order, палитру, вторую позицию, preview и отправку формы.
+10. **Обычный заказ regression.** Проверить путь `товар → корзина → checkout → заказ → доставка → письма`; повторная реальная staging-оплата не требуется.
+11. **Environment comparison.** Зафиксировать PHP, WordPress, WooCommerce, YooKassa, 5Post и другие критичные версии/настройки. Marking bridge проверен с YooKassa 2.16.3.
+12. **Credentials / cleanup.** Удалить тестовые и устаревшие Fivepost credentials, проверить другие ключи и временные настройки; не переносить их в production.
+13. **Test-data cleanup.** До финальной миграции определить зависимости и безопасно удалить или архивировать ненужные Woo orders, individual applications, customers, marking/КИЗ data, notes и logs. Из известных тестов: ИЗ-945, Woo №946, №947, №949. Ничего не удалять вслепую.
+
+### Этап B — Freeze
+
+1. Выполнить финальный regression `/test/`.
+2. Создать финальный checkpoint.
+3. Зафиксировать полный список версий, environment-specific настроек и тестовых данных.
+4. Сделать полный backup production: файлы, БД, uploads и конфигурация.
+
+### Этап C — One-time migration
+
+1. Включить maintenance / technical mode на production.
+2. Полностью перенести staging WordPress files, theme, plugins, uploads и database в корень `https://loraleya.ru/`.
+3. Заменить `https://loraleya.ru/test/` на `https://loraleya.ru/` инструментом, безопасным для WordPress serialized data. Слепой SQL replace запрещён.
+4. Проверить `siteurl` / `home`, HTTPS, permalinks, cron, email, YooKassa, 5Post, analytics, robots, sitemap и canonical.
+5. Открыть сайт посетителям и поисковикам только после успешных проверок.
+
+SEO-правила миграции:
+
+- сохранять существующие production URL, особенно `/individualnyy-zakaz/`, shop/category/product, color taxonomy, статьи, About, offer, delivery, return и privacy;
+- новая версия страницы заменяет старую на том же URL; новые slug без необходимости не создавать;
+- перед открытием production проверить отсутствие meta robots / `X-Robots-Tag: noindex` и запрета индексации в WordPress;
+- `robots.txt` не должен блокировать production;
+- canonical, sitemap и внутренние ссылки должны использовать `https://loraleya.ru/...`, без `/test/`.
+
+После успешной миграции `/test/` закрывается авторизацией/паролем либо удаляется/архивируется. Публичная индексируемая копия и дубли `loraleya.ru/page/` / `loraleya.ru/test/page/` недопустимы.
+
+### Этап D — Production acceptance
+
+Staging не может полноценно проверить боевой YooKassa callback. После миграции выполнить один контролируемый небольшой реальный production order и проверить:
+
+`individual application → agreement → Woo order → payment link → real payment → payment.succeeded callback → Woo автоматически Обработка → first receipt → marking + → КИЗ → Выполнен → second receipt → фактический вывод КИЗ из оборота`.
+
+Дополнительно проверить:
+
+- покупатель получил чек;
+- повторный webhook не вызвал повторную обработку;
+- Яндекс.Метрика зафиксировала одну покупку с правильной суммой.
+
+Путь `КИЗ → Выполнен → второй чек → вывод из оборота` является production acceptance test, а не staging blocker. Боевой callback YooKassa ради `/test/` не менять.
+
+### Не блокирует production rollout
+
+- дополнительный visual polish и About;
+- новые статьи, SEO-тексты и расширенные FAQ;
+- дополнительная PageSpeed / Core Web Vitals оптимизация;
+- Google Analytics, расширенные цели и воронки Метрики;
+- дополнительный admin UX;
+- исправление раннего появления marking `+`, если оно не мешает workflow;
+- дополнительные automation, способы доставки и расширение individual form.
+
+Известная проблема partial refund маркированного заказа остаётся отдельной задачей. Она не блокирует запуск, если непроверенный automatic partial refund не используется как подтверждённый workflow до отдельного теста или исправления.
 
 ## Текущий Git
 
 - Branch: `fix/staging-audit-2026-08-13`.
-- Позиционная форма individual order, многопозиционная Woo-конвертация, письмо согласования и marking bridge вручную проверены на staging и зафиксированы checkpoint 2026-08-24.
-- После нового checkpoint ветка должна быть ahead 6 относительно `origin/fix/staging-audit-2026-08-13`.
+- Предыдущий checkpoint: `6d78431f5978273ec750d5c228372f977e1c450d` — `checkpoint: positional individual orders and marking support`.
+- Новый checkpoint закрывает полный individual delivery workflow и customer-facing cleanup; точный SHA определяется через `git rev-parse HEAD`.
+- После нового checkpoint ветка должна быть ahead 7 относительно `origin/fix/staging-audit-2026-08-13`.
 - Рабочее дерево после checkpoint должно быть чистым.
 
 ## Следующий шаг
 
-1. Следующий крупный этап ещё не начат; начинать его только отдельной задачей.
-2. Подготовить отдельный production rollout с regression и явным approval.
-3. В production-safe сценарии проверить callback `payment.succeeded` и финальный второй чек с выводом КИЗ из оборота.
+1. Начать pre-production аудит с SEO-защиты `/test/` и Яндекс.Метрики.
+2. Остальные задачи этапа A — Finish staging — выполнять отдельными минимальными блоками.
+3. После закрытия обязательного checklist перейти к этапу B — Freeze — с финальным regression, checkpoint и backup production.
+4. Полную миграцию staging → production выполнять только с отдельным явным approval.
+5. После миграции провести controlled production acceptance order для callback, чеков, КИЗ и Метрики.
 
 ## Ежедневное правило работы
 
