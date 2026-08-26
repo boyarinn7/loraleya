@@ -155,3 +155,11 @@ Partial refund маркированного заказа остаётся отд
 - Пользовательские подписи размеров строятся из видимого native option label, а не из внутреннего slug/value.
 - SKU сохраняется в WooCommerce, admin и внутренних процессах; на frontend single-product он только визуально скрыт scoped CSS.
 - Стандартный механизм WooCommerce reviews сохраняется: вкладка скрывается только у товара без опубликованных отзывов.
+
+## 2026-08-26 — Mobile WooCommerce cart
+
+- Фактическая корзина сайта — WooCommerce Block Cart; mobile-оформление scoped через `body.woocommerce-cart` и `max-width: 640px`.
+- Полные размеры скатерти и дорожки в корзине являются только frontend presentation: internal variation values, variation IDs, cart/order meta не переписываются.
+- Variation meta текущего Woo Blocks использует `span`; обновление подписи должно переживать React/Woo Blocks re-render через `MutationObserver`.
+- Готовый набор сохраняет штатные подписи и не участвует в добавлении ширины.
+- Завершённую mobile-корзину не пересматривать без нового воспроизводимого дефекта.

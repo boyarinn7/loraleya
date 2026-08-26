@@ -282,13 +282,31 @@ Production этими изменениями ещё не обновлён.
 - Standard order-received: desktop/mobile, товары, вариации, доставка, totals, «Контактные данные» и кнопка каталога — PASS.
 - Cart widget: catalog → «+ Добавить товар» → `/test/shop/`; palette/constructor → прежний workflow — PASS.
 
+## Mobile regression — текущее состояние
+
+На staging вручную проверены и закрыты: главная, каталог `/shop/`, карточка товара, «О бренде», individual order и корзина — PASS.
+
+Мобильная корзина полностью завершена. Фактическая реализация — WooCommerce Block Cart. На `<=640px` настроены боковые поля и вертикальный ритм, свободная компоновка товарной строки, доставки и итогов. «Предполагаемый итог» приведён к спокойному размеру. Checkout button получил фирменный золотой фон, тёмный текст и компактную mobile-типографику.
+
+Полные размеры выводятся только визуально на странице корзины: скатерть — `140 × длина`, дорожка — `40 × длина`. Internal variation values, variation IDs, cart/order meta не меняются; готовый набор не затронут. Реальная variation meta Woo Blocks использует `span`, а не `li`; JS selector исправлен под фактический DOM. `MutationObserver` сохраняет подписи после повторного рендера quantity/remove/update. Ручной staging-тест — PASS. Корзину не открывать повторно без нового реального дефекта.
+
+Ещё не закрыто в mobile:
+
+1. Checkout: функциональные блоки, доставка, выбор ПВЗ, manager-confirmation block и фирменная кнопка «ОФОРМИТЬ ЗАКАЗ» проверены; остаются общие боковые поля `18–20px`, защита от horizontal overflow, spacing двух consent checkbox и frontend-only полный размер скатерти/дорожки.
+2. Оферта — проверить и при необходимости исправить mobile-вёрстку.
+3. «Оплата и доставка» — проверить и при необходимости исправить mobile-вёрстку.
+4. «Возврат и обмен» — mobile PASS ещё не зафиксирован; проверить позже.
+5. Privacy Policy — содержание не менять, допустима только визуальная проверка.
+
+Во время разработки caching period REG.RU временно уменьшен с `45 дней` до `1 часа`: query parameter подтвердил, что устаревшая product page выдавалась hosting cache. После production launch и стабилизации вернуть более длинный период кеширования.
+
 ## Оставшиеся pre-production задачи
 
 Следующий этап — подготовка всего `/test/` к полной миграции:
 
-1. Подключение боевого счётчика Яндекс.Метрики ближе к production launch с исключением `/test/`.
-2. Production acceptance marking / second receipt и quantity больше одного.
-3. Mobile regression остальных ключевых страниц, не закрытых текущими staging-тестами.
+1. Завершить mobile regression: checkout → оферта → условия доставки → возвраты.
+2. Подключение боевого счётчика Яндекс.Метрики ближе к production launch с исключением `/test/`.
+3. Production acceptance marking / second receipt и quantity больше одного.
 4. Проверка PHP, WordPress, WooCommerce, YooKassa 2.16.3, 5Post и других критичных версий.
 5. Credentials cleanup, включая Fivepost и временные/test credentials.
 6. Полный аудит и очистка test data.
@@ -379,18 +397,20 @@ Staging не может полноценно проверить боевой Yoo
 ## Текущий Git
 
 - Branch: `fix/staging-audit-2026-08-13`.
-- Предыдущий checkpoint: `e417b956f09cb250bfbf7075c6d041c690bc2ad0` — `checkpoint: pre-production checkout and policy alignment`.
-- Текущий checkpoint: `checkpoint: refine product cards and variation UI`; точный SHA определяется через `git rev-parse HEAD` после commit.
-- После текущего checkpoint ветка должна быть ahead 9 относительно `origin/fix/staging-audit-2026-08-13`.
+- Предыдущий checkpoint: `883125b517f3fe5e1670b53af4e519da2f93d92f` — `checkpoint: refine product cards and variation UI`.
+- Текущий checkpoint: `checkpoint: complete mobile cart regression`; точный SHA определяется через `git rev-parse HEAD` после commit.
+- После текущего checkpoint ветка должна быть ahead 10 относительно `origin/fix/staging-audit-2026-08-13`.
 - Рабочее дерево после checkpoint должно быть чистым.
 
 ## Следующий шаг
 
-1. Закрыть оставшиеся задачи этапа A: environment/version audit, credentials и test-data cleanup, оставшийся mobile regression.
-2. Подготовить Яндекс.Метрику к production launch без включения на `/test/`.
-3. После обязательного checklist перейти к этапу B — Freeze — с финальным regression и backup production.
-4. Полную миграцию staging → production выполнять только с отдельным явным approval.
-5. После миграции провести controlled production acceptance order для callback, чеков, КИЗ и Метрики.
+1. Завершить mobile checkout: поля `18–20px`, overflow, consent spacing и frontend-only полные размеры.
+2. Проверить mobile оферту, «Оплата и доставка», затем «Возврат и обмен» и закрыть mobile regression.
+3. Закрыть оставшиеся задачи этапа A: environment/version audit, credentials и test-data cleanup.
+4. Подготовить Яндекс.Метрику к production launch без включения на `/test/`.
+5. После обязательного checklist перейти к этапу B — Freeze — с финальным regression и backup production.
+6. Полную миграцию staging → production выполнять только с отдельным явным approval.
+7. После миграции провести controlled production acceptance order для callback, чеков, КИЗ и Метрики.
 
 ## Ежедневное правило работы
 

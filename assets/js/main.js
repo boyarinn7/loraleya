@@ -770,3 +770,38 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   });
 })();
+
+/* ===== Cart Block: полные размеры в клиентской подписи (только страница корзины) ===== */
+(function () {
+  if (!document.body.classList.contains('woocommerce-cart')) return;
+
+  var sizePrefixes = {
+    'Размер скатерти': '140',
+    'Размер дорожки': '40'
+  };
+  var cart = document.querySelector('.wp-block-woocommerce-cart');
+
+  if (!cart) return;
+
+  function updateCartSizeLabels(root) {
+    root.querySelectorAll('.wc-block-components-product-details__name').forEach(function (name) {
+      var item = name.parentElement;
+      var value = item.querySelector('.wc-block-components-product-details__value');
+
+      if (!value) return;
+
+      var label = name.textContent.replace(/:\s*$/, '').trim();
+      var prefix = sizePrefixes[label];
+      var size = value.textContent.trim().match(/^(\d+)\s*(?:см)?$/i);
+
+      if (prefix && size) {
+        value.textContent = prefix + ' × ' + size[1] + ' см';
+      }
+    });
+  }
+
+  updateCartSizeLabels(cart);
+  new MutationObserver(function () {
+    updateCartSizeLabels(cart);
+  }).observe(cart, { childList: true, subtree: true });
+})();
