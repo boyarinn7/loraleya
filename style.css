@@ -5801,3 +5801,27 @@ body.nav-open .nav-toggle span:nth-child(3) { transform: translateY(-0.5rem) rot
         color: var(--bg);
     }
 }
+
+/* Mobile gutters for the four public policy/service pages. */
+@media (max-width: 640px) {
+    body:is(.page-id-772, .page-id-774, .page-id-776, .page-id-778) .container.section {
+        width: 100%;
+        padding-right: 20px !important;
+        padding-left: 20px !important;
+    }
+
+    body:is(.page-id-772, .page-id-774, .page-id-776, .page-id-778) .container.section > article,
+    body:is(.page-id-772, .page-id-774, .page-id-776, .page-id-778) .page-content {
+        min-width: 0;
+        max-width: 100%;
+    }
+
+    body:is(.page-id-772, .page-id-774, .page-id-776, .page-id-778) .page-content {
+        overflow-wrap: anywhere;
+    }
+
+    body:is(.page-id-772, .page-id-774, .page-id-776, .page-id-778) .page-content img,
+    body:is(.page-id-772, .page-id-774, .page-id-776, .page-id-778) .page-content table {
+        max-width: 100%;
+    }
+}

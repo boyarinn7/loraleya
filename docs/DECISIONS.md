@@ -163,3 +163,12 @@ Partial refund маркированного заказа остаётся отд
 - Variation meta текущего Woo Blocks использует `span`; обновление подписи должно переживать React/Woo Blocks re-render через `MutationObserver`.
 - Готовый набор сохраняет штатные подписи и не участвует в добавлении ширины.
 - Завершённую mobile-корзину не пересматривать без нового воспроизводимого дефекта.
+
+## 2026-08-26 — Mobile regression закрыт
+
+- Mobile checkout использует scoped поля `20px` и ограничения безопасной ширины; desktop и checkout workflow не меняются.
+- Consent checkbox сохраняют отдельные тексты, required-состояние и server-side validation; mobile patch отвечает только за spacing и alignment.
+- Полные размеры скатерти и дорожки в checkout являются presentation layer, повторяемым после `updated_checkout`; internal variation values, variation IDs и cart/order meta не переписываются.
+- Оферта (`page-id-772`), Privacy Policy (`page-id-774`), «Оплата и доставка» (`page-id-776`) и «Возврат и обмен» (`page-id-778`) используют единое scoped mobile-правило с полями `20px`.
+- Юридический контент не менялся; Privacy Policy остаётся неизменной по содержанию.
+- Весь mobile regression считается PASS / CLOSED и повторно открывается только при новом воспроизводимом дефекте.

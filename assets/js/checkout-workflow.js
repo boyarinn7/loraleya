@@ -229,6 +229,32 @@
         }
     }
 
+    function updateCheckoutSizeLabels() {
+        var sizePrefixes = {
+            'Размер скатерти': '140',
+            'Размер дорожки': '40'
+        };
+
+        $('#order_review dl.variation dt').each(function () {
+            var $name = $(this);
+            var $valueContainer = $name.next('dd');
+            var $value = $valueContainer.find('p').first();
+            var label = $.trim($name.text()).replace(/:\s*$/, '');
+            var prefix = sizePrefixes[label];
+            var size;
+
+            if (!$value.length) {
+                $value = $valueContainer;
+            }
+
+            size = $.trim($value.text()).match(/^(\d+)\s*(?:см)?$/i);
+
+            if (prefix && size) {
+                $value.text(prefix + ' × ' + size[1] + ' см');
+            }
+        });
+    }
+
     function setSubmittingState(submitting) {
         var $button = $('#place_order');
 
@@ -253,6 +279,7 @@
         moveDeliveryPanel();
         mountShippingMethods();
         rememberOrRestoreConsent();
+        updateCheckoutSizeLabels();
         refreshConditionalFields();
 
         if (checkoutSubmitting) {
