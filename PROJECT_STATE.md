@@ -12,6 +12,21 @@
 - Все изменения сначала проверяются на `/test/`.
 - Git push сам по себе не разворачивает staging.
 
+## Environment / versions — PASS / CLOSED
+
+- Staging: WordPress `7.1`, WooCommerce `11.0.1`, PHP `8.3.31`, MySQL `8.0.25-15`.
+- Production: WordPress `7.1`, WooCommerce `11.0.1`; точные PHP и DB пока не подтверждены.
+- Тема требует PHP `>= 8.0`; metadata `Tested up to` обновлена до WordPress `7.1`.
+- `woocommerce/content-product.php`: override и WooCommerce core имеют одинаковый `@version 9.4.0`. Warning был ложным, исчез после истечения transient; функциональной несовместимости шаблона нет.
+- Action Scheduler здоров: всего `463`, completed `445`, pending `16`, failed `2`, overdue `0`; зависшей очереди нет, WP-Cron и async runner работают. Пропуск `action_scheduler_run_queue` был разовым, вопрос закрыт.
+- Оба failed action относятся только к `rank_math/analytics/email_report_event`. Это низкоприоритетный follow-up Rank Math, не влияющий на WooCommerce-заказы, оплату, webhooks и транзакционные email магазина.
+
+Non-blocking host/pre-production follow-ups:
+
+1. Отдельно проверить и только после approval обновить: Better Search Replace `1.4.10 → 1.4.11`, Rank Math SEO `1.0.272 → 1.0.276`, WP STAGING `4.9.1 → 4.11.1`.
+2. До production migration уточнить у REG.RU план обновления MySQL и security/backport policy для ветки MySQL 8.0, которая достигла upstream EOL. Текущая staging DB совместима и блокером не является.
+3. До переноса подтвердить точные версии PHP и DB на production.
+
 ## Безопасность работы
 
 - WP STAGING protection на staging не отключать.
@@ -402,13 +417,14 @@ Staging не может полноценно проверить боевой Yoo
 
 - Branch: `fix/staging-audit-2026-08-13`.
 - Предыдущий checkpoint: `5954c93230e19e9acec04941ba0725127b3317d3` — `checkpoint: complete mobile regression`.
-- Текущий checkpoint: `checkpoint: update about founder photo`; точный SHA определяется через `git rev-parse HEAD` после commit.
-- После текущего checkpoint ветка должна быть ahead 12 относительно `origin/fix/staging-audit-2026-08-13`.
-- Рабочее дерево после checkpoint должно быть чистым.
+- Последний checkpoint до environment audit: `checkpoint: update about founder photo`.
+- Новый checkpoint: `checkpoint: verify environment compatibility`.
+- После нового checkpoint ветка должна быть ahead 13 относительно `origin/fix/staging-audit-2026-08-13`.
+- Handoff-файл `LoraLeya_handoff_2026-08-26.md` остаётся локальным untracked-файлом и в checkpoint не включается.
 
 ## Следующий шаг
 
-1. Закрыть оставшиеся задачи этапа A: environment/version audit, credentials и test-data cleanup.
+1. Environment/version audit закрыт; завершить оставшиеся задачи этапа A: credentials и test-data cleanup.
 2. Подготовить Яндекс.Метрику к production launch без включения на `/test/`.
 3. После обязательного checklist перейти к этапу B — Freeze — с финальным regression и backup production.
 4. Полную миграцию staging → production выполнять только с отдельным явным approval.

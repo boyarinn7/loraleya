@@ -2,7 +2,7 @@
 /**
  * LoraLeya catalog card — lookbook layout (photo | info).
  * Overrides WooCommerce default content-product.php.
- * @version 9.4.0 (base)
+ * @version 9.4.0
  */
 
 defined( 'ABSPATH' ) || exit;

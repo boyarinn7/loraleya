@@ -178,3 +178,14 @@ Partial refund маркированного заказа остаётся отд
 - Фото основательницы на странице «О бренде» строится через current-site `content_url()`, а не через жёсткий URL `loraleya.ru`.
 - Актуальный файл: `/wp-content/uploads/2026/08/natalia-kurenkova-loraleya.webp`.
 - Такой URL сохраняет корректное окружение на staging и после migration; production не изменяется до отдельного переноса.
+
+## 2026-08-26 — Environment / versions закрыт по совместимости приложения
+
+- Environment / versions имеет статус `PASS / CLOSED`: staging использует WordPress `7.1`, WooCommerce `11.0.1`, PHP `8.3.31`, MySQL `8.0.25-15`; production подтверждён на WordPress `7.1` и WooCommerce `11.0.1`.
+- Тема требует PHP `>= 8.0`. Metadata темы фиксирует `Tested up to: 7.1`.
+- WooCommerce warning для `content-product.php` был ложным: override и core имеют `@version 9.4.0`, warning исчез после истечения transient, реальной несовместимости нет. Закрытый шаблон повторно не менять без нового дефекта.
+- Action Scheduler здоров: `463` actions, `445` completed, `16` pending, `2` failed, `0` overdue. WP-Cron и async runner работают, зависшей очереди нет; пропуск `action_scheduler_run_queue` признан разовым и закрыт.
+- Два failed action `rank_math/analytics/email_report_event` фиксируются как низкоприоритетный follow-up Rank Math. Они не влияют на заказы WooCommerce, оплату, webhooks или транзакционные email магазина.
+- Обновления Better Search Replace `1.4.10 → 1.4.11`, Rank Math SEO `1.0.272 → 1.0.276` и WP STAGING `4.9.1 → 4.11.1` вынесены в отдельную pre-production задачу; автоматически их не устанавливать.
+- MySQL `8.0.25-15` совместим с текущим сайтом и не является текущим блокером. До migration отдельно запросить у REG.RU план обновления и security/backport policy для достигшей upstream EOL ветки MySQL 8.0.
+- Точные PHP и DB production остаются host-level pre-production follow-up и должны быть подтверждены до переноса.
