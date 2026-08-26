@@ -268,6 +268,13 @@ Production этими изменениями ещё не обновлён.
 
 В WordPress БД staging вручную обновлены описания скатерти, дорожки, салфетки, куверта и готового набора; эти изменения не находятся в Git. Для каждого типа используется отдельный текст и реальные полные размеры. Для дорожек и салфеток указана обработка «английским уголком»; салфетка — `40 × 40 см`, допуск до `0,5 см`; куверт — `9 × 24 см`, два отделения; скатерть — ширина `140 см`, длины `175/220/240 см`; дорожка — ширина `40 см`, длины `140/175/240/300 см`; набор содержит число салфеток и кувертов по числу персон плюс одну дорожку выбранной длины. Описания предупреждают о переливе жаккарда и возможном отличии цвета из-за цветопередачи экрана.
 
+## Страница «О бренде» — фото основательницы staging PASS
+
+- В `page-about.php` прежний жёсткий production URL фото основательницы заменён на current-site URL через `content_url()`.
+- Используется staging media: `/wp-content/uploads/2026/08/natalia-kurenkova-loraleya.webp`.
+- Новое фото отображается на `/test/`; ручная staging-проверка — PASS.
+- Alt, тексты, layout и стили страницы не менялись; production не затронут.
+
 ## Pre-production content, SEO и privacy — staging PASS
 
 Актуальным источником истины для публичного контента считается staging `/test/`. Содержимое старого production по оферте, оплате/доставке и возвратам устарело и не используется для обратной сверки. Будущий production — текущий staging после полной migration.
@@ -394,9 +401,9 @@ Staging не может полноценно проверить боевой Yoo
 ## Текущий Git
 
 - Branch: `fix/staging-audit-2026-08-13`.
-- Предыдущий checkpoint: `999fa6587474475a29468fac40dc2f9d89a6c6e1` — `checkpoint: complete mobile cart regression`.
-- Текущий checkpoint: `checkpoint: complete mobile regression`; точный SHA определяется через `git rev-parse HEAD` после commit.
-- После текущего checkpoint ветка должна быть ahead 11 относительно `origin/fix/staging-audit-2026-08-13`.
+- Предыдущий checkpoint: `5954c93230e19e9acec04941ba0725127b3317d3` — `checkpoint: complete mobile regression`.
+- Текущий checkpoint: `checkpoint: update about founder photo`; точный SHA определяется через `git rev-parse HEAD` после commit.
+- После текущего checkpoint ветка должна быть ahead 12 относительно `origin/fix/staging-audit-2026-08-13`.
 - Рабочее дерево после checkpoint должно быть чистым.
 
 ## Следующий шаг

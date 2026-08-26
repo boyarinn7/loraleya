@@ -172,3 +172,9 @@ Partial refund маркированного заказа остаётся отд
 - Оферта (`page-id-772`), Privacy Policy (`page-id-774`), «Оплата и доставка» (`page-id-776`) и «Возврат и обмен» (`page-id-778`) используют единое scoped mobile-правило с полями `20px`.
 - Юридический контент не менялся; Privacy Policy остаётся неизменной по содержанию.
 - Весь mobile regression считается PASS / CLOSED и повторно открывается только при новом воспроизводимом дефекте.
+
+## 2026-08-26 — Theme media не привязывать к production URL
+
+- Фото основательницы на странице «О бренде» строится через current-site `content_url()`, а не через жёсткий URL `loraleya.ru`.
+- Актуальный файл: `/wp-content/uploads/2026/08/natalia-kurenkova-loraleya.webp`.
+- Такой URL сохраняет корректное окружение на staging и после migration; production не изменяется до отдельного переноса.

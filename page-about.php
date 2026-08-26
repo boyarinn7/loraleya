@@ -364,7 +364,7 @@ get_header();
         </div>
         <div class="ab-seal-since">Раменское · с 2022 года</div>
         <div class="ab-photo-slot">
-            <img src="https://loraleya.ru/wp-content/uploads/2026/06/natalia-kurenkova-loraleya.webp"
+            <img src="<?php echo esc_url( content_url( '/uploads/2026/08/natalia-kurenkova-loraleya.webp' ) ); ?>"
                  alt="Наталья Куренкова, основательница бренда LoraLeya"
                  width="1600" height="2133"
                  fetchpriority="high">
