@@ -146,6 +146,23 @@ add_action( 'wp_enqueue_scripts', function () {
 
 // ===== WOOCOMMERCE ADJUSTMENTS =====
 
+add_filter( 'woocommerce_product_tabs', function ( $tabs ) {
+    unset( $tabs['additional_information'] );
+
+    global $product;
+    if ( ! $product instanceof WC_Product ) {
+        $product = wc_get_product( get_the_ID() );
+    }
+
+    if ( ! $product || 0 === $product->get_review_count() ) {
+        unset( $tabs['reviews'] );
+    }
+
+    return $tabs;
+}, 20 );
+
+add_filter( 'woocommerce_product_description_heading', '__return_false' );
+
 add_action( 'woocommerce_cart_totals_before_order_total', 'loraleya_cart_shipping_info' );
 function loraleya_cart_shipping_info() {
     echo '<tr class="ll-cart-shipping-info"><td colspan="2">'

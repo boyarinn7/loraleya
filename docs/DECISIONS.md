@@ -147,3 +147,11 @@ Partial refund маркированного заказа остаётся отд
 - Актуальная Политика обработки персональных данных уже подана в Роскомнадзор и не изменяется без отдельной юридической необходимости.
 - До migration `/test/` остаётся `noindex`; перед открытием production все staging SEO-ограничения обязательно снимаются.
 - Боевой счётчик Яндекс.Метрики подключается ближе к production launch и не должен учитывать `/test/`.
+
+## 2026-08-26 — Variation UI не меняет данные WooCommerce
+
+- Custom dropdown размеров является только presentation layer над штатным WooCommerce select.
+- Native select остаётся источником variation value и событий `change`; внутренние option values, variation IDs, цены и SKU не переписываются.
+- Пользовательские подписи размеров строятся из видимого native option label, а не из внутреннего slug/value.
+- SKU сохраняется в WooCommerce, admin и внутренних процессах; на frontend single-product он только визуально скрыт scoped CSS.
+- Стандартный механизм WooCommerce reviews сохраняется: вкладка скрывается только у товара без опубликованных отзывов.
