@@ -379,3 +379,200 @@ body.woocommerce-checkout #post5-map-popup
     text-align: center;
   }
 }
+
+/* ============================================================
+   Order received — standard WooCommerce thank-you output.
+   Scoped to this endpoint so cart, checkout and account stay intact.
+   ============================================================ */
+.ll-standard-order-received .container.section {
+  max-width: 1080px; padding-top: 8rem !important; padding-bottom: 6rem;
+}
+.ll-standard-order-received article > h1 {
+  max-width: 920px; margin: 0 auto 2rem; color: var(--cream);
+  font-size: clamp(2.5rem, 6vw, 4.5rem); line-height: 1;
+}
+.ll-standard-order-received .page-content,
+.ll-standard-order-received .woocommerce-order {
+  width: 100%; max-width: 920px; margin-right: auto; margin-left: auto;
+}
+.ll-standard-order-received .woocommerce-thankyou-order-received,
+.ll-standard-order-received .woocommerce-order-overview,
+.ll-standard-order-received .woocommerce-order-details,
+.ll-standard-order-received .woocommerce-customer-details {
+  background: var(--bg2); border: 1px solid rgba(197, 165, 90, 0.22);
+}
+.ll-standard-order-received .woocommerce-thankyou-order-received {
+  margin: 0 0 1.5rem; padding: 1.5rem 1.75rem;
+}
+.ll-standard-order-received .ll-thankyou-next__title,
+.ll-standard-order-received .woocommerce-order-details__title,
+.ll-standard-order-received .woocommerce-column__title {
+  margin: 0 0 0.8rem; color: var(--cream); font-family: var(--serif);
+  font-weight: 300; line-height: 1.2;
+}
+.ll-standard-order-received .ll-thankyou-next__title {
+  display: block; color: var(--gold-light); font-size: 1.7rem;
+}
+.ll-standard-order-received .ll-thankyou-next__text {
+  display: block; max-width: 760px; color: var(--text); font-size: 1.05rem; line-height: 1.8;
+}
+.ll-standard-order-received ul.woocommerce-order-overview {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0;
+  width: 100%; margin: 0 0 2rem; padding: 0; list-style: none;
+}
+.ll-standard-order-received ul.woocommerce-order-overview li {
+  float: none; min-width: 0; margin: 0; padding: 1.15rem 1.25rem;
+  border: 0; border-right: 1px solid rgba(197, 165, 90, 0.12);
+  color: var(--text-muted); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.12em; line-height: 1.45; text-transform: uppercase;
+  overflow-wrap: anywhere;
+}
+.ll-standard-order-received ul.woocommerce-order-overview li:last-child { border-right: 0; }
+.ll-standard-order-received ul.woocommerce-order-overview li strong {
+  display: block; margin-top: 0.4rem; color: var(--cream); font-family: var(--serif);
+  font-size: 1.12rem; font-weight: 400; letter-spacing: 0; line-height: 1.3;
+  text-transform: none; overflow-wrap: anywhere;
+}
+.ll-standard-order-received .woocommerce-order-details {
+  margin: 0 0 1.5rem; padding: 1.6rem 1.75rem;
+}
+.ll-standard-order-received .woocommerce-order-details__title {
+  padding-bottom: 0.8rem; border-bottom: 1px solid rgba(197, 165, 90, 0.15);
+  font-size: 2rem;
+}
+.ll-standard-order-received table.woocommerce-table--order-details {
+  width: 100%; margin: 0; border: 0; border-collapse: collapse;
+  background: transparent; color: var(--text);
+}
+.ll-standard-order-received table.woocommerce-table--order-details th,
+.ll-standard-order-received table.woocommerce-table--order-details td {
+  padding: 0.85rem 0.45rem; border: 0;
+  border-bottom: 1px solid rgba(197, 165, 90, 0.11);
+  color: var(--text); text-align: left; vertical-align: top;
+}
+.ll-standard-order-received table.woocommerce-table--order-details thead th {
+  color: var(--text-muted); font-size: 0.68rem; font-weight: 500;
+  letter-spacing: 0.13em; text-transform: uppercase;
+}
+.ll-standard-order-received table.woocommerce-table--order-details .product-total,
+.ll-standard-order-received table.woocommerce-table--order-details tfoot td {
+  text-align: right;
+}
+.ll-standard-order-received table.woocommerce-table--order-details .product-name a {
+  color: var(--cream); font-family: var(--serif); font-size: 1.15rem;
+}
+.ll-standard-order-received table.woocommerce-table--order-details .product-quantity,
+.ll-standard-order-received table.woocommerce-table--order-details .amount {
+  color: var(--gold-light); white-space: nowrap;
+}
+.ll-standard-order-received table.woocommerce-table--order-details dl.variation,
+.ll-standard-order-received table.woocommerce-table--order-details .wc-item-meta {
+  margin: 0.55rem 0 0; color: var(--text-muted); font-size: 0.78rem; line-height: 1.55;
+}
+.ll-standard-order-received table.woocommerce-table--order-details dl.variation dt,
+.ll-standard-order-received table.woocommerce-table--order-details dl.variation dd,
+.ll-standard-order-received table.woocommerce-table--order-details .wc-item-meta li,
+.ll-standard-order-received table.woocommerce-table--order-details .wc-item-meta p {
+  float: none; display: inline; margin: 0;
+}
+.ll-standard-order-received table.woocommerce-table--order-details dl.variation dd::after,
+.ll-standard-order-received table.woocommerce-table--order-details .wc-item-meta li::after {
+  content: ''; display: block;
+}
+.ll-standard-order-received table.woocommerce-table--order-details tfoot th {
+  width: 52%; color: var(--text-muted); font-weight: 400;
+}
+.ll-standard-order-received table.woocommerce-table--order-details tfoot tr:last-child th,
+.ll-standard-order-received table.woocommerce-table--order-details tfoot tr:last-child td {
+  padding-top: 1rem; border-bottom: 0; color: var(--cream); font-size: 1.05rem;
+}
+.ll-standard-order-received .ll-order-add-more { margin: 0 0 2rem; }
+.ll-standard-order-received .ll-order-add-more .button.ll-btn-outline {
+  display: inline-flex; align-items: center; min-height: 46px; padding: 0.75rem 1.25rem;
+  background: var(--bg2); border: 1px solid var(--gold-dim); border-radius: var(--radius);
+  color: var(--gold-light); font-size: 0.72rem; font-weight: 600;
+  letter-spacing: 0.1em; line-height: 1.3; text-transform: uppercase;
+  transition: background var(--transition), border-color var(--transition), color var(--transition);
+}
+.ll-standard-order-received .ll-order-add-more .button.ll-btn-outline:hover,
+.ll-standard-order-received .ll-order-add-more .button.ll-btn-outline:focus-visible {
+  background: var(--gold); border-color: var(--gold); color: var(--bg);
+}
+.ll-standard-order-received .ll-order-add-more .button.ll-btn-outline:focus-visible {
+  outline: 2px solid var(--gold-light); outline-offset: 3px;
+}
+.ll-standard-order-received .woocommerce-customer-details {
+  margin-top: 2rem; padding: 1.4rem 1.5rem;
+}
+.ll-standard-order-received .woocommerce-customer-details .col2-set {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem;
+}
+.ll-standard-order-received .woocommerce-customer-details .woocommerce-column {
+  float: none; width: 100%; min-width: 0; padding: 0;
+}
+.ll-standard-order-received .woocommerce-customer-details .woocommerce-column--shipping-address {
+  padding-left: 1rem; border-left: 1px solid rgba(197, 165, 90, 0.15);
+}
+.ll-standard-order-received .woocommerce-customer-details .woocommerce-column__title {
+  padding-bottom: 0.65rem; border-bottom: 1px solid rgba(197, 165, 90, 0.15);
+  font-size: 1.55rem;
+}
+.ll-standard-order-received .woocommerce-customer-details address {
+  padding: 0; border: 0; color: var(--text); font-style: normal;
+  line-height: 1.75; overflow-wrap: anywhere;
+}
+.ll-standard-order-received .woocommerce-customer-details address p {
+  margin-top: 0.55rem; color: var(--text-muted); overflow-wrap: anywhere;
+}
+@media (max-width: 720px) {
+  .ll-standard-order-received .container.section {
+    padding-right: 1.25rem; padding-bottom: 4rem; padding-left: 1.25rem;
+  }
+  .ll-standard-order-received article > h1 { margin-bottom: 1.5rem; }
+  .ll-standard-order-received ul.woocommerce-order-overview,
+  .ll-standard-order-received .woocommerce-customer-details .col2-set {
+    grid-template-columns: 1fr;
+  }
+  .ll-standard-order-received ul.woocommerce-order-overview li,
+  .ll-standard-order-received ul.woocommerce-order-overview li:last-child {
+    border-right: 0; border-bottom: 1px solid rgba(197, 165, 90, 0.12);
+  }
+  .ll-standard-order-received ul.woocommerce-order-overview li:last-child { border-bottom: 0; }
+  .ll-standard-order-received .woocommerce-thankyou-order-received,
+  .ll-standard-order-received .woocommerce-order-details,
+  .ll-standard-order-received .woocommerce-customer-details {
+    padding: 1.2rem;
+  }
+  .ll-standard-order-received .woocommerce-customer-details .woocommerce-column--shipping-address {
+    padding-top: 1.2rem; padding-left: 0;
+    border-top: 1px solid rgba(197, 165, 90, 0.15); border-left: 0;
+  }
+}
+@media (max-width: 560px) {
+  .ll-standard-order-received table.woocommerce-table--order-details,
+  .ll-standard-order-received table.woocommerce-table--order-details tbody,
+  .ll-standard-order-received table.woocommerce-table--order-details tfoot {
+    display: block; width: 100%;
+  }
+  .ll-standard-order-received table.woocommerce-table--order-details thead { display: none; }
+  .ll-standard-order-received table.woocommerce-table--order-details tbody tr {
+    display: grid; grid-template-columns: minmax(0, 1fr) auto; width: 100%;
+  }
+  .ll-standard-order-received table.woocommerce-table--order-details tfoot tr {
+    display: grid; grid-template-columns: minmax(0, 1fr); width: 100%;
+  }
+  .ll-standard-order-received table.woocommerce-table--order-details th,
+  .ll-standard-order-received table.woocommerce-table--order-details td {
+    min-width: 0; overflow-wrap: anywhere;
+  }
+  .ll-standard-order-received table.woocommerce-table--order-details tfoot th {
+    width: auto; padding-bottom: 0.2rem; border-bottom: 0;
+    word-break: normal; overflow-wrap: normal;
+  }
+  .ll-standard-order-received table.woocommerce-table--order-details tfoot td {
+    padding-top: 0.2rem; text-align: left; white-space: normal; overflow-wrap: anywhere;
+  }
+  .ll-standard-order-received .ll-order-add-more .button.ll-btn-outline {
+    width: 100%; justify-content: center; text-align: center;
+  }
+}

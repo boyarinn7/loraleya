@@ -67,6 +67,7 @@ function loraleya_scripts() {
         'ajax_url' => admin_url('admin-ajax.php'),
         'nonce'    => wp_create_nonce('loraleya_nonce'),
         'cart_url' => wc_get_cart_url(),
+        'shop_url' => wc_get_page_permalink('shop'),
     ]);
 
     // Передать item-map для страницы цвета
@@ -1359,9 +1360,16 @@ add_action( 'template_redirect', function () {
 
 add_action( 'woocommerce_order_details_after_order_table', function ( $order ) {
     if ( ! $order ) return;
-    $shop = get_permalink( wc_get_page_id( 'shop' ) );
+    $shop = wc_get_page_permalink( 'shop' );
     if ( ! $shop ) $shop = home_url( '/#palette' );
-    echo '<p class="ll-order-add-more"><a href="' . esc_url( $shop ) . '" class="button ll-btn-outline">В каталог — добавить ещё</a></p>';
+    $is_standard_received = function_exists( 'is_order_received_page' )
+        && is_order_received_page()
+        && 'yes' !== $order->get_meta( '_ll_individual_order' )
+        && 'yes' !== $order->get_meta( '_ll_delivery_payment_order' );
+    $label = $is_standard_received
+        ? '← Вернуться в каталог'
+        : 'В каталог — добавить ещё';
+    echo '<p class="ll-order-add-more"><a href="' . esc_url( $shop ) . '" class="button ll-btn-outline">' . esc_html( $label ) . '</a></p>';
 }, 20 );
 
 // Заголовок вкладки «Профиль» — вместо «Анкета»

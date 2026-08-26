@@ -1,6 +1,6 @@
 # LoraLeya — текущее состояние проекта
 
-Дата состояния: 2026-08-25
+Дата состояния: 2026-08-26
 
 ## Среда
 
@@ -29,6 +29,15 @@
 - YooKassa отдельно подтверждает клиенту факт оплаты и чек.
 - `customer_processing_order` означает: заказ принят LoraLeya в работу.
 - `customer_completed_order` означает: заказ физически передан службе доставки и находится в пути.
+
+Pre-production customer UI проверен на staging:
+
+- checkout содержит два отдельных незаполненных обязательных согласия: обработка персональных данных и принятие Публичной оферты;
+- URL Политики берётся через `get_privacy_policy_url()`, URL оферты — через `home_url( '/oferta/' )`; для каждого checkbox работает отдельная server-side validation;
+- standard order-received оформлен в стиле LoraLeya: «Заказ принят», карточка «Что дальше», компактные данные и состав заказа, контактные данные, desktop/mobile layout и возврат в каталог;
+- оформление order-received применяется только к обычным заказам; individual и delivery-payment orders исключены;
+- mobile `tfoot` сохраняет читаемые строки «Подытог», «Доставка», «Итого» и «Способ оплаты»;
+- cart widget сохраняет constructor/palette workflow «+ Добавить в другом цвете», а на остальных страницах показывает «+ Добавить товар» с переходом на динамический WooCommerce shop URL; при пустой корзине дополнительная кнопка скрыта.
 
 ## Клиентские письма обычного заказа — ГОТОВО
 
@@ -245,21 +254,31 @@ Individual-order workflow на staging функционально закрыт. 
 
 Production этими изменениями ещё не обновлён.
 
+## Pre-production content, SEO и privacy — staging PASS
+
+Актуальным источником истины для публичного контента считается staging `/test/`. Содержимое старого production по оферте, оплате/доставке и возвратам устарело и не используется для обратной сверки. Будущий production — текущий staging после полной migration.
+
+- SEO-защита `/test/`: WordPress Search Engine Visibility включён; meta robots — `noindex, nofollow`; HTTP `X-Robots-Tag` — `noindex, nofollow, noarchive, nosnippet`; PASS. Перед открытием production ограничения обязательно снять.
+- Яндекс.Метрика: код в репозитории не найден, запросов к `mc.yandex.ru` нет ни на `/test/`, ни на текущем production. Боевой счётчик подключить ближе к запуску production, исключив `/test/`.
+- Актуальная staging-оферта вручную уточнена в пунктах 5.3, 5.7, 5.9 и 5.10, чтобы обычные и индивидуальные заказы корректно различались по оплате доставки.
+- Страницы «Оплата и доставка» и «Возврат и обмен» на `/test/` вручную приведены в соответствие актуальной оферте и runtime; возвраты согласованы с разделом 6 оферты.
+- Политика обработки персональных данных уже подана в Роскомнадзор и не изменяется без отдельной юридической необходимости.
+- Individual-order form: отдельный незаполненный checkbox и ссылка на `/test/privacy-policy/` — PASS.
+- Обычный checkout: два отдельных обязательных checkbox и все validation-сценарии — PASS.
+- Standard order-received: desktop/mobile, товары, вариации, доставка, totals, «Контактные данные» и кнопка каталога — PASS.
+- Cart widget: catalog → «+ Добавить товар» → `/test/shop/`; palette/constructor → прежний workflow — PASS.
+
 ## Оставшиеся pre-production задачи
 
 Следующий этап — подготовка всего `/test/` к полной миграции:
 
-1. SEO-защита `/test/` без переноса `noindex` на production.
-2. Яндекс.Метрика без загрязнения production analytics.
-3. Финальная сверка оферты, оплаты, доставки и возвратов с фактическими workflow.
-4. Privacy/data-flow minimum audit.
-5. Production acceptance marking / second receipt и quantity больше одного.
-6. Mobile regression ключевых страниц и individual form.
-7. Финальный regression обычного заказа.
-8. Проверка PHP, WordPress, WooCommerce, YooKassa 2.16.3, 5Post и других критичных версий.
-9. Credentials cleanup, включая Fivepost и временные/test credentials.
-10. Полный аудит и очистка test data.
-11. Final regression и freeze перед migration.
+1. Подключение боевого счётчика Яндекс.Метрики ближе к production launch с исключением `/test/`.
+2. Production acceptance marking / second receipt и quantity больше одного.
+3. Mobile regression остальных ключевых страниц, не закрытых текущими staging-тестами.
+4. Проверка PHP, WordPress, WooCommerce, YooKassa 2.16.3, 5Post и других критичных версий.
+5. Credentials cleanup, включая Fivepost и временные/test credentials.
+6. Полный аудит и очистка test data.
+7. Final regression и freeze перед migration.
 
 Production rollout выполняется только после отдельного подтверждения.
 
@@ -346,16 +365,16 @@ Staging не может полноценно проверить боевой Yoo
 ## Текущий Git
 
 - Branch: `fix/staging-audit-2026-08-13`.
-- Предыдущий checkpoint: `6d78431f5978273ec750d5c228372f977e1c450d` — `checkpoint: positional individual orders and marking support`.
-- Новый checkpoint закрывает полный individual delivery workflow и customer-facing cleanup; точный SHA определяется через `git rev-parse HEAD`.
-- После нового checkpoint ветка должна быть ahead 7 относительно `origin/fix/staging-audit-2026-08-13`.
+- Предыдущий checkpoint: `f660ced0f58d928244531b0f09b363e3211f2a3f` — `checkpoint: complete individual order delivery workflow`.
+- Текущий checkpoint: `checkpoint: pre-production checkout and policy alignment`; точный SHA определяется через `git rev-parse HEAD` после commit.
+- После текущего checkpoint ветка должна быть ahead 8 относительно `origin/fix/staging-audit-2026-08-13`.
 - Рабочее дерево после checkpoint должно быть чистым.
 
 ## Следующий шаг
 
-1. Начать pre-production аудит с SEO-защиты `/test/` и Яндекс.Метрики.
-2. Остальные задачи этапа A — Finish staging — выполнять отдельными минимальными блоками.
-3. После закрытия обязательного checklist перейти к этапу B — Freeze — с финальным regression, checkpoint и backup production.
+1. Закрыть оставшиеся задачи этапа A: environment/version audit, credentials и test-data cleanup, оставшийся mobile regression.
+2. Подготовить Яндекс.Метрику к production launch без включения на `/test/`.
+3. После обязательного checklist перейти к этапу B — Freeze — с финальным regression и backup production.
 4. Полную миграцию staging → production выполнять только с отдельным явным approval.
 5. После миграции провести controlled production acceptance order для callback, чеков, КИЗ и Метрики.
 

@@ -440,10 +440,14 @@ document.addEventListener('DOMContentLoaded', function() {
             clearBtn.addEventListener('click', handleClearCart);
         }
 
-        // "Добавить в другом цвете" доступна только на страницах с конструктором
-        if (addMoreBtn && hasConstructor()) {
-            addMoreBtn.removeAttribute('hidden');
-            addMoreBtn.addEventListener('click', handleAddMore);
+        if (addMoreBtn) {
+            if (hasConstructor()) {
+                addMoreBtn.textContent = '+ Добавить в другом цвете';
+                addMoreBtn.addEventListener('click', handleAddMore);
+            } else {
+                addMoreBtn.textContent = '+ Добавить товар';
+                addMoreBtn.addEventListener('click', handleAddProduct);
+            }
         }
 
         fab.addEventListener('click', openModal);
@@ -531,11 +535,13 @@ document.addEventListener('DOMContentLoaded', function() {
             modalBody.innerHTML = '<div class="ll-cart-modal__empty">Корзина пуста</div>';
             modalFooter.setAttribute('hidden', '');
             if (clearBtn) clearBtn.setAttribute('hidden', '');
+            if (addMoreBtn) addMoreBtn.setAttribute('hidden', '');
             updateBadge(0);
             return;
         }
 
         if (clearBtn) clearBtn.removeAttribute('hidden');
+        if (addMoreBtn) addMoreBtn.removeAttribute('hidden');
 
         var html = '';
         items.forEach(function(item) {
@@ -643,6 +649,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 lcsBtn.click();
             }
         }, 300);
+    }
+
+    function handleAddProduct() {
+        closeModal();
+        window.location.href = loraleya.shop_url;
     }
 
     function handleClearCart() {

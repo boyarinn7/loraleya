@@ -309,16 +309,23 @@ function loraleya_checkout_delivery_panel() {
 add_action( 'woocommerce_after_checkout_billing_form', 'loraleya_checkout_delivery_panel', 5 );
 
 /**
- * Required consent for the actual classic checkout used by this site.
+ * Required consents for the actual classic checkout used by this site.
  */
 function loraleya_checkout_privacy_consent() {
-    $privacy_url = home_url( '/privacy-policy/' );
+    $privacy_url = get_privacy_policy_url();
     $offer_url   = home_url( '/oferta/' );
     ?>
     <p class="form-row validate-required ll-checkout-consent" id="ll_privacy_consent_field">
         <label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox">
             <input type="checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox input-checkbox" name="ll_privacy_consent" id="ll_privacy_consent" value="1" />
-            <span>Я согласен(на) с <a href="<?php echo esc_url( $privacy_url ); ?>" target="_blank" rel="noopener">Политикой обработки персональных данных</a> и <a href="<?php echo esc_url( $offer_url ); ?>" target="_blank" rel="noopener">Условиями оферты</a></span>
+            <span>Я даю согласие на обработку моих персональных данных в соответствии с <a href="<?php echo esc_url( $privacy_url ); ?>" target="_blank" rel="noopener">Политикой обработки персональных данных</a>.</span>
+            <span class="required" aria-hidden="true">*</span>
+        </label>
+    </p>
+    <p class="form-row validate-required ll-checkout-consent" id="ll_offer_consent_field">
+        <label class="woocommerce-form__label woocommerce-form__label-for-checkbox checkbox">
+            <input type="checkbox" class="woocommerce-form__input woocommerce-form__input-checkbox input-checkbox" name="ll_offer_consent" id="ll_offer_consent" value="1" />
+            <span>Я ознакомлен(а) и принимаю условия <a href="<?php echo esc_url( $offer_url ); ?>" target="_blank" rel="noopener">Публичной оферты</a>.</span>
             <span class="required" aria-hidden="true">*</span>
         </label>
     </p>
@@ -340,7 +347,11 @@ function loraleya_checkout_validate_delivery() {
     }
 
     if ( ! loraleya_checkout_post_value( 'll_privacy_consent' ) ) {
-        wc_add_notice( 'Для оформления заказа необходимо согласиться с Политикой обработки персональных данных и Условиями оферты.', 'error' );
+        wc_add_notice( 'Для оформления заказа необходимо дать согласие на обработку персональных данных.', 'error' );
+    }
+
+    if ( ! loraleya_checkout_post_value( 'll_offer_consent' ) ) {
+        wc_add_notice( 'Для оформления заказа необходимо принять условия Публичной оферты.', 'error' );
     }
 
     if ( 'fivepost' === $service ) {
@@ -1307,12 +1318,71 @@ add_filter( 'woocommerce_order_button_text', static function () {
     return 'Оформить заказ';
 } );
 
+function loraleya_checkout_is_standard_received_order( $order ) {
+    return $order instanceof WC_Order
+        && 'yes' !== $order->get_meta( '_ll_individual_order' )
+        && 'yes' !== $order->get_meta( '_ll_delivery_payment_order' );
+}
+
 add_filter( 'woocommerce_thankyou_order_received_text', static function ( $text, $order ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
-        return 'Заказ принят. Оплата пока не требуется. Менеджер свяжется с вами для подтверждения наличия, количества, сроков и доставки. После согласования вы получите ссылку на оплату, а зарегистрированным покупателям станет доступна кнопка оплаты в личном кабинете.';
+        if ( ! loraleya_checkout_is_standard_received_order( $order ) ) {
+            return 'Заказ принят. Оплата пока не требуется. Менеджер свяжется с вами для подтверждения наличия, количества, сроков и доставки. После согласования вы получите ссылку на оплату, а зарегистрированным покупателям станет доступна кнопка оплаты в личном кабинете.';
+        }
+
+        return '<span class="ll-thankyou-next__title">Что дальше</span>'
+            . '<span class="ll-thankyou-next__text">Оплата сейчас не требуется. Менеджер проверит заказ, наличие и количество товаров, сроки и доставку. После согласования вы получите ссылку на оплату.</span>';
     }
     return $text;
 }, 20, 2 );
+
+add_filter( 'woocommerce_endpoint_order-received_title', static function ( $title ) {
+    $order = wc_get_order( absint( get_query_var( 'order-received' ) ) );
+    return loraleya_checkout_is_standard_received_order( $order ) ? 'Заказ принят' : $title;
+} );
+
+add_filter( 'body_class', static function ( $classes ) {
+    if ( function_exists( 'is_order_received_page' ) && is_order_received_page() ) {
+        $order = wc_get_order( absint( get_query_var( 'order-received' ) ) );
+        if ( loraleya_checkout_is_standard_received_order( $order ) ) {
+            $classes[] = 'll-standard-order-received';
+        }
+    }
+
+    return $classes;
+} );
+
+add_filter( 'gettext', static function ( $translation, $text, $domain ) {
+    if (
+        'woocommerce' === $domain
+        && 'Billing address' === $text
+        && function_exists( 'is_order_received_page' )
+        && is_order_received_page()
+    ) {
+        $order = wc_get_order( absint( get_query_var( 'order-received' ) ) );
+        if ( loraleya_checkout_is_standard_received_order( $order ) ) {
+            return 'Контактные данные';
+        }
+    }
+
+    return $translation;
+}, 20, 3 );
+
+add_filter( 'woocommerce_order_needs_shipping_address', static function ( $needs_address, $hide, $order ) {
+    if (
+        ! $needs_address
+        || ! function_exists( 'is_order_received_page' )
+        || ! is_order_received_page()
+        || ! loraleya_checkout_is_standard_received_order( $order )
+    ) {
+        return $needs_address;
+    }
+
+    $billing_address  = trim( wp_strip_all_tags( $order->get_formatted_billing_address() ) );
+    $shipping_address = trim( wp_strip_all_tags( $order->get_formatted_shipping_address() ) );
+
+    return '' !== $shipping_address && $shipping_address !== $billing_address;
+}, 20, 3 );
 
 add_filter( 'woocommerce_email_subject_new_order', static function ( $subject, $order ) {
     if ( $order instanceof WC_Order && 'yes' === $order->get_meta( '_ll_manager_confirmation_required' ) ) {
