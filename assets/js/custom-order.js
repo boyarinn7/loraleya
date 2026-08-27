@@ -40,7 +40,11 @@
     function clearFieldError(element) {
         if (!element) return;
         element.classList.remove('co-ct-input--error', 'co-item-colors--error');
-        if (!form.querySelector('.co-ct-input--error, .co-item-colors--error, .co-consent--error')) {
+        if (element.matches('[data-item-field="item_type"]')) {
+            var itemPicker = element.closest('[data-item-card]').querySelector('.co-item-select');
+            if (itemPicker) itemPicker.classList.remove('co-item-select--error');
+        }
+        if (!form.querySelector('.co-ct-input--error, .co-item-colors--error, .co-consent--error, .co-item-select--error')) {
             hideFormError();
         }
     }
@@ -130,14 +134,171 @@
         }
     }
 
+    var itemSelectCounter = 0;
+
+    function closeItemSelect(root, returnFocus) {
+        if (!root) return;
+        var trigger = root.querySelector('.co-item-select__trigger');
+        var list = root.querySelector('.co-item-select__list');
+        trigger.setAttribute('aria-expanded', 'false');
+        list.hidden = true;
+        root.classList.remove('is-open');
+        if (returnFocus) trigger.focus();
+    }
+
+    function closeOtherItemSelects(current) {
+        document.querySelectorAll('.co-item-select.is-open').forEach(function (root) {
+            if (root !== current) closeItemSelect(root, false);
+        });
+    }
+
+    function itemSelectOptions(root) {
+        return Array.prototype.slice.call(root.querySelectorAll('.co-item-select__option'));
+    }
+
+    function focusItemSelectOption(root, direction) {
+        var options = itemSelectOptions(root);
+        if (!options.length) return;
+        var selected = root.querySelector('.co-item-select__option[aria-selected="true"]');
+        var index = options.indexOf(selected);
+        if (direction === 'last') index = options.length - 1;
+        else if (index < 0) index = 0;
+        options[index].focus();
+    }
+
+    function openItemSelect(root, direction) {
+        closeOtherItemSelects(root);
+        root.querySelector('.co-item-select__trigger').setAttribute('aria-expanded', 'true');
+        root.querySelector('.co-item-select__list').hidden = false;
+        root.classList.add('is-open');
+        focusItemSelectOption(root, direction || 'first');
+    }
+
+    function initItemTypeSelect(card) {
+        var select = card && card.querySelector('[data-item-field="item_type"]');
+        if (!select || select.dataset.llItemSelect === '1') return;
+
+        select.dataset.llItemSelect = '1';
+        select.classList.add('co-item-type-native');
+        select.setAttribute('tabindex', '-1');
+        select.setAttribute('aria-hidden', 'true');
+
+        itemSelectCounter += 1;
+        var root = document.createElement('div');
+        var trigger = document.createElement('button');
+        var value = document.createElement('span');
+        var arrow = document.createElement('span');
+        var list = document.createElement('div');
+        var fieldLabel = 'Изделие';
+        var listId = 'co-item-select-list-' + itemSelectCounter;
+
+        root.className = 'co-item-select';
+        trigger.type = 'button';
+        trigger.className = 'co-item-select__trigger';
+        trigger.setAttribute('aria-haspopup', 'listbox');
+        trigger.setAttribute('aria-expanded', 'false');
+        trigger.setAttribute('aria-controls', listId);
+        value.className = 'co-item-select__value';
+        arrow.className = 'co-item-select__arrow';
+        arrow.setAttribute('aria-hidden', 'true');
+        list.className = 'co-item-select__list';
+        list.id = listId;
+        list.setAttribute('role', 'listbox');
+        list.setAttribute('aria-label', fieldLabel);
+        list.hidden = true;
+        trigger.appendChild(value);
+        trigger.appendChild(arrow);
+        root.appendChild(trigger);
+        root.appendChild(list);
+        select.insertAdjacentElement('afterend', root);
+
+        function sync() {
+            list.textContent = '';
+            Array.prototype.forEach.call(select.options, function (nativeOption, index) {
+                var option = document.createElement('div');
+                var selected = nativeOption.value === select.value;
+                option.className = 'co-item-select__option';
+                option.id = listId + '-option-' + index;
+                option.setAttribute('role', 'option');
+                option.setAttribute('tabindex', '-1');
+                option.setAttribute('data-value', nativeOption.value);
+                option.setAttribute('aria-selected', selected ? 'true' : 'false');
+                option.textContent = nativeOption.textContent.trim();
+                list.appendChild(option);
+                if (selected) value.textContent = option.textContent;
+            });
+            trigger.setAttribute('aria-label', fieldLabel + ': ' + value.textContent);
+        }
+
+        function choose(option) {
+            if (!option) return;
+            select.value = option.getAttribute('data-value');
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+            closeItemSelect(root, true);
+        }
+
+        trigger.addEventListener('click', function (event) {
+            event.stopPropagation();
+            if (root.classList.contains('is-open')) closeItemSelect(root, false);
+            else openItemSelect(root, 'first');
+        });
+
+        trigger.addEventListener('keydown', function (event) {
+            if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                openItemSelect(root, event.key === 'ArrowUp' ? 'last' : 'first');
+            } else if (event.key === 'Escape') {
+                closeItemSelect(root, false);
+            }
+        });
+
+        list.addEventListener('click', function (event) {
+            event.stopPropagation();
+            choose(event.target.closest('.co-item-select__option'));
+        });
+
+        list.addEventListener('keydown', function (event) {
+            var options = itemSelectOptions(root);
+            var current = event.target.closest('.co-item-select__option');
+            var index = options.indexOf(current);
+
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                closeItemSelect(root, true);
+            } else if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                choose(current);
+            } else if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+                event.preventDefault();
+                index += event.key === 'ArrowDown' ? 1 : -1;
+                options[(index + options.length) % options.length].focus();
+            } else if (event.key === 'Home' || event.key === 'End') {
+                event.preventDefault();
+                options[event.key === 'Home' ? 0 : options.length - 1].focus();
+            } else if (event.key === 'Tab') {
+                closeItemSelect(root, false);
+            }
+        });
+
+        select.addEventListener('change', sync);
+        select.llItemSelectSync = sync;
+        sync();
+    }
+
+    function syncItemTypeSelect(card) {
+        var select = card && card.querySelector('[data-item-field="item_type"]');
+        if (select && select.llItemSelectSync) select.llItemSelectSync();
+    }
+
     function addProductCard() {
         if (!productList || !productTemplate || !productTemplate.content.firstElementChild) return;
         var card = productTemplate.content.firstElementChild.cloneNode(true);
         productList.appendChild(card);
+        initItemTypeSelect(card);
         renumberCards();
         updateOtherName(card);
         updateSummary();
-        var firstField = card.querySelector('[data-item-field="item_type"]');
+        var firstField = card.querySelector('.co-item-select__trigger');
         if (firstField) firstField.focus();
     }
 
@@ -252,7 +413,12 @@
 
             if (!item.item_type) {
                 type.classList.add('co-ct-input--error');
-                return { message: 'Выберите изделие в позиции ' + itemNumber + '.', target: type };
+                var typePicker = card.querySelector('.co-item-select');
+                if (typePicker) typePicker.classList.add('co-item-select--error');
+                return {
+                    message: 'Выберите изделие в позиции ' + itemNumber + '.',
+                    target: card.querySelector('.co-item-select__trigger') || type
+                };
             }
             if (!item.item_name) {
                 customName.classList.add('co-ct-input--error');
@@ -446,6 +612,7 @@
             element.classList.remove('co-ct-input--error', 'co-item-colors--error');
         });
         updateOtherName(card);
+        syncItemTypeSelect(card);
     }
 
     function resetFormToInitial() {
@@ -470,6 +637,14 @@
     }
 
     renumberCards();
-    cards().forEach(updateOtherName);
+    cards().forEach(function (card) {
+        initItemTypeSelect(card);
+        updateOtherName(card);
+    });
     updateSummary();
+
+    document.addEventListener('click', function () { closeOtherItemSelects(null); });
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') closeOtherItemSelects(null);
+    });
 })();

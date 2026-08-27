@@ -225,3 +225,16 @@ Partial refund маркированного заказа остаётся отд
 - 5Post на staging до migration не менять. Новый ключ устанавливается уже после переноса на production; затем выполняется минимальная проверка карты и выбора ПВЗ.
 - Старые тестовые Woo/YooKassa заказы `867/874/875/946` отдельно не исправляются и не reconcile-ятся только ради migration.
 - Реальных клиентских заказов ещё не было. Любая будущая очистка остаётся отдельной задачей и выполняется только после свежего backup.
+
+## 2026-08-27 — Migration staging → production завершена
+
+Это решение заменяет более ранние записи от 2026-08-27 о том, что migration ещё не запускалась и production оставался устаревшим.
+
+- Проверенное staging-состояние `/test/` успешно перенесено на production.
+- Production DB `wptk_*` теперь является актуальной копией staging DB; staging-набор `wpstg0_*` сохранён отдельно.
+- Файловая часть migration выполнена, production открыт.
+- Visual smoke production завершён со статусом `PASS`.
+- После migration закрыты три визуальных дефекта: положение H1 single product под фиксированной шапкой, системная синяя плашка native select «Изделие» и серая checkout CTA корзины.
+- Исправления находятся в `style.css` и `assets/js/custom-order.js`, проверены пользователем на staging и production и считаются `PASS / CLOSED`.
+- Custom dropdown «Изделие» остаётся presentation layer: native select хранит значение и передаёт его существующей логике формы; список изделий и business workflow не изменены.
+- Production и staging не изменять повторно в рамках этого checkpoint; дальнейшие 5Post, payment/marking и technical SEO задачи выполняются отдельно.

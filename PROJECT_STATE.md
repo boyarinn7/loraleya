@@ -21,11 +21,11 @@
 - Action Scheduler здоров: всего `463`, completed `445`, pending `16`, failed `2`, overdue `0`; зависшей очереди нет, WP-Cron и async runner работают. Пропуск `action_scheduler_run_queue` был разовым, вопрос закрыт.
 - Оба failed action относятся только к `rank_math/analytics/email_report_event`. Это низкоприоритетный follow-up Rank Math, не влияющий на WooCommerce-заказы, оплату, webhooks и транзакционные email магазина.
 
-Non-blocking host/pre-production follow-ups:
+Non-blocking host/post-production follow-ups:
 
 1. Отдельно проверить и только после approval обновить: Better Search Replace `1.4.10 → 1.4.11`, Rank Math SEO `1.0.272 → 1.0.276`, WP STAGING `4.9.1 → 4.11.1`.
-2. До production migration уточнить у REG.RU план обновления MySQL и security/backport policy для ветки MySQL 8.0, которая достигла upstream EOL. Текущая staging DB совместима и блокером не является.
-3. До переноса подтвердить точные версии PHP и DB на production.
+2. Уточнить у REG.RU план обновления MySQL и security/backport policy для ветки MySQL 8.0, которая достигла upstream EOL. Подтверждённая staging DB совместима и блокером не являлась.
+3. Отдельно подтвердить точные host-level версии PHP и DB на production.
 
 ## Безопасность работы
 
@@ -33,17 +33,23 @@ Non-blocking host/pre-production follow-ups:
 - Есть полный ZIP staging-theme до начала Codex-изменений как rollback.
 - Существует `stash@{0}: checkpoint custom order workflow before staging test 2026-08-17`; не применять и не делать pop без отдельной необходимости.
 - Публичный репозиторий ранее содержал скомпрометированный Fivepost credential. Сам credential в документацию не записывать.
-- До production требуется отзыв/ротация credential и cleanup репозитория.
+- Ротация 5Post credential и cleanup репозитория остаются отдельными post-migration задачами; новый ключ устанавливается на production после ответа менеджера 5Post.
 
-## Migration source readiness — PASS
+## Migration staging → production — PASS / CLOSED
 
-Три обязательных слоя будущей migration подтверждены на staging `/test/`:
+Migration из staging `/test/` успешно завершена 2026-08-27:
 
-1. **Runtime code — PASS / CLOSED.** Local Git, GitHub и staging содержат одинаковый runtime-код. Рабочая ветка — `fix/staging-audit-2026-08-13`; последний runtime checkpoint — `17addd170219c6179856c7e78d60c619e9c22632` (`checkpoint: sync staging registration mail`). Registration plugin и `page-about.php` синхронизированы со staging.
-2. **Database — PASS / CLOSED как migration source.** Рабочая БД — `u3477645_wp900`; production prefix — `wptk_`, staging prefix — `wpstg0_`. Source of truth — полный набор `wpstg0_*`; в нём находятся актуальные товары, страницы, WooCommerce, Rank Math, individual applications и настройки интеграций. `wptk_*` не использовать как источник актуального контента.
-3. **Uploads/media — PASS / CLOSED.** Product media и page/theme media физически присутствуют; после отключения устаревшей video-связи broken runtime media = `0`.
+1. **Database — PASS.** Актуальное состояние staging перенесено в production-набор `wptk_*`; production DB теперь является актуальной копией staging. Исходный staging-набор `wpstg0_*` сохранён отдельно и не смешивался с `wptk_*`.
+2. **Filesystem — PASS.** Файловая часть migration выполнена: актуальные runtime-файлы, тема, необходимые плагины и рабочие uploads перенесены на production.
+3. **Cutover — PASS.** Production открыт после проверок. Визуальный smoke production завершён со статусом `PASS`.
 
-Migration ещё не запускалась. Production остаётся устаревшим и не является source of truth.
+Три обнаруженных после migration визуальных дефекта исправлены на staging, вручную перенесены на production и проверены пользователем:
+
+- single product: H1 начинается ниже фиксированной шапки — `PASS`;
+- individual order: фирменный custom dropdown «Изделие» без системной синей плашки — `PASS`;
+- cart: checkout CTA соответствует стилю LoraLeya — `PASS`.
+
+Текущие runtime-файлы этого checkpoint: `style.css` и `assets/js/custom-order.js`.
 
 ## Обычный заказ WooCommerce
 
@@ -277,7 +283,7 @@ Individual-order workflow на staging функционально закрыт. 
 - публичная оферта обновлена в пунктах 3.3, 3.4, 3.7 и 3.8; пункт 3.8 на staging уточнён под отдельную оплату 250 ₽ до передачи заказа в 5Post;
 - редакция оферты: 23 августа 2026 г.
 
-Production этими изменениями ещё не обновлён.
+После migration эти изменения находятся и на production.
 
 ## Карточки обычных товаров — staging PASS
 
@@ -293,20 +299,20 @@ Production этими изменениями ещё не обновлён.
 
 В WordPress БД staging вручную обновлены описания скатерти, дорожки, салфетки, куверта и готового набора; эти изменения не находятся в Git. Для каждого типа используется отдельный текст и реальные полные размеры. Для дорожек и салфеток указана обработка «английским уголком»; салфетка — `40 × 40 см`, допуск до `0,5 см`; куверт — `9 × 24 см`, два отделения; скатерть — ширина `140 см`, длины `175/220/240 см`; дорожка — ширина `40 см`, длины `140/175/240/300 см`; набор содержит число салфеток и кувертов по числу персон плюс одну дорожку выбранной длины. Описания предупреждают о переливе жаккарда и возможном отличии цвета из-за цветопередачи экрана.
 
-## Страница «О бренде» — фото основательницы staging PASS
+## Страница «О бренде» — фото основательницы PASS
 
 - В `page-about.php` прежний жёсткий production URL фото основательницы заменён на current-site URL через `content_url()`.
 - Используется staging media: `/wp-content/uploads/2026/08/natalia-kurenkova-loraleya.webp`.
-- Новое фото отображается на `/test/`; ручная staging-проверка — PASS.
+- Новое фото отображалось на `/test/`; ручная staging-проверка — PASS. После migration актуальная файловая версия перенесена на production.
 - Старый одноимённый файл в `/wp-content/uploads/2026/06/` существует, но актуальный runtime его не использует.
-- Alt, тексты, layout и стили страницы не менялись; production не затронут.
+- Alt, тексты, layout и стили страницы не менялись.
 
 ## Product SEO после ручных изменений — PASS / CLOSED
 
 - Все пять опубликованных товаров повторно проверены: новые длинные описания уникальны, SEO-пригодны, без серьёзных дублей и переспама и не противоречат размерам или вариациям.
 - Product ID `44`, «Скатерть»: SEO title — `Жаккардовая скатерть для сервировки стола — LoraLeya`; meta description — `Жаккардовая скатерть LoraLeya для сервировки стола. Три размера на выбор, аккуратная обработка и выразительная фактура ткани.`
 - Product ID `50`, «Готовый набор — всё в одном цвете»: SEO title — `Готовый набор столового текстиля для сервировки — LoraLeya`; meta description не менялся.
-- Staging `noindex` остаётся активным до migration. После переноса обязательны production-проверки canonical, sitemap и снятия `noindex`.
+- Staging сохраняется отдельно от production. Production открыт после migration; технические SEO-проверки не входят в текущий визуальный checkpoint и не должны смешиваться с ним.
 
 ## Uploads/media — PASS / CLOSED
 
@@ -316,11 +322,11 @@ Production этими изменениями ещё не обновлён.
 - `/color/serebro/` использует штатный Ken Burns fallback: `serebro-hero-servirovka`, `serebro-macro-pereliv`, `serebro-hero-detail`.
 - Остальные 16 цветовых страниц и theme code не менялись.
 
-## Pre-production content, SEO и privacy — staging PASS
+## Публичный контент, SEO и privacy — migrated / PASS
 
-Актуальным источником истины для публичного контента считается staging `/test/`. Содержимое старого production по оферте, оплате/доставке и возвратам устарело и не используется для обратной сверки. Будущий production — текущий staging после полной migration.
+Проверенное состояние staging `/test/` было источником migration. Актуальные публичные страницы, товары, настройки и uploads перенесены в production; старое production-состояние больше не используется.
 
-- SEO-защита `/test/`: WordPress Search Engine Visibility включён; meta robots — `noindex, nofollow`; HTTP `X-Robots-Tag` — `noindex, nofollow, noarchive, nosnippet`; PASS. Перед открытием production ограничения обязательно снять.
+- SEO-защита `/test/` остаётся staging-only и не должна переноситься обратно на production.
 - Яндекс.Метрика: код в репозитории не найден, запросов к `mc.yandex.ru` нет ни на `/test/`, ни на текущем production. Боевой счётчик подключить ближе к запуску production, исключив `/test/`.
 - Актуальная staging-оферта вручную уточнена в пунктах 5.3, 5.7, 5.9 и 5.10, чтобы обычные и индивидуальные заказы корректно различались по оплате доставки.
 - Страницы «Оплата и доставка» и «Возврат и обмен» на `/test/` вручную приведены в соответствие актуальной оферте и runtime; возвраты согласованы с разделом 6 оферты.
@@ -346,22 +352,24 @@ Mobile checkout получил общие поля `20px` и ограничен�
 
 Во время разработки caching period REG.RU временно уменьшен с `45 дней` до `1 часа`: query parameter подтвердил, что устаревшая product page выдавалась hosting cache. После production launch и стабилизации вернуть более длинный период кеширования.
 
-## Оставшиеся pre-production задачи
+## Оставшиеся post-migration задачи
 
-Следующий этап — непосредственная подготовка cutover:
+Migration и визуальный production smoke завершены. Отдельными follow-up остаются:
 
-1. Непосредственно перед migration создать и зафиксировать ещё одну свежую резервную копию production и staging. Автоматический backup REG.RU уже существует; заранее замораживать staging и ждать ещё сутки не требуется.
-2. Не менять текущие 5Post credentials/settings на staging. Новый ключ устанавливать уже после переноса на production, затем минимально проверить карту и выбор ПВЗ.
+1. Не менять сохранённый staging-набор `wpstg0_*` без отдельной задачи; он остаётся источником rollback/сверки состояния на момент migration.
+2. Получить новый 5Post key у менеджера, установить его на production и затем минимально проверить карту и выбор ПВЗ.
 3. Не выполнять отдельный YooKassa reconciliation старых тестовых заказов `867/874/875/946` только ради migration; реальных клиентских заказов ещё не было.
-4. На production после переноса проверить environment-specific настройки, callbacks, SMTP, robots/canonical/sitemap и снять staging `noindex` только перед открытием сайта.
-5. Подключить боевой счётчик Яндекс.Метрики ближе к production launch, не включая `/test/` в статистику.
-6. Production acceptance marking / second receipt выполнить контролируемым заказом уже после migration.
+4. Отдельно подтвердить оставшиеся environment-specific настройки и технический SEO, если они не закрыты другим checkpoint.
+5. Подключение и настройка Яндекс.Метрики остаются отдельной задачей.
+6. Production acceptance marking / second receipt выполнить контролируемым заказом отдельным заданием.
 
-Production rollout выполняется только после отдельного подтверждения.
+Production уже открыт; новые изменения по-прежнему требуют отдельного подтверждения и staging-first проверки.
 
-## Стратегия staging → production
+## Стратегия staging → production — выполнена 2026-08-27
 
 Принятое решение заменяет любые прежние предположения о параллельной ручной доработке production или сложном merge двух рабочих баз.
+
+Статус: этапы подготовки, backup/cutover, переноса файлов и БД и открытия production выполнены. Ниже план сохранён как историческая схема выполненного rollout; controlled payment/marking acceptance остаётся отдельным follow-up.
 
 - `/test/` является источником истины и будущей финальной версией сайта.
 - Функционал, оферта, доставка, возвраты, privacy, клиентские тексты, письма, настройки и обязательный к запуску SEO-контент доводятся и проверяются на `/test/`.
@@ -412,7 +420,7 @@ SEO-правила миграции:
 - `robots.txt` не должен блокировать production;
 - canonical, sitemap и внутренние ссылки должны использовать `https://loraleya.ru/...`, без `/test/`.
 
-После успешной миграции `/test/` закрывается авторизацией/паролем либо удаляется/архивируется. Публичная индексируемая копия и дубли `loraleya.ru/page/` / `loraleya.ru/test/page/` недопустимы.
+После успешной migration staging `/test/` и набор `wpstg0_*` сохранены отдельно. Staging не должен становиться публичной индексируемой копией production.
 
 ### Этап D — Production acceptance
 
@@ -443,17 +451,17 @@ Staging не может полноценно проверить боевой Yoo
 ## Текущий Git
 
 - Branch: `fix/staging-audit-2026-08-13`.
-- Последний runtime checkpoint: `17addd170219c6179856c7e78d60c619e9c22632` — `checkpoint: sync staging registration mail`.
-- Local branch и `origin/fix/staging-audit-2026-08-13` синхронизированы до текущего documentation checkpoint.
+- Текущий checkpoint фиксирует успешную migration и проверенные post-migration visual fixes в `style.css` и `assets/js/custom-order.js`.
+- После обычного push local branch и `origin/fix/staging-audit-2026-08-13` должны быть синхронизированы.
 - Handoff-файл `LoraLeya_handoff_2026-08-26.md` остаётся локальным untracked-файлом и в checkpoint не включается.
 
 ## Следующий шаг
 
-1. До отдельного явного approval migration не запускать.
-2. Непосредственно перед cutover создать и проверить свежий backup production и staging; сутки ради нового автоматического backup не ждать.
-3. Выполнить migration из полного `wpstg0_*` и подтверждённого uploads allowlist только отдельной задачей.
-4. После переноса установить новый 5Post key, выполнить environment/SEO switches и минимальные production-проверки.
-5. После открытия провести controlled production acceptance order для callback, чеков, КИЗ и Метрики.
+1. Сохранить production и staging без дополнительных изменений до следующей отдельной задачи.
+2. После получения нового ключа 5Post установить его на production и проверить карту/выбор ПВЗ.
+3. Отдельно выполнить оставшиеся environment/technical SEO follow-up, если они не закрыты другим checkpoint.
+4. Провести controlled production acceptance order для callback, чеков и КИЗ отдельным согласованным заданием.
+5. Не возвращаться к трём закрытым visual fixes без нового воспроизводимого дефекта.
 
 ## Ежедневное правило работы
 
